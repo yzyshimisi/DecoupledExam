@@ -1,32 +1,30 @@
 package cn.edu.zjut.backend.service;
 
-import cn.edu.zjut.backend.dao.SubjectDAO;
-import cn.edu.zjut.backend.po.Subject;
+import cn.edu.zjut.backend.dao.QuestionDAO;
+import cn.edu.zjut.backend.dto.QuestionQueryDTO;
+import cn.edu.zjut.backend.po.Questions;
 import cn.edu.zjut.backend.util.HibernateUtil;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service("subjectServ")
-public class SubjectService {
+@Service("questionServ")
+public class QuestionService {
 
     public Session getSession() {
-        // SessionFactory sf= new Configuration().configure().buildSessionFactory();
-        // return sf.openSession();
-
         return HibernateUtil.getSession();
     }
 
-    public boolean addSubject(Subject subject) {
+    // 添加题目
+    public boolean addQuestion(Questions question){
         Session session = getSession();
-        SubjectDAO dao = new SubjectDAO();
+        QuestionDAO dao = new QuestionDAO();
         dao.setSession(session);
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            dao.add(subject);
+            dao.add(question);
             tran.commit();
             return true;
         } catch (Exception e) {
@@ -40,23 +38,23 @@ public class SubjectService {
         }
     }
 
-    public List<Subject> getSubject(int id) {
+    // 查询题目
+    public List<Questions> queryQuestion(QuestionQueryDTO dto){
         Session session = getSession();
-        SubjectDAO dao = new SubjectDAO();
+        QuestionDAO dao = new QuestionDAO();
         dao.setSession(session);
-        List<Subject> subjects = dao.query(id);
-        HibernateUtil.closeSession();
-        return subjects;
+        return dao.query(dto);
     }
 
-    public boolean deleteSubject(int id) {
-        Session session = getSession();
-        SubjectDAO dao = new SubjectDAO();
+    // 删除题目，支持批量删除
+    public boolean deleteQuestion(List<Long> ids){
+        Session session=this.getSession();
+        QuestionDAO dao = new QuestionDAO();
         dao.setSession(session);
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            dao.delete(id);
+            dao.delete(ids);
             tran.commit();
             return true;
         } catch (Exception e) {

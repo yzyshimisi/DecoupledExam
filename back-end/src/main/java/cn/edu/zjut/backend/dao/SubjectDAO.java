@@ -10,6 +10,7 @@ import org.hibernate.query.Query;
 import java.util.List;
 
 public class SubjectDAO {
+
     private Session session;
     private final Log log = LogFactory.getLog(SubjectDAO.class);
 
@@ -28,7 +29,7 @@ public class SubjectDAO {
         }
     }
 
-    public List<Subject> get(int id) throws HibernateException {
+    public List<Subject> query(int id) throws HibernateException {
         try {
             if(id==-1){     // 查询全部
                 String hql = "from Subject";

@@ -1,23 +1,9 @@
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS `user`;
-DROP TABLE IF EXISTS `edu_course`;
-DROP TABLE IF EXISTS `questions`;
-DROP TABLE IF EXISTS `question_items`;
-DROP TABLE IF EXISTS `question_components`;
-DROP TABLE IF EXISTS `question_tags`;
-DROP TABLE IF EXISTS `exam_paper`;
-DROP TABLE IF EXISTS `exam_paper_question`;
-DROP TABLE IF EXISTS `exam`;
-DROP TABLE IF EXISTS `exam_setting`;
-DROP TABLE IF EXISTS `exam_record`;
-DROP TABLE IF EXISTS `exam_answer`;
-DROP TABLE IF EXISTS `exam_wrong_book`;
-DROP TABLE IF EXISTS `system_operation_log`;
-DROP TABLE IF EXISTS `user_login_log`;
-DROP TABLE IF EXISTS `security_event_log`;
-DROP TABLE IF EXISTS `subject`;
-SET FOREIGN_KEY_CHECKS = 1;
+DROP DATABASE IF EXISTS `DecoupledExam`;
+CREATE DATABASE `DecoupledExam`;
+DEFAULT CHARACTER SET utf8mb4;
+DEFAULT COLLATE utf8mb4_unicode_ci;
+
+USE `DecoupledExam`;
 
 -- 学科表
 CREATE TABLE `subject` (
@@ -65,38 +51,82 @@ CREATE TABLE `edu_course` (
   FOREIGN KEY (`teacher_id`) REFERENCES `user`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='课程表';
 
--- 3. 题目主表
+-- =============================================
+-- 题型表（最终精简版：仅 3 个字段）
+-- =============================================
+DROP TABLE IF EXISTS `question_type`;
+CREATE TABLE `question_type` (
+  `type_id`    INT(11)      NOT NULL AUTO_INCREMENT COMMENT '题型ID（主键，自增）',
+  `type_code`  VARCHAR(30)  NOT NULL COMMENT '题型编码（唯一，如 SINGLE、READING）',
+  `type_name`  VARCHAR(30)  NOT NULL COMMENT '题型名称（如：单选题、阅读理解）',
+  PRIMARY KEY (`type_id`),
+  UNIQUE KEY `uk_code` (`type_code`),
+  UNIQUE KEY `uk_name` (`type_name`),
+  KEY `idx_code` (`type_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='题型表';
+
+INSERT INTO `question_type` (`type_code`, `type_name`) VALUES
+('SINGLE',       '单选题'),
+('MULTIPLE',     '多选题'),
+('TRUE_FALSE',   '判断题'),
+('FILL',         '填空题'),
+('SHORT_ANS',    '简答题'),
+('ESSAY',        '论述题'),
+('CALC',         '计算题'),
+('JOURNAL',      '分录题'),
+('MATCHING',     '连线题'),
+('SORTING',      '排序题'),
+('CLOZE',        '完形填空'),
+('READING',      '阅读理解'),
+('LISTENING',    '听力题'),
+('PROGRAM',      '程序题'),
+('ORAL',         '口语题'),
+('COMPREHENSIVE','综合题'),
+('POLL',         '投票题');
+
+-- =============================================
+-- 2. 题目主表（全新建表，已使用 type_id 外键）
+-- =============================================
+DROP TABLE IF EXISTS `questions`;
 CREATE TABLE `questions` (
-  `id`            BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `type`          VARCHAR(20)  NOT NULL COMMENT '题型标识',
-  `title`         TEXT         DEFAULT NULL COMMENT '题干（阅读理解文章放这里）',
-  `difficulty`    TINYINT(4)   NOT NULL DEFAULT 1 COMMENT '难度 1-5',
-  `subject_id`    INT(11)      DEFAULT NULL COMMENT '所属学科ID',
-  `creator_id`    BIGINT(20)   NOT NULL COMMENT '出题人ID',
-  `review_status` TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '审核状态 0待审1通过2驳回',
-  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `updated_at`    DATETIME     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `id`             BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '题目ID',
+  `type_id`        INT(11)     NOT NULL COMMENT '题型ID',
+  `title`          TEXT         DEFAULT NULL COMMENT '题干（阅读理解文章放这里）',
+  `difficulty`     TINYINT(4)   NOT NULL DEFAULT 1 COMMENT '难度 1-5',
+  `subject_id`     INT(11)        DEFAULT NULL COMMENT '所属学科ID',
+  `creator_id`     BIGINT(20)   NOT NULL COMMENT '出题人ID',
+  `review_status`  TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '审核状态：0待审 1通过 2驳回',
+  `created_at`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at`     DATETIME     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
-  KEY `idx_type` (`type`),
+  KEY `idx_type` (`type_id`),
+  KEY `idx_subject` (`subject_id`),
   KEY `idx_creator` (`creator_id`),
   KEY `idx_review` (`review_status`),
-  FOREIGN KEY (`creator_id`) REFERENCES `user`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
-  FOREIGN KEY (`subject_id`) REFERENCES `subject`(`subject_id`) ON DELETE SET NULL ON UPDATE CASCADE
+  CONSTRAINT `fk_questions_type`     FOREIGN KEY (`type_id`)     REFERENCES `question_type`(`type_id`)     ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_questions_subject`  FOREIGN KEY (`subject_id`)  REFERENCES `subject`(`subject_id`)         ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_questions_creator`  FOREIGN KEY (`creator_id`)  REFERENCES `user`(`user_id`)              ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='题目主表';
 
--- 4. 子题表
+-- =============================================
+-- 3. 子题表（全新建表，已使用 type_id 外键）
+-- =============================================
+DROP TABLE IF EXISTS `question_items`;
 CREATE TABLE `question_items` (
-  `id`          BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `question_id` BIGINT(20) NOT NULL COMMENT '关联主题目',
-  `sequence`    INT(11)    NOT NULL COMMENT '子题顺序',
-  `content`     TEXT       DEFAULT NULL COMMENT '子题题干',
-  `type`        VARCHAR(20) NOT NULL COMMENT '子题类型',
+  `id`           BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '子题ID',
+  `question_id`  BIGINT(20) DEFAULT NULL COMMENT '所属主题目ID',
+  `sequence`     INT(11)    NOT NULL COMMENT '子题顺序',
+  `type_id`      INT(11)    NOT NULL COMMENT '子题题型ID',
+  `content`      TEXT       DEFAULT NULL COMMENT '子题题干',
   PRIMARY KEY (`id`),
   KEY `idx_question` (`question_id`),
-  FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `idx_type` (`type_id`),
+  CONSTRAINT `fk_item_question` FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_item_type`     FOREIGN KEY (`type_id`)     REFERENCES `question_type`(`type_id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='子题表';
 
--- 5. 题目组件表（核心）
+
+-- 4. 题目组件表（核心）
 CREATE TABLE `question_components` (
   `id`             BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '主键',
   `question_id`    BIGINT(20)   DEFAULT NULL COMMENT '关联主题目（可空）',

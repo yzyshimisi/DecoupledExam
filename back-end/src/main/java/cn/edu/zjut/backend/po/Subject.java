@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity // 1. 标记这是一个 JPA 实体类，对应 XML 中的 <class>
-@Table(name = "subject", catalog = "DecoupledExam") // 2. 对应 XML 中的 <class> 标签的 table 和 catalog 属性
+@Table(name = "subject") // 2. 对应 XML 中的 <class> 标签的 table 和 catalog 属性
 public class Subject {
     // 学科ID
     @Id // 3. 标记主键，对应 XML 中的 <id>
