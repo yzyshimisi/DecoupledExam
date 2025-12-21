@@ -1,6 +1,7 @@
 package cn.edu.zjut.backend.controller;
 
 import cn.edu.zjut.backend.dao.ExamPaperDAO;
+import cn.edu.zjut.backend.dto.ExamGenerationRequest;
 import cn.edu.zjut.backend.dto.ExamPaperDTO;
 import cn.edu.zjut.backend.po.ExamPaper;
 import cn.edu.zjut.backend.po.ExamPaperQuestion;
@@ -29,6 +30,16 @@ public class ExamPaperController {
     @ResponseBody
     public Response<List<ExamPaperDTO>> addExamPaper(@RequestBody ExamPaperDTO examPaperDTO, Model model) {
         if(examPaperServ.addExamPaper(examPaperDTO)) {
+            return Response.success();
+        }else{
+            return Response.error("题目添加失败");
+        }
+    }
+
+    @RequestMapping(value = "/api/examPaper/generate", method = RequestMethod.POST)
+    @ResponseBody
+    public Response<List<ExamPaperDTO>> generateExamPaper(@RequestBody ExamGenerationRequest examGenerationRequest , Model model) {
+        if(examPaperServ.generateExamPaper(examGenerationRequest)) {
             return Response.success();
         }else{
             return Response.error("题目添加失败");

@@ -171,7 +171,7 @@ CREATE TABLE `question_components` (
 CREATE TABLE `question_tags` (
   `id`          BIGINT(20)  NOT NULL AUTO_INCREMENT COMMENT '主键',
   `question_id` BIGINT(20)  NOT NULL COMMENT '题目ID',
-  `tag_name`    VARCHAR(50) NOT NULL COMMENT '标签名称',
+  `tag_name`    VARCHAR(30) NOT NULL COMMENT '标签名称',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_question_tag` (`question_id`,`tag_name`),
   FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE
@@ -364,3 +364,23 @@ ALTER TABLE `edu_course`
   ADD KEY `idx_subject` (`subject_id`),
   ADD CONSTRAINT `fk_course_subject` 
   FOREIGN KEY (`subject_id`) REFERENCES `subject`(`subject_id`) ON DELETE SET NULL;
+
+  -- =============================================
+-- 22. 考试通知表
+-- =============================================
+CREATE TABLE `exam_notification` (
+    `notification_id`  BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '通知ID',
+    `exam_id`          BIGINT(20)   NOT NULL COMMENT '考试ID',
+    `student_id`       BIGINT(20)   DEFAULT NULL COMMENT '学生ID（NULL表示发送给所有考生）',
+    `title`            VARCHAR(100) NOT NULL COMMENT '通知标题',
+    `content`          VARCHAR(500) NOT NULL COMMENT '通知内容',
+    `send_time`        DATETIME     DEFAULT NULL COMMENT '计划发送时间',
+    `is_sent`          TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否已发送',
+    `send_attempts`    INT(11)      NOT NULL DEFAULT 0 COMMENT '发送尝试次数',
+    PRIMARY KEY (`notification_id`),
+    KEY `idx_exam` (`exam_id`),
+    KEY `idx_student` (`student_id`),
+    KEY `idx_send_time` (`send_time`),
+    CONSTRAINT `fk_notification_exam` FOREIGN KEY (`exam_id`) REFERENCES `exam`(`exam_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT `fk_notification_student` FOREIGN KEY (`student_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='考试通知表';

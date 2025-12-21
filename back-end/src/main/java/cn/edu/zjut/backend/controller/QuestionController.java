@@ -4,6 +4,8 @@ import cn.edu.zjut.backend.dto.QuestionQueryDTO;
 import cn.edu.zjut.backend.po.Questions;
 import cn.edu.zjut.backend.service.QuestionService;
 import cn.edu.zjut.backend.util.Response;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +21,7 @@ public class QuestionController {
 
     @RequestMapping(value = "/api/question", method = RequestMethod.POST)
     @ResponseBody
-    public Response<List<Questions>> addQuestion(@RequestBody Questions question, Model model) {
+    public Response<List<Questions>> addQuestion(@RequestBody Questions question) {
         if(questionServ.addQuestion(question)) {
             return Response.success();
         }else{
@@ -29,14 +31,24 @@ public class QuestionController {
 
     @RequestMapping(value = "/api/question/import", method = RequestMethod.POST)
     @ResponseBody
-    public Response<List<Questions>> importQuestion(@RequestBody Map<String, Object> request, Model model) {
+    public Response<List<Questions>> importQuestion(@RequestBody List<Questions> questions) {
+        if(questionServ.importQuestion(questions)) {
+            return Response.success();
+        }else{
+            return Response.error("题目添加失败");
+        }
+    }
+
+    @RequestMapping(value = "/api/question/file", method = RequestMethod.POST)
+    @ResponseBody
+    public Response<List<Questions>> fileImportQuestion(@RequestBody Map<String, Object> request) {
 
         String fileContent = (String) request.get("file");
         if (fileContent == null || fileContent.isEmpty()) {
             return Response.error("文件内容为空");
         }
 
-        if(questionServ.importQuestions(fileContent)) {
+        if(questionServ.fileImportQuestions(fileContent)) {
             return Response.success();
         } else {
             return Response.error("导入失败");

@@ -37,7 +37,7 @@ public class Questions {
     private Integer subjectId;
 
     @Column(name = "creator_id", nullable = false)
-    private Long creatorId;
+    private Long creatorId = -1L;
 
     @Column(name = "review_status", nullable = false)
     private Byte reviewStatus = 0; // 默认值0

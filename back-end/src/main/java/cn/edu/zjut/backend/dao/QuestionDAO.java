@@ -28,6 +28,19 @@ public class QuestionDAO {
         }
     }
 
+    public Questions query(Long id) {
+        String hql = "from Questions where id = :id";
+        try {
+            Query<Questions> queryObject = session.createQuery(hql, Questions.class);
+            queryObject.setParameter("id", id);
+            return queryObject.list().get(0);
+        } catch (RuntimeException re) {
+            System.out.println("find by hql failed"+re);
+            throw re;
+        } finally{
+        }
+    }
+
     public List<Questions> query(QuestionQueryDTO dto){
 
         try {
@@ -78,14 +91,9 @@ public class QuestionDAO {
         }
     }
 
-    public void delete(List<Long> ids) {
+    public void delete(Questions questions) {
         try {
-            for(int i=0; i<ids.size(); i++){
-                String hql = "delete from Questions q where q.id = :id";
-                Query query = session.createQuery(hql);
-                query.setParameter("id", ids.get(i));
-                query.executeUpdate();
-            }
+            session.delete(questions);
         } catch (RuntimeException re) {
             log.error("delete failed", re);
             throw re;

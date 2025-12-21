@@ -52,6 +52,21 @@ public class QuestionTagsDAO {
         }
     }
 
+    public QuestionTags findById(Long id) {
+        log.debug("querying questionTags instance");
+        String hql = "from QuestionTags where id = :id";
+        try {
+            Query<QuestionTags> queryObject = session.createQuery(hql, QuestionTags.class);
+            queryObject.setParameter("id", id);
+            log.debug("query successful");
+            return queryObject.list().get(0);
+        } catch (RuntimeException re) {
+            log.error("query failed", re);
+            throw re;
+        } finally{
+        }
+    }
+
     // 通过题目ID去查询
     public List<QuestionTags> query(Long questionId) {
         log.debug("querying questionTags instance");
@@ -59,6 +74,21 @@ public class QuestionTagsDAO {
         try {
             Query<QuestionTags> queryObject = session.createQuery(hql, QuestionTags.class);
             queryObject.setParameter("questionId", questionId);
+            log.debug("query successful");
+            return queryObject.list();
+        } catch (RuntimeException re) {
+            log.error("query failed", re);
+            throw re;
+        } finally{
+        }
+    }
+
+    // 查询所有记录（用来导出成文件）
+    public List<QuestionTags> queryAll() {
+        log.debug("querying questionTags instance");
+        String hql = "from QuestionTags";
+        try {
+            Query<QuestionTags> queryObject = session.createQuery(hql, QuestionTags.class);
             log.debug("query successful");
             return queryObject.list();
         } catch (RuntimeException re) {

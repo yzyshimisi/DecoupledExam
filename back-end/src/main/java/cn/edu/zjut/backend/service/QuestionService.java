@@ -1,15 +1,16 @@
 package cn.edu.zjut.backend.service;
 
 import cn.edu.zjut.backend.dao.QuestionDAO;
+import cn.edu.zjut.backend.dao.QuestionTagsDAO;
 import cn.edu.zjut.backend.dao.SubjectDAO;
 import cn.edu.zjut.backend.dto.QuestionQueryDTO;
-import cn.edu.zjut.backend.po.QuestionComponents;
-import cn.edu.zjut.backend.po.QuestionItems;
-import cn.edu.zjut.backend.po.Questions;
-import cn.edu.zjut.backend.po.Subject;
+import cn.edu.zjut.backend.po.*;
 import cn.edu.zjut.backend.util.ChatGLM;
+import cn.edu.zjut.backend.util.ChatGLM_N;
 import cn.edu.zjut.backend.util.HibernateUtil;
+import cn.edu.zjut.backend.util.UserContext;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.Data;
 import org.apache.poi.xwpf.usermodel.*;
 import org.hibernate.*;
@@ -25,6 +26,7 @@ import java.util.regex.Pattern;
 
 @Service("questionServ")
 public class QuestionService {
+
     private final Gson gson = new Gson();
     private static final Map<String, String> QUESTION_JSON = new HashMap<String, String>() {{
         // 单选题
@@ -568,16 +570,81 @@ public class QuestionService {
     // 添加题目
     public boolean addQuestion(Questions question){
 
+        // 生成题目标签
+        Gson gson = new Gson();
+        String questionStr = gson.toJson(question);
+
+        String questionTagsJson = generateTags(questionStr);
+        List<QuestionTags> questionTags = gson.fromJson(questionTagsJson, new TypeToken<List<QuestionTags>>(){}.getType());
+
         // 手动建立双向引用
         bindQuestionRelations(question);
+        question.setCreatorId(UserContext.getUserId());     // 设置创建者ID
 
         Session session = getSession();
         QuestionDAO dao = new QuestionDAO();
+        QuestionTagsDAO questionTagsDAO = new QuestionTagsDAO();
         dao.setSession(session);
+        questionTagsDAO.setSession(session);
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            dao.add(question);
+
+            dao.add(question);  // 插入题目
+            // 插入标签
+            for(QuestionTags questionTag : questionTags){
+                questionTag.setQuestionId(question.getId());
+                questionTagsDAO.add(questionTag);
+            }
+
+            tran.commit();
+            return true;
+        } catch (Exception e) {
+            System.out.println("save customer failed "+ e);
+            if (tran != null) {
+                tran.rollback();
+            }
+            return false;
+        } finally {
+            HibernateUtil.closeSession();
+        }
+    }
+
+    // 批量导入（列表）
+    public boolean importQuestion(List<Questions> questions){
+
+        Session session = getSession();
+        QuestionDAO dao = new QuestionDAO();
+        QuestionTagsDAO questionTagsDAO = new QuestionTagsDAO();
+        dao.setSession(session);
+        questionTagsDAO.setSession(session);
+        Transaction tran = null;
+
+        try {
+            tran = session.beginTransaction();
+
+            for(Questions question : questions){
+                // 生成题目标签
+                Gson gson = new Gson();
+                String questionStr = gson.toJson(question);
+
+                String questionTagsJson = generateTags(questionStr);
+                System.out.println(questionTagsJson);
+                List<QuestionTags> questionTags = gson.fromJson(questionTagsJson, new TypeToken<List<QuestionTags>>(){}.getType());
+
+                // 手动建立双向引用
+                bindQuestionRelations(question);
+                question.setCreatorId(UserContext.getUserId());     // 设置创建者ID
+
+                dao.add(question);  // 插入题目
+
+                // 插入标签
+                for(QuestionTags questionTag : questionTags){
+                    questionTag.setQuestionId(question.getId());
+                    questionTagsDAO.add(questionTag);
+                }
+            }
+
             tran.commit();
             return true;
         } catch (Exception e) {
@@ -592,7 +659,7 @@ public class QuestionService {
     }
 
     // 批量导入题目（Docx文档）
-    public boolean importQuestions(String fileContent){
+    public boolean fileImportQuestions(String fileContent){
         Session session = this.getSession();
         Transaction tran = null;
 
@@ -666,7 +733,12 @@ public class QuestionService {
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            dao.delete(ids);
+            for(Long id:ids){
+                Questions questions = dao.query(id);
+                if(Objects.equals(questions.getCreatorId(), UserContext.getUserId())){  // 只允许删除自己创建的题目
+                    dao.delete(questions);
+                }
+            }
             tran.commit();
             return true;
         } catch (Exception e) {
@@ -690,7 +762,9 @@ public class QuestionService {
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            dao.update(question);
+            if(Objects.equals(question.getCreatorId(), UserContext.getUserId())){
+                dao.update(question);
+            }
             tran.commit();
             return true;
         } catch (Exception e) {
@@ -704,7 +778,7 @@ public class QuestionService {
         }
     }
 
-    // 手动建立Question之间的连接
+    // 手动建立题目（Questions、QuestionItems、QuestionComponents）之间的双向连接
     public static void bindQuestionRelations(Questions question){
         if (question.getQuestionComponents() != null) {
             for (QuestionComponents comp : question.getQuestionComponents()) {
@@ -722,6 +796,27 @@ public class QuestionService {
                 }
             }
         }
+    }
+
+    // 生成题目标签
+    private String generateTags(String questionJson){
+        String prompt = questionJson + "我要往数据库中插入上面这道题目，帮忙给这个题目打几个标签，有如下注意的点：\n" +
+                "1. 不需要科目、题型等标签，比较多余，最好更多是知识点、重点、关联点等\n" +
+                "2. 按以下格式生成一个JSON格式的数组（即使只有一个，也要放在数组里）\n" +
+                "3. 给出一个JSON数据即可，不需要其他任何内容，也不要有```json代码框\n" +
+                "\n" +
+                "[\n" +
+                "  {\n" +
+                "    \"questionId\": 4,\n" +
+                "    \"tagName\": \"多态\"\n" +
+                "  },\n" +
+                "  {\n" +
+                "    \"questionId\": 4,\n" +
+                "    \"tagName\": \"继承\"\n" +
+                "  }\n" +
+                "]";
+
+        return ChatGLM_N.inquire(prompt, false);
     }
 
     // 将Base64文件解码为XWPFDocument对象
@@ -825,7 +920,7 @@ public class QuestionService {
         }
     }
 
-    public static String removeJsonCodeBlockMarkers(String input) {
+    private static String removeJsonCodeBlockMarkers(String input) {
         Pattern JSON_CODE_BLOCK_PATTERN = Pattern.compile("^```json\\s*(.*?)\\s*```$", Pattern.DOTALL);
         if (input == null || input.isBlank()) {
             return input;
@@ -835,6 +930,8 @@ public class QuestionService {
         return matcher.find() ? matcher.group(1) : input;
     }
 
+
+    // 生成JSON格式的请求，如果失败了进行重试
     private boolean generateQuestionWithRetry(String qContent, String qType, String qSubject, List<String> qi) {
         int maxRetries = 3;
         int retryCount = 0;
@@ -842,8 +939,10 @@ public class QuestionService {
         innerSession = this.getSession();
         QuestionDAO qdao = new QuestionDAO();
         SubjectDAO sdao = new SubjectDAO();
+        QuestionTagsDAO qtdao = new QuestionTagsDAO();
         qdao.setSession(innerSession);
         sdao.setSession(innerSession);
+        qtdao.setSession(innerSession);
 
         while(retryCount < maxRetries) {
             innerSession.clear();
@@ -856,10 +955,14 @@ public class QuestionService {
 
                 // 预处理：尝试修复常见的JSON格式问题
                 res = preprocessJson(res);
-                System.out.println(res);
+//                System.out.println(res);
 
                 Questions question = gson.fromJson(res, Questions.class);
-                System.out.println(question);
+//                System.out.println(question);
+
+                // 生成题目标签
+                String questionTagsJson = generateTags(res);
+                List<QuestionTags> questionTags = gson.fromJson(questionTagsJson, new TypeToken<List<QuestionTags>>(){}.getType());
 
                 // 验证必要字段
                 if(validateQuestion(question)) {
@@ -890,8 +993,12 @@ public class QuestionService {
 
                     // 手动建立双向连接
                     bindQuestionRelations(question);
-
+                    question.setCreatorId(UserContext.getUserId());
                     qdao.add(question);
+                    for(QuestionTags questionTag : questionTags) {
+                        questionTag.setQuestionId(question.getId());
+                        qtdao.add(questionTag);
+                    }
                     return true;
                 } else {
                     retryCount++;
