@@ -26,4 +26,5 @@
     <context:component-scan base-package="cn.edu.zjut.backend.controller" />
     <context:component-scan base-package="cn.edu.zjut.backend.service" />
     <context:component-scan base-package="cn.edu.zjut.backend.aspect" />
+    <context:component-scan base-package="cn.edu.zjut.backend.dao" />
 </beans>
