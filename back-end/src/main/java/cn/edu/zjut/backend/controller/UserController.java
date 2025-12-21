@@ -3,12 +3,13 @@ package cn.edu.zjut.backend.controller;
 import cn.edu.zjut.backend.po.User;
 import cn.edu.zjut.backend.service.UserService;
 import cn.edu.zjut.backend.util.Response;
+import cn.edu.zjut.backend.util.LoginLogger;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -18,6 +19,9 @@ public class UserController {
     @Autowired
     @Qualifier("userServ")
     private UserService userService;
+    
+    @Autowired
+    private LoginLogger loginLogger;
 
     /**
      * 用户注册
@@ -54,11 +58,55 @@ public class UserController {
      */
     @RequestMapping(value = "/user/login", method = RequestMethod.POST)
     @ResponseBody
-    public Response<String> login(@RequestBody LoginRequest loginRequest, HttpSession session) {
+    public Response<String> login(@RequestBody LoginRequest loginRequest, HttpSession session, HttpServletRequest request) {
         String token = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
         if (token != null && !token.isEmpty()) {
+            // 登录成功，将用户信息保存到session中
+            String[] parts = token.split("\\.");
+            if (parts.length == 3) {
+                // 解析JWT token获取用户信息
+                try {
+                    String payload = new String(java.util.Base64.getDecoder().decode(parts[1]));
+                    com.google.gson.JsonObject jsonObject = new com.google.gson.Gson().fromJson(payload, com.google.gson.JsonObject.class);
+                    Long userId = jsonObject.get("id").getAsLong();
+                    String username = jsonObject.get("username").getAsString();
+                    Integer userType = jsonObject.get("userType").getAsInt();
+                    
+                    // 创建用户对象并保存到session
+                    User user = new User();
+                    user.setUserId(userId);
+                    user.setUsername(username);
+                    user.setUserType(userType);
+                    session.setAttribute("currentUser", user);
+                    
+                    // 记录登录成功日志
+                    loginLogger.logLoginSuccess(
+                        userId,
+                        username,
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"),
+                        session.getId()
+                    );
+                } catch (Exception e) {
+                    // 如果解析失败，仍然记录日志但使用基本信息
+                    loginLogger.logLoginSuccess(
+                        null,
+                        loginRequest.getUsername(),
+                        request.getRemoteAddr(),
+                        request.getHeader("User-Agent"),
+                        session.getId()
+                    );
+                }
+            }
             return Response.success(token);
         } else {
+            // 登录失败，记录登录日志
+            loginLogger.logLoginFailure(
+                loginRequest.getUsername(),
+                request.getRemoteAddr(),
+                request.getHeader("User-Agent"),
+                "用户名或密码错误，或账户已被禁用"
+            );
             return Response.error("用户名或密码错误，或账户已被禁用");
         }
     }
@@ -68,7 +116,20 @@ public class UserController {
      */
     @RequestMapping(value = "/user/logout", method = RequestMethod.POST)
     @ResponseBody
-    public Response<String> logout(HttpSession session) {
+    public Response<String> logout(HttpSession session, HttpServletRequest request) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser != null) {
+            // 记录登出日志
+            loginLogger.logUserLogin(
+                currentUser.getUserId(),
+                currentUser.getUsername(),
+                request.getRemoteAddr(),
+                request.getHeader("User-Agent"),
+                1, // 成功登出
+                "用户主动登出",
+                session.getId()
+            );
+        }
         session.removeAttribute("currentUser");
         return Response.success("登出成功");
     }

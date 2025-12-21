@@ -1,4 +1,4 @@
-package cn.edu.zjut.backend.aspect;
+/*package cn.edu.zjut.backend.aspect;
 
 import cn.edu.zjut.backend.util.Jwt;
 import io.jsonwebtoken.Claims;
@@ -19,10 +19,7 @@ import java.util.List;
 @Component
 public class AuthHandler {
 
-    /**
-     * 白名单列表
-     * 存放不需要身份验证的 URI 路径
-     */
+
     private static final List<String> WHITE_LIST = List.of(
         "/api/admin/teacher/register",
             "/api/user/register",
@@ -85,3 +82,4 @@ public class AuthHandler {
         return WHITE_LIST.stream().anyMatch(uri::equals);
     }
 }
+*/
