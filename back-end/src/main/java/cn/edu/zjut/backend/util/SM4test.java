@@ -6,7 +6,7 @@ public class SM4test {
     private static final String SECRET_KEY = "DecoupledExamKey"; // 与你 PasswordEncoder 中一致
 
     public static void main(String[] args) {
-        String rawPassword = "123456"; // 要加密的明文密码
+        String rawPassword = "gly123456"; // 要加密的明文密码
 
         try {
             // 使用你现有的 SM4Utils.encrypt 方法加密

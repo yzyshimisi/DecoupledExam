@@ -24,10 +24,8 @@ public class AuthHandler {
      * 存放不需要身份验证的 URI 路径
      */
     private static final List<String> WHITE_LIST = List.of(
-        "/api/admin/teacher/register",
             "/api/user/register",
-            "/api/user/login",
-            "/api/admin/user/password/reset"
+            "/api/user/login"
     );
 
     @Pointcut("execution(* cn.edu.zjut.backend.controller..*(..))")

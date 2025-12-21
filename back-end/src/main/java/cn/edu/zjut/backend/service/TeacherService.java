@@ -17,7 +17,11 @@ import java.util.List;
 public class TeacherService {
 
     public Session getSession() {
-        return HibernateUtil.getSession();
+        Session session = HibernateUtil.getSession();
+        if (session == null) {
+            throw new RuntimeException("Failed to get Hibernate session");
+        }
+        return session;
     }
 
     /**
@@ -38,29 +42,45 @@ public class TeacherService {
             tran = session.beginTransaction();
             
             // 验证用户是否存在且为教师
+            System.out.println("开始设置教师职位，教师ID: " + teacherId + ", 职位: " + role);
             User user = userDAO.findById(teacherId);
-            if (user == null || user.getUserType() != 1) { // 1表示教师
+            System.out.println("查找用户结果: " + user);
+            
+            if (user == null) {
+                System.out.println("用户不存在，ID: " + teacherId);
+                return false;
+            }
+            
+            System.out.println("用户类型: " + user.getUserType() + " (期望值: 1)");
+            if (user.getUserType() != 1) { // 1表示教师
+                System.out.println("用户不是教师类型，ID: " + teacherId + ", 类型: " + user.getUserType());
                 return false;
             }
             
             // 查找是否已有职位记录
             TeacherPosition position = positionDAO.findByTeacherId(teacherId);
+            System.out.println("查找教师职位记录结果: " + position);
+            
             if (position == null) {
                 // 创建新记录
+                System.out.println("创建新的教师职位记录");
                 position = new TeacherPosition();
                 position.setTeacherId(teacherId);
                 position.setRole(role);
                 positionDAO.add(position);
             } else {
                 // 更新现有记录
+                System.out.println("更新现有教师职位记录");
                 position.setRole(role);
                 positionDAO.update(position);
             }
             
             tran.commit();
+            System.out.println("教师职位设置成功");
             return true;
         } catch (Exception e) {
-            System.out.println("set teacher position failed " + e);
+            System.err.println("设置教师职位失败: " + e.getMessage());
+            e.printStackTrace();
             if (tran != null) {
                 tran.rollback();
             }
@@ -102,6 +122,18 @@ public class TeacherService {
         } finally {
             HibernateUtil.closeSession();
         }
+    }
+
+    /**
+     * 检查教师是否为教务老师
+     * @param teacherId 教师ID
+     * @return true=教务老师，false=任课老师或未设置
+     */
+    public boolean isAcademicAffairsTeacher(Long teacherId) {
+        TeacherPosition position = getTeacherPosition(teacherId);
+        // 如果没有职位记录，默认为任课老师（false）
+        // 如果有职位记录，role=1表示教务老师（true）
+        return position != null && position.getRole() == 1;
     }
 
     /**

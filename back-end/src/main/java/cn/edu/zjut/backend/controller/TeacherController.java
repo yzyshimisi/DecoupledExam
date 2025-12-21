@@ -4,12 +4,15 @@ import cn.edu.zjut.backend.po.TeacherPosition;
 import cn.edu.zjut.backend.po.TeacherSubject;
 import cn.edu.zjut.backend.po.User;
 import cn.edu.zjut.backend.service.TeacherService;
+import cn.edu.zjut.backend.util.Jwt;
 import cn.edu.zjut.backend.util.Response;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
@@ -83,11 +86,16 @@ public class TeacherController {
     @ResponseBody
     public Response<String> setTeacherPosition(
             @RequestBody PositionRequest request,
-            HttpSession session) {
+            HttpServletRequest httpRequest) {
         try {
             // 验证是否为管理员
-            User currentUser = (User) session.getAttribute("currentUser");
-            if (currentUser == null || currentUser.getUserType() != 0) { // 0=管理员
+            Claims claims = (Claims) httpRequest.getAttribute("claims");
+            if (claims == null) {
+                return Response.error("用户未登录");
+            }
+            
+            Integer currentUserType = (Integer) claims.get("userType");
+            if (currentUserType != 0) { // 0=管理员
                 return Response.error("权限不足，仅管理员可执行此操作");
             }
             
@@ -111,11 +119,16 @@ public class TeacherController {
     @ResponseBody
     public Response<TeacherPosition> getTeacherPosition(
             @RequestParam("teacherId") Long teacherId,
-            HttpSession session) {
+            HttpServletRequest httpRequest) {
         try {
             // 验证是否为管理员
-            User currentUser = (User) session.getAttribute("currentUser");
-            if (currentUser == null || currentUser.getUserType() != 0) { // 0=管理员
+            Claims claims = (Claims) httpRequest.getAttribute("claims");
+            if (claims == null) {
+                return Response.error("用户未登录");
+            }
+            
+            Integer currentUserType = (Integer) claims.get("userType");
+            if (currentUserType != 0) { // 0=管理员
                 return Response.error("权限不足，仅管理员可执行此操作");
             }
             
@@ -139,11 +152,16 @@ public class TeacherController {
     @ResponseBody
     public Response<List<TeacherPosition>> getTeachersByRole(
             @RequestParam("role") Byte role,
-            HttpSession session) {
+            HttpServletRequest httpRequest) {
         try {
             // 验证是否为管理员
-            User currentUser = (User) session.getAttribute("currentUser");
-            if (currentUser == null || currentUser.getUserType() != 0) { // 0=管理员
+            Claims claims = (Claims) httpRequest.getAttribute("claims");
+            if (claims == null) {
+                return Response.error("用户未登录");
+            }
+            
+            Integer currentUserType = (Integer) claims.get("userType");
+            if (currentUserType != 0) { // 0=管理员
                 return Response.error("权限不足，仅管理员可执行此操作");
             }
             
@@ -164,24 +182,27 @@ public class TeacherController {
     @ResponseBody
     public Response<String> bindTeacherSubject(
             @RequestBody SubjectRequest request,
-            HttpSession session) {
+            HttpServletRequest httpRequest) {
         try {
             // 验证权限：教师只能操作自己的账号，管理员可以操作所有账号
-            User currentUser = (User) session.getAttribute("currentUser");
-            if (currentUser == null) {
+            Claims claims = (Claims) httpRequest.getAttribute("claims");
+            if (claims == null) {
                 return Response.error("用户未登录");
             }
+            
+            Long currentUserId = ((Number) claims.get("id")).longValue();
+            Integer currentUserType = (Integer) claims.get("userType");
             
             Long teacherId = request.getTeacherId();
             Integer subjectId = request.getSubjectId();
             
             // 如果是教师，只能操作自己的账号
-            if (currentUser.getUserType() == 1 && !currentUser.getUserId().equals(teacherId)) { // 1=教师
+            if (currentUserType == 1 && !currentUserId.equals(teacherId)) { // 1=教师
                 return Response.error("权限不足，教师只能操作自己的账号");
             }
             
             // 如果是学生，无权操作
-            if (currentUser.getUserType() == 2) { // 2=学生
+            if (currentUserType == 2) { // 2=学生
                 return Response.error("权限不足，学生无法执行此操作");
             }
             
@@ -206,16 +227,19 @@ public class TeacherController {
     @ResponseBody
     public Response<List<TeacherSubject>> getTeacherSubjects(
             @RequestParam("teacherId") Long teacherId,
-            HttpSession session) {
+            HttpServletRequest httpRequest) {
         try {
             // 验证权限：教师只能查看自己的学科，管理员可以查看所有教师的学科
-            User currentUser = (User) session.getAttribute("currentUser");
-            if (currentUser == null) {
+            Claims claims = (Claims) httpRequest.getAttribute("claims");
+            if (claims == null) {
                 return Response.error("用户未登录");
             }
             
+            Long currentUserId = ((Number) claims.get("id")).longValue();
+            Integer currentUserType = (Integer) claims.get("userType");
+            
             // 如果是教师，只能查看自己的学科
-            if (currentUser.getUserType() == 1 && !currentUser.getUserId().equals(teacherId)) { // 1=教师
+            if (currentUserType == 1 && !currentUserId.equals(teacherId)) { // 1=教师
                 return Response.error("权限不足，教师只能查看自己的学科信息");
             }
             
@@ -254,21 +278,24 @@ public class TeacherController {
     public Response<String> unbindTeacherSubject(
             @RequestParam("teacherId") Long teacherId,
             @RequestParam("subjectId") Integer subjectId,
-            HttpSession session) {
+            HttpServletRequest httpRequest) {
         try {
             // 验证权限：教师只能操作自己的账号，管理员可以操作所有账号
-            User currentUser = (User) session.getAttribute("currentUser");
-            if (currentUser == null) {
+            Claims claims = (Claims) httpRequest.getAttribute("claims");
+            if (claims == null) {
                 return Response.error("用户未登录");
             }
             
+            Long currentUserId = ((Number) claims.get("id")).longValue();
+            Integer currentUserType = (Integer) claims.get("userType");
+            
             // 如果是教师，只能操作自己的账号
-            if (currentUser.getUserType() == 1 && !currentUser.getUserId().equals(teacherId)) { // 1=教师
+            if (currentUserType == 1 && !currentUserId.equals(teacherId)) { // 1=教师
                 return Response.error("权限不足，教师只能操作自己的账号");
             }
             
             // 如果是学生，无权操作
-            if (currentUser.getUserType() == 2) { // 2=学生
+            if (currentUserType == 2) { // 2=学生
                 return Response.error("权限不足，学生无法执行此操作");
             }
             

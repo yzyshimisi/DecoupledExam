@@ -119,6 +119,7 @@
             <version>${spring.version}</version>
         </dependency>
 
+
         <!-- Hibernate框架 -->
         <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
         <dependency>
@@ -182,7 +183,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
+            <version>1.18.42</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
@@ -228,6 +229,22 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.3.2</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                    <encoding>UTF-8</encoding>
+                    <compilerArgs>
+                        <arg>--release</arg>
+                        <arg>11</arg>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
         </plugins>
         <resources>
             <resource>

@@ -15,7 +15,11 @@ import java.util.List;
 public class UserService {
     
     public Session getSession() {
-        return HibernateUtil.getSession();
+        Session session = HibernateUtil.getSession();
+        if (session == null) {
+            throw new RuntimeException("Failed to get Hibernate session");
+        }
+        return session;
     }
 
     /**
@@ -102,11 +106,12 @@ public class UserService {
      * 用户登录验证
      */
     public String login(String username, String password) {
-        Session session = getSession();
-        UserDAO dao = new UserDAO();
-        dao.setSession(session);
-        
+        Session session = null;
         try {
+            session = getSession();
+            UserDAO dao = new UserDAO();
+            dao.setSession(session);
+            
             User user = dao.findByUsername(username);
             // 验证密码是否正确且用户状态正常
             if (user != null && PasswordEncoder.matches(password, user.getPassword()) && user.getStatus().equals("0")) {
@@ -115,8 +120,13 @@ public class UserService {
                 return token; // 登录成功，返回用户信息
             }
             return null; // 登录失败
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         } finally {
-            HibernateUtil.closeSession();
+            if (session != null) {
+                HibernateUtil.closeSession();
+            }
         }
     }
 
@@ -186,6 +196,9 @@ public class UserService {
             }
             if (user.getPhone() != null) {
                 originalUser.setPhone(user.getPhone());
+            }
+            if (user.getFaceImg() != null) {
+                originalUser.setFaceImg(user.getFaceImg());
             }
             // 不更新userId、userType、password、status、createTime等敏感字段
             
