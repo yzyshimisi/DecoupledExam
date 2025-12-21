@@ -1,5 +1,10 @@
 package cn.edu.zjut.backend.po;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -9,6 +14,10 @@ import java.util.List;
                 @Index(name = "idx_question", columnList = "question_id"),
                 @Index(name = "idx_type", columnList = "type_id")
         })
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id"  // 使用实体的 id 字段作为唯一标识
+)
 public class QuestionItems {
     /** 主键 */
     @Id
@@ -32,26 +41,28 @@ public class QuestionItems {
     private Integer typeId;
 
     // ==================== 关联关系 ====================
-//    /** 关联主题目（多对一） */
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "question_id",
-//            foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT))
-//    private Questions question;
+    /** 关联主题目（多对一） */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "question_id",
+            foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT))
+//    @JsonBackReference
+    private Questions question;
 
     /** 关联子题组件（一对多）：子题关联的组件 */
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id")
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+//    @JoinColumn(name = "item_id")
+//    @JsonManagedReference
     private List<QuestionComponents> questionComponents;
 
     public QuestionItems() {}
 
-    public QuestionItems(Long id, Integer sequence, String content, Integer typeId, List<QuestionComponents> questionComponents) {
+    public QuestionItems(Long id, Integer sequence, String content, Integer typeId, Questions question, List<QuestionComponents> questionComponents) {
         this.id = id;
 //        this.questionId = questionId;
         this.sequence = sequence;
         this.content = content;
         this.typeId = typeId;
-//        this.question = question;
+        this.question = question;
         this.questionComponents = questionComponents;
     }
 
@@ -95,13 +106,13 @@ public class QuestionItems {
         this.typeId = typeId;
     }
 
-//    public Questions getQuestion() {
-//        return question;
-//    }
-//
-//    public void setQuestion(Questions question) {
-//        this.question = question;
-//    }
+    public Questions getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(Questions question) {
+        this.question = question;
+    }
 
     public List<QuestionComponents> getQuestionComponents() {
         return questionComponents;

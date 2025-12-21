@@ -1,5 +1,9 @@
 package cn.edu.zjut.backend.po;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
@@ -11,6 +15,10 @@ import java.util.List;
         @Index(name = "idx_creator", columnList = "creator_id"),
         @Index(name = "idx_review", columnList = "review_status")
 })
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id"  // 使用实体的 id 字段作为唯一标识
+)
 public class Questions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 适配MySQL AUTO_INCREMENT
@@ -29,7 +37,7 @@ public class Questions {
     private Integer subjectId;
 
     @Column(name = "creator_id", nullable = false)
-    private Long creatorId;
+    private Long creatorId = -1L;
 
     @Column(name = "review_status", nullable = false)
     private Byte reviewStatus = 0; // 默认值0
@@ -44,14 +52,16 @@ public class Questions {
 
     // ==================== 关联关系 ====================
     /** 关联子题（一对多）：一个题目包含多个子题 */
-    @OneToMany(cascade = CascadeType.ALL, // 级联增删改
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, // 级联增删改
             orphanRemoval = true) // 移除子题时自动删除数据库记录
-    @JoinColumn(name = "question_id")
+//    @JoinColumn(name = "question_id")
+//    @JsonManagedReference
     private List<QuestionItems> questionItems;
 
     /** 关联题目组件（一对多）：题目直接关联的组件 */
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "question_id")
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JoinColumn(name = "question_id")
+//    @JsonManagedReference
     private List<QuestionComponents> questionComponents;
 
     public Questions() {}

@@ -1,5 +1,7 @@
 package cn.edu.zjut.backend.po;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.persistence.*;
 
 @Entity
@@ -36,29 +38,31 @@ public class QuestionComponents {
     private String meta;
 
     // ==================== 关联关系 ====================
-//    /** 关联主题目（多对一，可空） */
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "question_id",
-//            foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT))
-//    private Questions question;
-//
-//    /** 关联子题（多对一，可空） */
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "item_id",
-//            foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT))
-//    private QuestionItems item;
+    /** 关联主题目（多对一，可空） */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "question_id",
+            foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT))
+//    @JsonBackReference
+    private Questions question;
+
+    /** 关联子题（多对一，可空） */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id",
+            foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT))
+//    @JsonBackReference
+    private QuestionItems item;
 
     public QuestionComponents() {}
 
-    public QuestionComponents(Long id, String componentType, String content, String meta) {
+    public QuestionComponents(Long id, String componentType, String content, String meta, Questions question, QuestionItems item) {
         this.id = id;
 //        this.questionId = questionId;
 //        this.itemId = itemId;
         this.componentType = componentType;
         this.content = content;
         this.meta = meta;
-//        this.question = question;
-//        this.item = item;
+        this.question = question;
+        this.item = item;
     }
 
     public Long getId() {
@@ -109,21 +113,21 @@ public class QuestionComponents {
         this.meta = meta;
     }
 
-//    public Questions getQuestion() {
-//        return question;
-//    }
-//
-//    public void setQuestion(Questions question) {
-//        this.question = question;
-//    }
-//
-//    public QuestionItems getItem() {
-//        return item;
-//    }
-//
-//    public void setItem(QuestionItems item) {
-//        this.item = item;
-//    }
+    public Questions getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(Questions question) {
+        this.question = question;
+    }
+
+    public QuestionItems getItem() {
+        return item;
+    }
+
+    public void setItem(QuestionItems item) {
+        this.item = item;
+    }
 
     @Override
     public String toString() {

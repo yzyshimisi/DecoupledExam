@@ -1,6 +1,7 @@
 package cn.edu.zjut.backend.dao;
 
 import cn.edu.zjut.backend.po.Subject;
+import lombok.Setter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
@@ -11,12 +12,9 @@ import java.util.List;
 
 public class SubjectDAO {
 
+    @Setter
     private Session session;
     private final Log log = LogFactory.getLog(SubjectDAO.class);
-
-    public void setSession(Session session) {
-        this.session=session;
-    }
 
     public void add(Subject subject) throws HibernateException {
         try {
@@ -41,6 +39,19 @@ public class SubjectDAO {
                 queryObject.setParameter("id", id);
                 return queryObject.list();
             }
+        } catch (RuntimeException re) {
+            log.error("获取数据失败", re);
+            throw re;
+        } finally{
+        }
+    }
+
+    public Subject query(String name) throws HibernateException {
+        try {
+            String hql = "from Subject where subjectName=:name";
+            Query<Subject> queryObject = session.createQuery(hql, Subject.class);
+            queryObject.setParameter("name", name);
+            return queryObject.list().get(0);
         } catch (RuntimeException re) {
             log.error("获取数据失败", re);
             throw re;

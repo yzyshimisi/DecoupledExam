@@ -4,29 +4,32 @@
         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
         <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/DecoupledExam</property>
         <property name="hibernate.connection.username">root</property>
         <property name="hibernate.connection.password">lyx610</property>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
 
         <!--打印 sql 语句-->
-        <property name="hibernate.show_sql">true</property>
+<!--        <property name="hibernate.show_sql">true</property>-->
         <!--格式化 sql-->
-        <property name="hibernate.format_sql">true</property>
+<!--        <property name="hibernate.format_sql">true</property>-->
 
         <!-- 3. 关键补充：Session上下文配置（解决Session空指针核心） -->
         <property name="hibernate.current_session_context_class">thread</property>
 
-<!--        <mapping resource="cn/edu/zjut/backend/po/Subject.hbm.xml" />-->
         <mapping class="cn.edu.zjut.backend.po.Subject"/>
         <mapping class="cn.edu.zjut.backend.po.Questions"/>
         <mapping class="cn.edu.zjut.backend.po.QuestionItems"/>
         <mapping class="cn.edu.zjut.backend.po.QuestionComponents"/>
-        <!-- 核心：显式注册ExamSetting实体 -->
         <mapping class="cn.edu.zjut.backend.po.ExamSetting"/>
-        <mapping class="cn.edu.zjut.backend.po.Exam"/> <!-- 同时注册Exam实体 -->
+        <mapping class="cn.edu.zjut.backend.po.Exam"/>
         <mapping class="cn.edu.zjut.backend.po.ExamNotification"/>
         <mapping class="cn.edu.zjut.backend.po.ExamRecord"/>
+        <mapping class="cn.edu.zjut.backend.po.User"/>
+        <mapping class="cn.edu.zjut.backend.po.QuestionTags"/>
+        <mapping class="cn.edu.zjut.backend.po.ExamPaper"/>
+        <mapping class="cn.edu.zjut.backend.po.ExamPaperQuestion"/>
+        <mapping class="cn.edu.zjut.backend.po.QuestionType"/>
     </session-factory>
 </hibernate-configuration>

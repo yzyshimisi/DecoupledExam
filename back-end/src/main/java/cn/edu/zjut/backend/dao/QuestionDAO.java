@@ -2,6 +2,7 @@ package cn.edu.zjut.backend.dao;
 
 import cn.edu.zjut.backend.dto.QuestionQueryDTO;
 import cn.edu.zjut.backend.po.Questions;
+import lombok.Setter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
@@ -11,12 +12,9 @@ import java.util.List;
 
 public class QuestionDAO {
 
+    @Setter
     private Session session;
     private final Log log = LogFactory.getLog(QuestionDAO.class);
-
-    public void setSession(Session session) {
-        this.session=session;
-    }
 
     public void add(Questions question) {
         log.debug("saving question instance");
@@ -25,6 +23,19 @@ public class QuestionDAO {
             log.debug("save successful");
         } catch (RuntimeException re) {
             log.error("save failed", re);
+            throw re;
+        } finally{
+        }
+    }
+
+    public Questions query(Long id) {
+        String hql = "from Questions where id = :id";
+        try {
+            Query<Questions> queryObject = session.createQuery(hql, Questions.class);
+            queryObject.setParameter("id", id);
+            return queryObject.list().get(0);
+        } catch (RuntimeException re) {
+            System.out.println("find by hql failed"+re);
             throw re;
         } finally{
         }
@@ -74,22 +85,28 @@ public class QuestionDAO {
 
             return query.list();
         } catch (RuntimeException re) {
-            log.error("save failed", re);
+            log.error("query failed", re);
             throw re;
         } finally{
         }
     }
 
-    public void delete(List<Long> ids) {
+    public void delete(Questions questions) {
         try {
-            for(int i=0; i<ids.size(); i++){
-                String hql = "delete from Questions q where q.id = :id";
-                Query query = session.createQuery(hql);
-                query.setParameter("id", ids.get(i));
-                query.executeUpdate();
-            }
+            session.delete(questions);
         } catch (RuntimeException re) {
-            log.error("save failed", re);
+            log.error("delete failed", re);
+            throw re;
+        } finally{
+        }
+    }
+
+    public void update(Questions question) {
+        try {
+            session.update(question);
+            log.debug("update successful");
+        } catch (RuntimeException re) {
+            log.error("update failed", re);
             throw re;
         } finally{
         }
