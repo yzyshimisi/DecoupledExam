@@ -14,12 +14,9 @@
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-    <!-- 简化配置，相当于配置了 HandlerMapping、HandlerAdapter、
-    HandlerExceptionResolver 三个特殊的 Bean，且在容器中注册了一系列支持 HTTP 消
-    息转换的 Bean -->
-
     <!-- 启用Spring MVC的注解支持，使@Controller和@RequestMapping等注解生效 -->
     <mvc:annotation-driven/>
+
     <aop:aspectj-autoproxy />
 
     <!-- 配置 Spring 自动扫描指定包及其子包中的所有 Bean -->

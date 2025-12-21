@@ -59,12 +59,14 @@ public class HibernateUtil {
                     ? sessionFactory.openSession(): null;
             threadLocal.set(session);
         }
+        System.out.println("获取Hibernate Session: " + session);
         return session;
     }
     public static void closeSession() throws HibernateException {
         Session session = (Session) threadLocal.get();
         threadLocal.set(null);
         if (session != null) {
+            System.out.println("关闭Hibernate Session: " + session);
             session.close();
         }
     }
