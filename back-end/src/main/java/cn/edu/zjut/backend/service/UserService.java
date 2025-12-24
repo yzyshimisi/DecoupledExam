@@ -116,7 +116,7 @@ public class UserService {
             // 验证密码是否正确且用户状态正常
             if (user != null && PasswordEncoder.matches(password, user.getPassword()) && user.getStatus().equals("0")) {
                 Jwt jwt = new Jwt();
-                String token = jwt.generateJwtToken(user.getUserId(), user.getUsername(), user.getUserType());
+                String token = jwt.generateJwtToken(user.getUserId(), user.getUsername(), user.getUserType(), user.getFaceImg());
                 return token; // 登录成功，返回用户信息
             }
             return null; // 登录失败
@@ -193,6 +193,9 @@ public class UserService {
             }
             if (user.getRealName() != null) {
                 originalUser.setRealName(user.getRealName());
+            }
+            if (user.getAvatarUrl() != null) {
+                originalUser.setAvatarUrl(user.getAvatarUrl());
             }
             if (user.getPhone() != null) {
                 originalUser.setPhone(user.getPhone());

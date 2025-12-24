@@ -20,6 +20,9 @@ public class User {
     @Column(name = "real_name", length = 50)
     private String realName;
 
+    @Column(name = "avatar_url", length = 255)
+    private String avatarUrl;
+
     @Column(name = "user_type", nullable = false, columnDefinition = "INT(4) DEFAULT 2")
     private Integer userType = 2; // 0=管理员, 1=教师, 2=学生
 
@@ -44,6 +47,7 @@ public class User {
         this.username = username;
         this.password = password;
         this.realName = realName;
+        this.avatarUrl = null; // 默认值
         this.userType = userType;
         this.faceImg = faceImg;
         this.phone = phone;
@@ -82,6 +86,14 @@ public class User {
 
     public void setRealName(String realName) {
         this.realName = realName;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public Integer getUserType() {

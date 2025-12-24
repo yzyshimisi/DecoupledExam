@@ -1,4 +1,4 @@
-package cn.edu.zjut.backend.util;
+package cn.edu.zjut.backend.app;
 import cn.edu.zjut.backend.util.sm4.SM4Utils;
 
 public class SM4test {
@@ -6,7 +6,7 @@ public class SM4test {
     private static final String SECRET_KEY = "DecoupledExamKey"; // 与你 PasswordEncoder 中一致
 
     public static void main(String[] args) {
-        String rawPassword = "gly123456"; // 要加密的明文密码
+        String rawPassword = "admin123456"; // 要加密的明文密码
 
         try {
             // 使用你现有的 SM4Utils.encrypt 方法加密

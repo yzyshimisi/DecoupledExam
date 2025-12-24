@@ -19,7 +19,7 @@ public class Jwt {
     private final static String jwt_iss = "DecoupledExam";
     private final static String subject = "DecoupledExam";
 
-    public String generateJwtToken(Long id, String username, int userType) {
+    public String generateJwtToken(Long id, String username, int userType, String faceImg) {
         Map<String, Object> map = new HashMap<>();
         map.put("alg", "HS256");
         map.put("typ", "JWT");
@@ -28,6 +28,10 @@ public class Jwt {
         claims.put("id", id);
         claims.put("username", username);
         claims.put("userType", userType);
+        // 添加人脸识别基准照片URL信息
+        claims.put("faceImg", faceImg);
+        // 添加是否上传人脸照片的标识
+        claims.put("hasFaceImg", faceImg != null && !faceImg.isEmpty());
 
         claims.put("iss", jwt_iss);
 
@@ -42,6 +46,11 @@ public class Jwt {
                 .setSubject(subject)    //设置sub：代表这个jwt所面向的用户，所有人
                 .signWith(SIGNATURE_ALGORITHM, secret)//设置签名：通过签名算法和秘钥生成签名
                 .compact(); // 开始压缩为xxxxx.yyyyy.zzzzz 格式的jwt token
+    }
+    
+    // 重载方法，保持向后兼容
+    public String generateJwtToken(Long id, String username, int userType) {
+        return generateJwtToken(id, username, userType, null);
     }
 
     private Claims getClaimsFromJwt(String jwt) {

@@ -1,64 +1,18 @@
-<<<<<<< Updated upstream
 DROP DATABASE IF EXISTS `DecoupledExam`;
 CREATE DATABASE `DecoupledExam`;
 SET NAMES utf8mb4;
-DEFAULT COLLATE utf8mb4_unicode_ci;
-=======
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
->>>>>>> Stashed changes
-
--- =============================================
--- 安全删除所有表（倒序，防止外键冲突）
--- =============================================
-DROP TABLE IF EXISTS `security_event_log`;
-DROP TABLE IF EXISTS `user_login_log`;
-DROP TABLE IF EXISTS `system_operation_log`;
-DROP TABLE IF EXISTS `exam_wrong_book`;
-DROP TABLE IF EXISTS `exam_answer`;
-DROP TABLE IF EXISTS `exam_record`;
-DROP TABLE IF EXISTS `exam_setting`;
-DROP TABLE IF EXISTS `exam`;
-DROP TABLE IF EXISTS `exam_paper_question`;
-DROP TABLE IF EXISTS `exam_paper`;
-DROP TABLE IF EXISTS `question_tags`;
-DROP TABLE IF EXISTS `question_components`;
-DROP TABLE IF EXISTS `question_items`;
-DROP TABLE IF EXISTS `questions`;
-DROP TABLE IF EXISTS `teacher_subject`;
-DROP TABLE IF EXISTS `teacher_position`;
-DROP TABLE IF EXISTS `student_course`;
-DROP TABLE IF EXISTS `edu_course`;
-DROP TABLE IF EXISTS `question_type`;
-DROP TABLE IF EXISTS `subject`;
-DROP TABLE IF EXISTS `user`;
-
-SET FOREIGN_KEY_CHECKS = 1;
+USE `DecoupledExam`;
 
 -- =============================================
 -- 1. 用户表
 -- =============================================
 CREATE TABLE `user` (
-<<<<<<< Updated upstream
-  `user_id`     BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '用户ID',
-  `username`    VARCHAR(50)  NOT NULL COMMENT '登录账号',
-  `password`    VARCHAR(100) NOT NULL COMMENT '加密密码',
-  `real_name`   VARCHAR(50)  DEFAULT NULL COMMENT '真实姓名',
-  `user_type`   INT(4)       NOT NULL DEFAULT 2 COMMENT '用户类型：0=管理员(admin), 1=教师(teacher), 2=学生(student)',
-  `face_img`    VARCHAR(255) DEFAULT NULL COMMENT '人脸识别基准照片URL',
-  `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '手机号',
-  `status`      CHAR(1)      NOT NULL DEFAULT '0' COMMENT '状态：0正常 1停用',
-  `create_time` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
-  PRIMARY KEY (`user_id`),
-  UNIQUE KEY `uk_username` (`username`),
-  KEY `idx_phone` (`phone`),
-  KEY `idx_user_type` (`user_type`)
-=======
                         `user_id`     BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '用户ID',
                         `username`    VARCHAR(50)  NOT NULL COMMENT '登录账号',
                         `password`    VARCHAR(100) NOT NULL COMMENT '加密密码',
                         `real_name`   VARCHAR(50)  DEFAULT NULL COMMENT '真实姓名',
-                        `user_type`   INT(4)       NOT NULL DEFAULT 2 COMMENT '用户类型：0=管理员(admin), 1=教师(teacher), 2=学生(student)',
+                        `avatar_url` VARCHAR(255) DEFAULT NULL COMMENT '用户头像照片URL',
+  `user_type`   INT(4)       NOT NULL DEFAULT 2 COMMENT '用户类型：0=管理员(admin), 1=教师(teacher), 2=学生(student)',
                         `face_img`    VARCHAR(255) DEFAULT NULL COMMENT '人脸识别基准照片URL',
                         `phone`       VARCHAR(20)  DEFAULT NULL COMMENT '手机号',
                         `status`      CHAR(1)      NOT NULL DEFAULT '0' COMMENT '状态：0正常 1停用',
@@ -66,8 +20,8 @@ CREATE TABLE `user` (
                         PRIMARY KEY (`user_id`),
                         UNIQUE KEY `uk_username` (`username`),
                         KEY `idx_phone` (`phone`),
-                        KEY `idx_user_type` (`user_type`)
->>>>>>> Stashed changes
+                        KEY `idx_avatar` (`avatar_url`),
+  KEY `idx_user_type` (`user_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 -- =============================================
@@ -166,7 +120,7 @@ INSERT INTO `question_type` (`type_code`, `type_name`) VALUES
                                                            ('MULTIPLE', '多选题'),
                                                            ('TRUE_FALSE', '判断题'),
                                                            ('FILL', '填空题'),
-                                                           ('SHORT_ANS', '简答题'),
+                                                           ('NOUN_PARSING', '名词解析'),
                                                            ('ESSAY', '论述题'),
                                                            ('CALC', '计算题'),
                                                            ('JOURNAL', '分录题'),
@@ -208,7 +162,7 @@ CREATE TABLE `questions` (
 -- =============================================
 CREATE TABLE `question_items` (
                                   `id`           BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '子题ID',
-                                  `question_id`  BIGINT(20) NOT NULL COMMENT '所属主题目ID',
+                                  `question_id`  BIGINT(20)  DEFAULT NULL COMMENT '所属主题目ID',
                                   `sequence`     INT(11)    NOT NULL COMMENT '子题顺序',
                                   `type_id`      INT(11)    NOT NULL COMMENT '子题题型ID',
                                   `content`      TEXT       DEFAULT NULL COMMENT '子题题干',
@@ -241,41 +195,31 @@ CREATE TABLE `question_components` (
 -- 11. 题目标签表
 -- =============================================
 CREATE TABLE `question_tags` (
-<<<<<<< HEAD
                                  `id`          BIGINT(20)  NOT NULL AUTO_INCREMENT COMMENT '主键',
                                  `question_id` BIGINT(20)  NOT NULL COMMENT '题目ID',
                                  `tag_name`    VARCHAR(50) NOT NULL COMMENT '标签名称',
                                  PRIMARY KEY (`id`),
                                  UNIQUE KEY `uk_question_tag` (`question_id`,`tag_name`),
                                  CONSTRAINT `fk_tag_question` FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
-=======
-  `id`          BIGINT(20)  NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `question_id` BIGINT(20)  NOT NULL COMMENT '题目ID',
-  `tag_name`    VARCHAR(30) NOT NULL COMMENT '标签名称',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_question_tag` (`question_id`,`tag_name`),
-  FOREIGN KEY (`question_id`) REFERENCES `questions`(`id`) ON DELETE CASCADE
->>>>>>> upstream/main
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='题目标签表';
 
--- =============================================
--- 12. 试卷表
--- =============================================
+-- 12. 试卷表（修改：试卷绑定学科而非课程）
+DROP TABLE IF EXISTS `exam_paper`;
 CREATE TABLE `exam_paper` (
-                              `paper_id`     BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '试卷ID',
-                              `paper_name`   VARCHAR(100) NOT NULL COMMENT '试卷名称',
-                              `course_id`    BIGINT(20)   DEFAULT NULL COMMENT '所属课程ID',
-                              `total_score`  INT(11)      NOT NULL DEFAULT 100 COMMENT '试卷总分',
-                              `compose_type` CHAR(1)      NOT NULL COMMENT '组卷方式(1手动 2智能)',
-                              `is_sealed`    CHAR(1)      NOT NULL DEFAULT '0' COMMENT '是否封存(0否 1是)',
-                              `creator_id`   BIGINT(20)   NOT NULL COMMENT '创建人ID',
-                              `create_time`  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                              `paper_id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '试卷ID',
+                              `paper_name` VARCHAR(100) NOT NULL COMMENT '试卷名称',
+                              `subject_id` INT(11) NOT NULL COMMENT '所属学科ID（教考分离后试卷属于学科）',
+                              `total_score` INT(11) NOT NULL DEFAULT 100 COMMENT '试卷总分',
+                              `compose_type` CHAR(1) NOT NULL COMMENT '组卷方式(1手动 2智能)',
+                              `is_sealed` CHAR(1) NOT NULL DEFAULT '0' COMMENT '是否封存(0否 1是)',
+                              `creator_id` BIGINT(20) NOT NULL COMMENT '组卷教师ID（出卷人）',
+                              `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                               PRIMARY KEY (`paper_id`),
-                              KEY `idx_course` (`course_id`),
+                              KEY `idx_subject` (`subject_id`),
                               KEY `idx_creator` (`creator_id`),
-                              CONSTRAINT `fk_paper_course` FOREIGN KEY (`course_id`) REFERENCES `edu_course`(`course_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+                              CONSTRAINT `fk_paper_subject` FOREIGN KEY (`subject_id`) REFERENCES `subject`(`subject_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
                               CONSTRAINT `fk_paper_creator` FOREIGN KEY (`creator_id`) REFERENCES `user`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='试卷表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='试卷表（教考分离：试卷属于学科）';
 
 -- =============================================
 -- 13. 试卷题目关联表
@@ -459,35 +403,67 @@ CREATE TABLE `security_event_log` (
                                       KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='安全事件日志表';
 
-<<<<<<< HEAD
+-- =============================================
+-- 22. 考试通知表
+-- =============================================
+CREATE TABLE `exam_notification` (
+                                     `notification_id`  BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '通知ID',
+                                     `exam_id`          BIGINT(20)   NOT NULL COMMENT '考试ID',
+                                     `student_id`       BIGINT(20)   DEFAULT NULL COMMENT '学生ID（NULL表示发送给所有考生）',
+                                     `title`            VARCHAR(100) NOT NULL COMMENT '通知标题',
+                                     `content`          VARCHAR(500) NOT NULL COMMENT '通知内容',
+                                     `send_time`        DATETIME     DEFAULT NULL COMMENT '计划发送时间',
+                                     `is_sent`          TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否已发送',
+                                     `send_attempts`    INT(11)      NOT NULL DEFAULT 0 COMMENT '发送尝试次数',
+                                     PRIMARY KEY (`notification_id`),
+                                     KEY `idx_exam` (`exam_id`),
+                                     KEY `idx_student` (`student_id`),
+                                     KEY `idx_send_time` (`send_time`),
+                                     CONSTRAINT `fk_notification_exam` FOREIGN KEY (`exam_id`) REFERENCES `exam`(`exam_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+                                     CONSTRAINT `fk_notification_student` FOREIGN KEY (`student_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='考试通知表';
+-- 23. 学生成绩总表
+CREATE TABLE `student_grade` (
+                                 `grade_id`        BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '成绩记录ID',
+                                 `student_id`      BIGINT(20)   NOT NULL COMMENT '学生ID，关联 user 表',
+                                 `course_id`       BIGINT(20)   DEFAULT NULL COMMENT '所属课程ID（可选）',
+                                 `subject_id`      INT(11)      DEFAULT NULL COMMENT '所属学科ID（可选）',
+                                 `grade_type`      VARCHAR(30)  NOT NULL COMMENT '成绩类型：ONLINE_EXAM, OFFLINE_EXAM, QUIZ, HOMEWORK, PROJECT, EXPERIMENT, ATTENDANCE 等',
+                                 `source_id`       BIGINT(20)   DEFAULT NULL COMMENT '来源ID（如线上考试可填 exam_id；线下可留空或自定义编号）',
+                                 `grade_name`      VARCHAR(100) NOT NULL COMMENT '成绩名称，如“期中考试”、“Python作业1”',
+                                 `score`           DECIMAL(5,1) NOT NULL COMMENT '实际得分',
+                                 `full_score`      DECIMAL(5,1) NOT NULL DEFAULT 100.0 COMMENT '满分值',
+                                 `teacher_id`      BIGINT(20)   NOT NULL COMMENT '成绩录入教师ID',
+                                 `record_time`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '成绩录入时间',
+                                 `remark`          VARCHAR(255) DEFAULT NULL COMMENT '备注（如扣分原因、评语等）',
+                                 PRIMARY KEY (`grade_id`),
+                                 KEY `idx_student_id` (`student_id`),
+                                 KEY `idx_course_id` (`course_id`),
+                                 KEY `idx_subject_id` (`subject_id`),
+                                 KEY `idx_teacher_id` (`teacher_id`),
+                                 KEY `idx_grade_type` (`grade_type`),
+                                 KEY `idx_record_time` (`record_time`),
+                                 CONSTRAINT `fk_grade_student` FOREIGN KEY (`student_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+                                 CONSTRAINT `fk_grade_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `user`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+                                 CONSTRAINT `fk_grade_course` FOREIGN KEY (`course_id`) REFERENCES `edu_course`(`course_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+                                 CONSTRAINT `fk_grade_subject` FOREIGN KEY (`subject_id`) REFERENCES `subject`(`subject_id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='学生成绩总表（兼容线上线下各类成绩）';
+
+-- 24、考试与课程多对多关系
+CREATE TABLE `exam_course` (
+                               `exam_id` BIGINT(20) NOT NULL COMMENT '考试ID',
+                               `course_id` BIGINT(20) NOT NULL COMMENT '课程ID（班级）',
+                               `publish_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '发布到该课程的时间',
+                               `publisher_id` BIGINT(20) NOT NULL COMMENT '发布人ID（任课老师或教务老师）',
+                               PRIMARY KEY (`exam_id`, `course_id`),
+                               KEY `idx_course` (`course_id`),
+                               KEY `idx_publisher` (`publisher_id`),
+                               CONSTRAINT `fk_ec_exam` FOREIGN KEY (`exam_id`) REFERENCES `exam`(`exam_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+                               CONSTRAINT `fk_ec_course` FOREIGN KEY (`course_id`) REFERENCES `edu_course`(`course_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+                               CONSTRAINT `fk_ec_publisher` FOREIGN KEY (`publisher_id`) REFERENCES `user`(`user_id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='考试发布到课程（班级）关系表，支持多对多';
+
 -- =============================================
 -- 执行完成提示
 -- =============================================
 SELECT '数据库建表完成！所有表已成功创建，外键约束已建立。' AS `状态`;
-=======
-ALTER TABLE `edu_course` 
-  ADD COLUMN `subject_id` INT(11) DEFAULT NULL COMMENT '学科ID' AFTER `course_name`,
-  ADD KEY `idx_subject` (`subject_id`),
-  ADD CONSTRAINT `fk_course_subject` 
-  FOREIGN KEY (`subject_id`) REFERENCES `subject`(`subject_id`) ON DELETE SET NULL;
-
-  -- =============================================
--- 22. 考试通知表
--- =============================================
-CREATE TABLE `exam_notification` (
-    `notification_id`  BIGINT(20)   NOT NULL AUTO_INCREMENT COMMENT '通知ID',
-    `exam_id`          BIGINT(20)   NOT NULL COMMENT '考试ID',
-    `student_id`       BIGINT(20)   DEFAULT NULL COMMENT '学生ID（NULL表示发送给所有考生）',
-    `title`            VARCHAR(100) NOT NULL COMMENT '通知标题',
-    `content`          VARCHAR(500) NOT NULL COMMENT '通知内容',
-    `send_time`        DATETIME     DEFAULT NULL COMMENT '计划发送时间',
-    `is_sent`          TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '是否已发送',
-    `send_attempts`    INT(11)      NOT NULL DEFAULT 0 COMMENT '发送尝试次数',
-    PRIMARY KEY (`notification_id`),
-    KEY `idx_exam` (`exam_id`),
-    KEY `idx_student` (`student_id`),
-    KEY `idx_send_time` (`send_time`),
-    CONSTRAINT `fk_notification_exam` FOREIGN KEY (`exam_id`) REFERENCES `exam`(`exam_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT `fk_notification_student` FOREIGN KEY (`student_id`) REFERENCES `user`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='考试通知表';
->>>>>>> upstream/main

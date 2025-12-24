@@ -91,7 +91,7 @@
         <div class="text-center">
           <p class="text-base-content/70">
             还没有账户？
-            <a href="#" class="link link-primary font-semibold hover:link-hover">立即注册</a>
+            <router-link to="/register" class="link link-primary font-semibold hover:link-hover">立即注册</router-link>
           </p>
         </div>
       </div>
@@ -158,7 +158,7 @@ const handleLogin = () => {
         let token = res['data']
         localStorage.setItem('token', token)
         useMainStore().useLoginStore().setLogin(true)
-        router.push('/home')
+        router.push('/admin/teacher/register')
       }
     },
 
