@@ -716,11 +716,12 @@ public class QuestionService {
     }
 
     // 查询题目
-    public List<Questions> queryQuestion(QuestionQueryDTO dto){
+    public List<Questions> queryQuestion(QuestionQueryDTO filterDTO){
         Session session = getSession();
         QuestionDAO dao = new QuestionDAO();
         dao.setSession(session);
-        List<Questions> questions = dao.query(dto);
+        List<Questions> questions = dao.query(filterDTO);
+
         HibernateUtil.closeSession();
         return questions;
     }

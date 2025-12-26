@@ -15,10 +15,10 @@ import jakarta.servlet.http.HttpServletRequest;
 @Aspect
 @Component
 public class SecurityEventAspect {
-    
+
     @Autowired
     private SecurityLogger securityLogger;
-    
+
     /**
      * 捕获认证异常并记录安全事件
      */
@@ -29,7 +29,7 @@ public class SecurityEventAspect {
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
                 String ipAddress = request.getRemoteAddr();
-                
+
                 // 记录安全事件
                 securityLogger.logSecurityEvent(
                     null,  // 用户ID未知
@@ -43,7 +43,7 @@ public class SecurityEventAspect {
             // 忽略日志记录过程中的异常，不影响主流程
         }
     }
-    
+
     /**
      * 捕获权限异常并记录安全事件
      */
@@ -51,7 +51,7 @@ public class SecurityEventAspect {
     public void logAuthorizationFailure(Exception exception) {
         // 检查是否是权限相关的异常
         if (exception.getMessage() != null && exception.getMessage().contains("权限")) {
-            
+
             try {
                 ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
                 if (attributes != null) {
@@ -59,7 +59,7 @@ public class SecurityEventAspect {
                     String ipAddress = request.getRemoteAddr();
                     Long userId = UserContext.getUserId();
                     String username = UserContext.getUsername();
-                    
+
                     // 记录安全事件
                     securityLogger.logSecurityEvent(
                         userId,

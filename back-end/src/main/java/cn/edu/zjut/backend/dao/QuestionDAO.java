@@ -2,6 +2,7 @@ package cn.edu.zjut.backend.dao;
 
 import cn.edu.zjut.backend.dto.QuestionQueryDTO;
 import cn.edu.zjut.backend.po.Questions;
+import cn.edu.zjut.backend.util.UserContext;
 import lombok.Setter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,52 +42,87 @@ public class QuestionDAO {
         }
     }
 
-    public List<Questions> query(QuestionQueryDTO dto){
+    public List<Questions> query(QuestionQueryDTO filterDTO){
 
         try {
-            StringBuilder hql = new StringBuilder("from Questions q where 1=1");
+            StringBuilder hql = new StringBuilder("FROM Questions q WHERE 1=1");
+            StringBuilder conditions = new StringBuilder();
 
-            // 所有条件判断统一对齐，使用dto.xxx获取参数
-            if (dto.getTypeId() != null) {
-                hql.append(" AND q.typeId = :typeId");
-            }
-            if (dto.getDifficulty() != null) {
-                hql.append(" AND q.difficulty = :difficulty");
-            }
-            if (dto.getSubjectId() != null) {
-                hql.append(" AND q.subjectId = :subjectId");
-            }
-            if (dto.getCreatorId() != null) {
-                hql.append(" AND q.creatorId = :creatorId");
-            }
-            if (dto.getReviewStatus() != null) {
-                hql.append(" AND q.reviewStatus = :reviewStatus");
+            // 1. 仅显示我的题目
+            if (filterDTO.isMineOnly()) {
+                conditions.append(" AND q.creatorId = :creatorId");
             }
 
+            // 2. 题干关键词
+            if (filterDTO.getStemKeyword() != null && !filterDTO.getStemKeyword().isEmpty()) {
+                conditions.append(" AND q.title LIKE :stemKeyword");
+            }
+
+            // 3. 选择的题型
+            if (filterDTO.getSelectedTypes() != null && !filterDTO.getSelectedTypes().isEmpty()) {
+                conditions.append(" AND q.typeId IN :selectedTypes");
+            }
+
+            // 4. 选择的学科
+            if (filterDTO.getSelectedSubjects() != null && !filterDTO.getSelectedSubjects().isEmpty()) {
+                conditions.append(" AND q.subjectId IN :selectedSubjects");
+            }
+
+            // 5. 最大难度
+            if (filterDTO.getMaxDifficulty()!=null && filterDTO.getMaxDifficulty()>0) {
+                conditions.append(" AND q.difficulty <= :maxDifficulty");
+            }
+
+            // 6. 选择的审核状态
+            if (filterDTO.getSelectedStatuses() != null && !filterDTO.getSelectedStatuses().isEmpty()) {
+                conditions.append(" AND q.reviewStatus IN :selectedStatuses");
+            }
+
+            // 7. 出题人查询
+            if (filterDTO.getAuthorQuery() != null) {
+                conditions.append(" AND q.creatorId = :authorId");
+            }
+
+            hql.append(conditions);
             System.out.println(hql.toString());
+
+            // 创建查询
             Query<Questions> query = session.createQuery(hql.toString(), Questions.class);
 
-            // 参数绑定
-            if (dto.getTypeId() != null) {
-                query.setParameter("typeId", dto.getTypeId());
+            // 设置参数
+            if (filterDTO.isMineOnly()) {
+                query.setParameter("creatorId", UserContext.getUserId()); // 需要获取当前用户ID
+                System.out.println(UserContext.getUserId());
             }
-            if (dto.getDifficulty() != null) {
-                query.setParameter("difficulty", dto.getDifficulty());
+
+            if (filterDTO.getStemKeyword() != null && !filterDTO.getStemKeyword().isEmpty()) {
+                query.setParameter("stemKeyword", "%" + filterDTO.getStemKeyword() + "%");
             }
-            if (dto.getSubjectId() != null) {
-                query.setParameter("subjectId", dto.getSubjectId());
+
+            if (filterDTO.getSelectedTypes() != null && !filterDTO.getSelectedTypes().isEmpty()) {
+                query.setParameter("selectedTypes", filterDTO.getSelectedTypes());
             }
-            if (dto.getCreatorId() != null) {
-                query.setParameter("creatorId", dto.getCreatorId());
+
+            if (filterDTO.getSelectedSubjects() != null && !filterDTO.getSelectedSubjects().isEmpty()) {
+                query.setParameter("selectedSubjects", filterDTO.getSelectedSubjects());
             }
-            if (dto.getReviewStatus() != null) {
-                query.setParameter("reviewStatus", dto.getReviewStatus());
+
+            if (filterDTO.getMaxDifficulty() !=null && filterDTO.getMaxDifficulty() > 0) {
+                query.setParameter("maxDifficulty", filterDTO.getMaxDifficulty().byteValue());
+            }
+
+            if (filterDTO.getSelectedStatuses() != null && !filterDTO.getSelectedStatuses().isEmpty()) {
+                query.setParameter("selectedStatuses", filterDTO.getSelectedStatuses());
+            }
+
+            if (filterDTO.getAuthorQuery() != null) {
+                query.setParameter("authorId", filterDTO.getAuthorQuery());
             }
 
             return query.list();
         } catch (RuntimeException re) {
             log.error("query failed", re);
-            throw re;
+            return null;
         } finally{
         }
     }

@@ -1,71 +1,30 @@
 package cn.edu.zjut.backend.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class QuestionQueryDTO {
-    // 可以通过这些字段筛选题目
-    private Integer typeId;          // 题型ID
-    private Byte difficulty;         // 难度（1-5）
-    private Integer subjectId;       // 科目ID
-    private Long creatorId;          // 创建人ID
-    private Byte reviewStatus;       // 审核状态
+    // 仅显示我的题目
+    private boolean mineOnly;
+    // 题干关键词
+    private String stemKeyword;
+    // 选择的题型 ID 数组
+    private List<Integer> selectedTypes;
+    // 选择的学科 ID 数组
+    private List<Integer> selectedSubjects;
+    // 最大难度（≤）
+    private Integer maxDifficulty;
+    // 选择的审核状态数组（0: 待审核, 1: 已通过, 2: 已拒绝）
+    private List<Byte> selectedStatuses;
+    // 出题人查询（ID 或姓名）
+    private Long authorQuery;
 
-    public QuestionQueryDTO() {}
-
-    public QuestionQueryDTO(Integer typeId, Byte difficulty, Integer subjectId, Long creatorId, Byte reviewStatus) {
-        this.typeId = typeId;
-        this.difficulty = difficulty;
-        this.subjectId = subjectId;
-        this.creatorId = creatorId;
-        this.reviewStatus = reviewStatus;
-    }
-
-    @Override
-    public String toString() {
-        return "QuestionQueryDTO{" +
-                "typeId=" + typeId +
-                ", difficulty=" + difficulty +
-                ", subjectId=" + subjectId +
-                ", creatorId=" + creatorId +
-                ", reviewStatus=" + reviewStatus +
-                '}';
-    }
-
-    public Integer getTypeId() {
-        return typeId;
-    }
-
-    public void setTypeId(Integer typeId) {
-        this.typeId = typeId;
-    }
-
-    public Byte getDifficulty() {
-        return difficulty;
-    }
-
-    public void setDifficulty(Byte difficulty) {
-        this.difficulty = difficulty;
-    }
-
-    public Integer getSubjectId() {
-        return subjectId;
-    }
-
-    public void setSubjectId(Integer subjectId) {
-        this.subjectId = subjectId;
-    }
-
-    public Long getCreatorId() {
-        return creatorId;
-    }
-
-    public void setCreatorId(Long creatorId) {
-        this.creatorId = creatorId;
-    }
-
-    public Byte getReviewStatus() {
-        return reviewStatus;
-    }
-
-    public void setReviewStatus(Byte reviewStatus) {
-        this.reviewStatus = reviewStatus;
-    }
+    private Integer pageNum;
+    private Integer pageSize;
 }

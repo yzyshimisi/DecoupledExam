@@ -23,10 +23,10 @@ public class ExamService {
 
     @Autowired
     private ExamSettingDAO examSettingDAO;
-    
+
     @Autowired
     private ExamRecordDAO examRecordDAO;
-    
+
     @Autowired
     private ExamNotificationService examNotificationService;
 
@@ -66,7 +66,7 @@ public class ExamService {
 
             // 步骤3：保存ExamSetting
             examSettingDAO.saveSetting(session, setting);
-            
+
             // 步骤4：创建考试通知（在考试开始前10分钟提醒）
             examNotificationService.createPreExamNotification(exam, session);
 
@@ -192,17 +192,17 @@ public class ExamService {
         try {
             session = HibernateUtil.getSession();
             transaction = session.beginTransaction();
-            
+
             // 检查考试是否存在
             examDAO.setSession(session);
             Exam exam = examDAO.getById(examId);
             if (exam == null) {
                 throw new RuntimeException("考试不存在");
             }
-            
+
             // 添加学生到考试
             examRecordDAO.addStudentsToExam(session, examId, studentIds);
-            
+
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -230,17 +230,17 @@ public class ExamService {
         try {
             session = HibernateUtil.getSession();
             transaction = session.beginTransaction();
-            
+
             // 检查考试是否存在
             examDAO.setSession(session);
             Exam exam = examDAO.getById(examId);
             if (exam == null) {
                 throw new RuntimeException("考试不存在");
             }
-            
+
             // 从考试中移除学生
             examRecordDAO.removeStudentsFromExam(session, examId, studentIds);
-            
+
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -281,7 +281,7 @@ public class ExamService {
             }
         }
     }
-    
+
     /**
      * 根据考试记录ID获取考试记录
      * @param recordId 考试记录ID

@@ -13,11 +13,16 @@
        http://www.springframework.org/schema/mvc/spring-mvc.xsd
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop.xsd">
+        <!-- 文件上传配置 -->
+    <mvc:annotation-driven />
 
     <!-- 启用Spring MVC的注解支持，使@Controller和@RequestMapping等注解生效 -->
     <mvc:annotation-driven/>
 
     <aop:aspectj-autoproxy />
+    <!-- 静态资源配置，用于访问上传的人脸图片 -->
+<mvc:resources mapping="/uploads/face_images/**" location="file:D:/JAVAfile/JavaEEprogram/DecoupledExam/uploads/face_images/" />
+
 
     <!-- 配置 Spring 自动扫描指定包及其子包中的所有 Bean -->
     <context:component-scan base-package="cn.edu.zjut.backend.controller" />

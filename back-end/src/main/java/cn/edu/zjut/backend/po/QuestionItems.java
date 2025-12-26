@@ -42,14 +42,14 @@ public class QuestionItems {
 
     // ==================== 关联关系 ====================
     /** 关联主题目（多对一） */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "question_id",
             foreignKey = @ForeignKey(ConstraintMode.CONSTRAINT))
 //    @JsonBackReference
     private Questions question;
 
     /** 关联子题组件（一对多）：子题关联的组件 */
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 //    @JoinColumn(name = "item_id")
 //    @JsonManagedReference
     private List<QuestionComponents> questionComponents;

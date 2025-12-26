@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-base-200 flex items-center justify-center p-6">
-    <div class="card w-full max-w-md bg-base-100 shadow-2xl">
+  <div class="flex items-center justify-center p-6">
+    <div class="card w-full max-w-md bg-white shadow-xl border-4 border-base-200">
       <div class="card-body">
         <!-- 头部 -->
         <div class="text-center mb-8">
@@ -65,6 +65,21 @@
         <!-- 分割线 -->
         <div class="divider text-base-content/50">或使用以下方式登录</div>
 
+        <!-- 人脸登录按钮 -->
+        <div class="text-center">
+          <button
+              type="button"
+              class="btn btn-primary bg-cyan-500 text-white w-1/2 mb-4 hover:bg-cyan-600 transition-colors"
+              onclick="cameraRecorderDia.showModal()"
+          >
+            <svg class="w-7 h-7 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            人脸识别登录
+          </button>
+        </div>
+
         <!-- 社交登录 -->
         <div class="flex gap-4 justify-center mb-8">
           <button class="btn btn-circle btn-outline hover:btn-primary">
@@ -97,14 +112,18 @@
       </div>
     </div>
   </div>
+  <CameraRecorder @loginFace="loginFace"></CameraRecorder>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRequest } from "vue-hooks-plus";
-import { loginAPI } from "../../apis"
+import { loginAPI, loginFaceAPI } from "../../apis"
 import { useMainStore } from "../../stores";
 import router from "../../routers";
+import { jwtDecode } from "jwt-decode";
+import { CameraRecorder } from "../../components"
+import { ElNotification } from 'element-plus'
 
 // 登录表单数据
 const loginForm = reactive({
@@ -156,9 +175,21 @@ const handleLogin = () => {
     onSuccess(res){
       if(res['code']==200){
         let token = res['data']
+        const decoded = jwtDecode(token);
         localStorage.setItem('token', token)
+        localStorage.setItem('userType', decoded['userType'])
         useMainStore().useLoginStore().setLogin(true)
-        router.push('/home')
+        switch (decoded['userType']){
+          case 0:
+            router.push('/admin').then(()=>{window.location.reload();})
+            break
+          case 1:
+            router.push('/teacher').then(()=>{window.location.reload();})
+            break
+          case 2:
+            router.push('/student').then(()=>{window.location.reload();})
+            break
+        }
       }
     },
 
@@ -166,6 +197,18 @@ const handleLogin = () => {
 
     onFinally(){
       isLoading.value = false
+    }
+  })
+}
+
+const loginFace = (videoBase64:string) => {
+  useRequest(()=>loginFaceAPI({"video":videoBase64}), {
+    onSuccess(res){
+      if(res['code']==200){
+        ElNotification({title: 'Success', message: "登录成功", type: 'success',})
+      }else{
+        ElNotification({title: 'Warning', message: res['msg'], type: 'warning',})
+      }
     }
   })
 }
@@ -179,7 +222,7 @@ const handleLogin = () => {
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
 }
 
 .btn {

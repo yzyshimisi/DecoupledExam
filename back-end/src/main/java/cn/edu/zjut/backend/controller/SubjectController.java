@@ -54,6 +54,7 @@ public class SubjectController {
     public Response<List<Subject>> getSubject(@RequestParam(value="id", required=false) Integer id, HttpServletRequest res) {
         Claims claims = (Claims) res.getAttribute("claims");
         System.out.println("claims:" + claims.get("id") + " " + claims.get("username") + " " + claims.get("userType"));
+
         int subjectId = id==null ? -1 : id;
         List<Subject> subjects = subjectServ.getSubject(subjectId);
         return Response.success(subjects);

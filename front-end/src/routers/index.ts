@@ -3,7 +3,7 @@ import pinia from "../stores/createPinia";
 import { useMainStore } from "../stores";
 import { storeToRefs } from "pinia";
 
-import { Login } from "../views";
+import { Login, Question } from "../views";
 
 const routes : Array<RouteRecordRaw> = [
     {
@@ -15,6 +15,11 @@ const routes : Array<RouteRecordRaw> = [
         name : "login",             // 路由的名字
         component : Login,    // 路由对应的组件
     },                           // 如果还有其他的路由，就继续添加
+    {
+        path: "/teacher/question",
+        name: "question",
+        component : Question,
+    }
 ]
 
 const router = createRouter({
