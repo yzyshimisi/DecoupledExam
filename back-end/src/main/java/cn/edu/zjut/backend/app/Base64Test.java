@@ -8,7 +8,7 @@ import java.util.Base64;
 public class Base64Test {
     public static void main(String[] args) {
         try {
-            String filePath = "C:\\Users\\31986\\Desktop\\综合学科测试题集.docx"; // 替换为你的文件路径
+            String filePath = "C:\\Users\\31986\\Desktop\\证件\\5032083c6c526f82552cab483fc7a25.jpg"; // 替换为你的文件路径
             String outputFilePath = "C:\\Users\\31986\\Desktop\\output_base64.txt";
             String base64String = encodeFileToBase64(filePath);
             Files.write(Paths.get(outputFilePath), base64String.getBytes());

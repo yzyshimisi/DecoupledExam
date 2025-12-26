@@ -7,7 +7,7 @@
         <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
         <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/DecoupledExam</property>
         <property name="hibernate.connection.username">root</property>
-        <property name="hibernate.connection.password">Wxh050428$</property>
+        <property name="hibernate.connection.password">123456</property>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
 
         <!--打印 sql 语句-->
@@ -16,7 +16,6 @@
         <property name="hibernate.format_sql">true</property>
         <!-- 自动创建/更新表结构 -->
         <property name="hibernate.hbm2ddl.auto">update</property>
-
 
         <!-- 3. 关键补充：Session上下文配置（解决Session空指针核心） -->
         <property name="hibernate.current_session_context_class">thread</property>

@@ -105,7 +105,7 @@ public class ExamPaperService {
 
             // 获取指定学科的题目
             QuestionQueryDTO questionQueryDTO = new QuestionQueryDTO();
-            questionQueryDTO.setSubjectId(examGenerationRequest.getSubjectId());
+            questionQueryDTO.setSelectedSubjects(List.of(examGenerationRequest.getSubjectId()));
             List<Questions> questions = dao.query(questionQueryDTO);
 
             // 遍历每一个题型需求

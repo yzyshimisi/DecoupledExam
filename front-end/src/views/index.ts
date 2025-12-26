@@ -9,3 +9,9 @@ export {
     TeacherRegister,
     ProfileManagement,
 }
+import Question from "./question/index.vue"
+
+export {
+    Login,
+    Question,
+}

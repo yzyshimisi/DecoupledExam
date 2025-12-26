@@ -329,10 +329,10 @@ public class ExamController {
     public ResponseEntity<String> exportExamMonitoringData(@PathVariable("examId") Long examId) {
         try {
             List<ExamRecord> records = examService.getStudentsByExam(examId);
-            
+
             StringBuilder csvContent = new StringBuilder();
             csvContent.append("学生ID,客观题得分,主观题得分,总成绩,状态,交卷时间\n");
-            
+
             // 添加具体数据
             for (ExamRecord record : records) {
                 csvContent.append(record.getStudentId())
@@ -348,11 +348,11 @@ public class ExamController {
                         .append(record.getSubmitTime() != null ? record.getSubmitTime() : "")
                         .append("\n");
             }
-            
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentDispositionFormData("attachment", "exam_" + examId + "_monitoring_data.csv");
-            
+
             return new ResponseEntity<>(csvContent.toString(), headers, HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
@@ -387,7 +387,7 @@ public class ExamController {
         private Boolean allowViewPaper = true; // 默认允许查看试卷
         private Boolean allowViewScore = true; // 默认允许查看成绩
         private BigDecimal multiChoicePartialRatio = new BigDecimal(0.5); // 默认多选题部分得分率
-        
+
         // 防作弊设置字段
         private Boolean fillCaseSensitive = false; // 填空题是否区分大小写
         private Boolean fillIgnoreSymbols = true; // 填空题是否忽略符号
@@ -427,7 +427,7 @@ public class ExamController {
         public void setAllowViewScore(Boolean allowViewScore) { this.allowViewScore = allowViewScore; }
         public BigDecimal getMultiChoicePartialRatio() { return multiChoicePartialRatio; }
         public void setMultiChoicePartialRatio(BigDecimal multiChoicePartialRatio) { this.multiChoicePartialRatio = multiChoicePartialRatio; }
-        
+
         // 防作弊设置字段的Getters & Setters
         public Boolean getFillCaseSensitive() { return fillCaseSensitive; }
         public void setFillCaseSensitive(Boolean fillCaseSensitive) { this.fillCaseSensitive = fillCaseSensitive; }

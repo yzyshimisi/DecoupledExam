@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,10 +59,39 @@ public class QuestionController {
 
     @RequestMapping(value = "/api/question", method = RequestMethod.GET)
     @ResponseBody
-    public Response<List<Questions>> queryQuestion(QuestionQueryDTO dto, Model model) {
-        System.out.println("1");
-        List<Questions> questions = questionServ.queryQuestion(dto);
-        return Response.success(questions);
+    public Response<Map<String, Object>> queryQuestion(QuestionQueryDTO filterDTO, Model model) {
+        List<Questions> questions = questionServ.queryQuestion(filterDTO);
+        if(questions==null || questions.isEmpty()) {
+            Map<String, Object> multiData = new HashMap<>();
+            multiData.put("questions", questions);
+            multiData.put("total", 0);
+
+            return Response.success(multiData);
+        }
+        // 设置分页参数
+        // 关键公式：开始索引 = (当前页 - 1) * 每页大小
+        int firstResult = (filterDTO.getPageNum() - 1) * filterDTO.getPageSize();
+        int total = (questions.size() + filterDTO.getPageSize() - 1) / filterDTO.getPageSize(); // 总页数
+
+        // 1. 计算结束索引
+        int toIndex = firstResult + filterDTO.getPageSize();
+
+        if (toIndex > questions.size()) {
+            toIndex = questions.size();
+        }
+
+        try{
+            questions = questions.subList(firstResult, toIndex);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(firstResult);
+
+        Map<String, Object> multiData = new HashMap<>();
+        multiData.put("questions", questions);
+        multiData.put("total", total);
+
+        return Response.success(multiData);
     }
 
     @RequestMapping(value = "/api/question", method = RequestMethod.DELETE)

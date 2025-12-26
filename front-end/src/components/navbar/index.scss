@@ -1,0 +1,12 @@
+.navbar {
+  backdrop-filter: blur(10px);
+  background-color: hsl(var(--b1) / 0.8);
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.btn-ghost:hover {
+  background-color: hsl(var(--b2));
+}

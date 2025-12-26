@@ -2,6 +2,7 @@ package cn.edu.zjut.backend.controller;
 
 import cn.edu.zjut.backend.po.User;
 import cn.edu.zjut.backend.service.UserService;
+import cn.edu.zjut.backend.util.FaceRec;
 import cn.edu.zjut.backend.util.Jwt;
 import cn.edu.zjut.backend.util.Response;
 import cn.edu.zjut.backend.util.LoginLogger;
@@ -19,6 +20,7 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
+import java.util.Map;
 
 
 @Controller
@@ -119,6 +121,24 @@ public class UserController {
 //            );
             loginLogger.logLoginFailure("用户名或密码错误，或账户已被禁用");
             return Response.error("用户名或密码错误，或账户已被禁用");
+        }
+    }
+
+    /**
+     * 用户登录（人脸）
+     */
+    @RequestMapping(value = "/user/login-face", method = RequestMethod.POST)
+    @ResponseBody
+    public Response<String> loginFace(@RequestBody Map<String, Object> loginRequest) {
+        FaceRec faceRec = new FaceRec();
+        String videoBase64 = loginRequest.get("video").toString();
+        if(videoBase64==null || videoBase64.isEmpty()){
+            return Response.error("参数禁止为空");
+        }
+        if(faceRec.faceRecognition(videoBase64)){
+            return Response.success("人脸登录成功");
+        }else{
+            return Response.error("人脸登录失败！");
         }
     }
 

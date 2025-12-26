@@ -78,7 +78,7 @@ public class ExamNotificationService {
             // Session将在HibernateUtil的ThreadLocal中管理
         }
     }
-    
+
     /**
      * 为考试创建通知（在考试前10分钟发送）- 重载版本，接受外部传入的Session
      *
@@ -128,7 +128,7 @@ public class ExamNotificationService {
     private void sendNotification(ExamNotification notification) {
         // 这里应该集成真正的消息推送服务，如邮件、短信、站内信等
         // 当前仅为模拟实现
-        System.out.println("发送通知 - 标题: " + notification.getTitle() + 
+        System.out.println("发送通知 - 标题: " + notification.getTitle() +
                           ", 内容: " + notification.getContent() +
                           ", 考试ID: " + notification.getExamId());
 
@@ -140,10 +140,10 @@ public class ExamNotificationService {
             transaction = session.beginTransaction();
 
             notificationDAO.setSession(session);
-            
+
             notification.setIsSent(true);
             notification.setSendAttempts(notification.getSendAttempts() + 1);
-            
+
             notificationDAO.update(notification);
 
             transaction.commit();
@@ -168,11 +168,11 @@ public class ExamNotificationService {
             try {
                 session = HibernateUtil.getSession();
                 notificationDAO.setSession(session);
-                
+
                 // 查找需要发送的通知
                 List<ExamNotification> unsentNotifications = notificationDAO.findUnsentNotifications();
                 System.out.println("找到 " + unsentNotifications.size() + " 条待发送通知");
-                
+
                 // 发送每个通知
                 for (ExamNotification notification : unsentNotifications) {
                     sendNotification(notification);
