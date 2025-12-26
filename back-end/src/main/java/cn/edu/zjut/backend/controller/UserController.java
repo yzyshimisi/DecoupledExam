@@ -6,6 +6,7 @@ import cn.edu.zjut.backend.util.FaceRec;
 import cn.edu.zjut.backend.util.Jwt;
 import cn.edu.zjut.backend.util.Response;
 import cn.edu.zjut.backend.util.LoginLogger;
+import cn.edu.zjut.backend.util.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import cn.edu.zjut.backend.dto.*;
+import cn.edu.zjut.backend.annotation.LogRecord;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -39,6 +41,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user/register", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "用户认证", action = "用户注册", targetType = "用户", logType = LogRecord.LogType.SECURITY)
     public Response<String> register(@RequestBody User user) {
         // 检查手机号格式
         if (user.getPhone() != null && !user.getPhone().isEmpty()) {
@@ -69,6 +72,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user/login", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "用户认证", action = "用户登录", targetType = "用户", logType = LogRecord.LogType.LOGIN)
     public Response<String> login(@RequestBody LoginRequest loginRequest) {
         String token = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
         if (token != null && !token.isEmpty()) {
@@ -89,30 +93,22 @@ public class UserController {
                     user.setUsername(username);
                     user.setUserType(userType);
 
-//                    session.setAttribute("currentUser", user);
+//                   session.setAttribute("currentUser", user);
                     
-                    // 记录登录成功日志
+                    // 设置UserContext，供AOP记录日志使用
+                    Claims claims = new Jwt().validateJwt(token);
+                    if (claims != null) {
+                        UserContext.setClaims(claims);
+                    }
 
                 } catch (Exception e) {
                     // 如果解析失败，仍然记录日志但使用基本信息
-//                    loginLogger.logLoginSuccess(
-//                        null,
-//                        loginRequest.getUsername(),
-//                        request.getRemoteAddr(),
-//                        request.getHeader("User-Agent"),
-//                        session.getId()
-//                    );
-                    
-                    // 记录登录成功日志
-//                    loginLogger.logLoginSuccess(
-//                        userId,
-//                        username
-//                    );
+                    e.printStackTrace();
                 }
             }
             return Response.success(token);
         } else {
-            // 登录失败，记录登录日志
+// 登录失败，记录登录日志
 //            loginLogger.logLoginFailure(
 //                loginRequest.getUsername(),
 //                request.getRemoteAddr(),
@@ -129,6 +125,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user/login-face", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "用户认证", action = "人脸登录", targetType = "用户", logType = LogRecord.LogType.LOGIN)
     public Response<String> loginFace(@RequestBody Map<String, Object> loginRequest) {
         FaceRec faceRec = new FaceRec();
         String videoBase64 = loginRequest.get("video").toString();
@@ -167,6 +164,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "查询用户列表", targetType = "用户", logType = LogRecord.LogType.OPERATION)
     public Response<List<User>> getUsers(@RequestParam(value = "userType", required = false) Integer userType, HttpServletRequest request) {
         Claims claims = (Claims) request.getAttribute("claims");
         if (claims == null) {
@@ -190,6 +188,7 @@ public class UserController {
      */
     @RequestMapping(value = "/admin/teacher/register", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "管理员注册教师用户", targetType = "用户", logType = LogRecord.LogType.OPERATION)
     public Response<String> adminRegisterTeacher(@RequestBody User user, HttpServletRequest request) {
         Claims claims = (Claims) request.getAttribute("claims");
         if (claims == null) {
@@ -236,6 +235,7 @@ public class UserController {
      */
     @RequestMapping(value = "/admin/user", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "管理员更新用户信息", targetType = "用户", logType = LogRecord.LogType.OPERATION)
     public Response<String> adminUpdateUser(@RequestBody User user, HttpServletRequest request) {
         Claims claims = (Claims) request.getAttribute("claims");
         if (claims == null) {
@@ -275,6 +275,7 @@ public class UserController {
     */
     @RequestMapping(value = "/user/face-image/upload", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "上传用户人脸图像", targetType = "用户", logType = LogRecord.LogType.OPERATION)
     public Response<String> uploadUserFaceImage(@RequestParam("file") MultipartFile file, HttpServletRequest httpRequest) {
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -406,6 +407,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "更新用户信息", targetType = "用户", logType = LogRecord.LogType.OPERATION)
     public Response<String> updateUser(@RequestBody UpdateUserInfoRequest request, HttpServletRequest httpRequest) {
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -445,6 +447,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user/face-image", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "更新用户人脸图像", targetType = "用户", logType = LogRecord.LogType.OPERATION)
     public Response<String> updateUserFaceImage(@RequestBody FaceImageRequest request, HttpServletRequest httpRequest) {
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -470,6 +473,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.DELETE)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "删除用户", targetType = "用户", logType = LogRecord.LogType.SECURITY)
     public Response<String> deleteUser(@PathVariable("userId") Long userId, HttpServletRequest request) {
         Claims claims = (Claims) request.getAttribute("claims");
         if (claims == null) {
@@ -501,6 +505,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user/status", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "修改用户状态", targetType = "用户", logType = LogRecord.LogType.SECURITY)
     public Response<String> updateUserStatus(@RequestBody UpdateUserStatusRequest request, HttpServletRequest httpRequest) {
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -532,6 +537,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user/password", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "修改密码", targetType = "用户", logType = LogRecord.LogType.SECURITY)
     public Response<String> changePassword(@RequestBody ChangePasswordRequest request, HttpServletRequest httpRequest) {
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -561,6 +567,7 @@ public class UserController {
      */
     @RequestMapping(value = "/admin/user/password/reset", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "管理员重置用户密码", targetType = "用户", logType = LogRecord.LogType.SECURITY)
     public Response<String> adminResetPassword(@RequestBody ResetPasswordRequest request, HttpServletRequest httpRequest) {
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -656,6 +663,7 @@ public class UserController {
      */
     @RequestMapping(value = "/user/simulate", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "用户管理", action = "管理员模拟用户登录", targetType = "用户", logType = LogRecord.LogType.SECURITY)
     public Response<User> simulateLogin(@RequestBody SimulateLoginRequest request, HttpServletRequest httpRequest) {
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {

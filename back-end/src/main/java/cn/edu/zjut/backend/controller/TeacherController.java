@@ -1,5 +1,6 @@
 package cn.edu.zjut.backend.controller;
 
+import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.po.TeacherPosition;
 import cn.edu.zjut.backend.po.TeacherSubject;
 import cn.edu.zjut.backend.po.User;
@@ -84,6 +85,7 @@ public class TeacherController {
      */
     @PostMapping("/position")
     @ResponseBody
+    @LogRecord(module = "教师管理", action = "设置教师职位", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<String> setTeacherPosition(
             @RequestBody PositionRequest request,
             HttpServletRequest httpRequest) {
@@ -117,6 +119,7 @@ public class TeacherController {
      */
     @GetMapping("/position")
     @ResponseBody
+    @LogRecord(module = "教师管理", action = "获取教师职位", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<TeacherPosition> getTeacherPosition(
             @RequestParam("teacherId") Long teacherId,
             HttpServletRequest httpRequest) {
@@ -150,6 +153,7 @@ public class TeacherController {
      */
     @GetMapping("/position/list")
     @ResponseBody
+    @LogRecord(module = "教师管理", action = "根据职位查询教师列表", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<List<TeacherPosition>> getTeachersByRole(
             @RequestParam("role") Byte role,
             HttpServletRequest httpRequest) {
@@ -180,6 +184,7 @@ public class TeacherController {
      */
     @PostMapping("/subject")
     @ResponseBody
+    @LogRecord(module = "教师管理", action = "绑定教师与学科", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<String> bindTeacherSubject(
             @RequestBody SubjectRequest request,
             HttpServletRequest httpRequest) {
@@ -225,6 +230,7 @@ public class TeacherController {
      */
     @GetMapping("/subject")
     @ResponseBody
+    @LogRecord(module = "教师管理", action = "获取教师的所有学科关联", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<List<TeacherSubject>> getTeacherSubjects(
             @RequestParam("teacherId") Long teacherId,
             HttpServletRequest httpRequest) {
@@ -257,6 +263,7 @@ public class TeacherController {
      */
     @GetMapping("/subject/teachers")
     @ResponseBody
+    @LogRecord(module = "教师管理", action = "获取学科的所有教师关联", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<List<TeacherSubject>> getSubjectTeachers(@RequestParam("subjectId") Integer subjectId) {
         try {
             List<TeacherSubject> teachers = teacherService.getSubjectTeachers(subjectId);
@@ -275,6 +282,7 @@ public class TeacherController {
      */
     @DeleteMapping("/subject")
     @ResponseBody
+    @LogRecord(module = "教师管理", action = "解绑教师与学科", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<String> unbindTeacherSubject(
             @RequestParam("teacherId") Long teacherId,
             @RequestParam("subjectId") Integer subjectId,
@@ -316,6 +324,7 @@ public class TeacherController {
      */
     @GetMapping("/subject/main")
     @ResponseBody
+    @LogRecord(module = "教师管理", action = "获取主教学科的教师列表", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<List<TeacherSubject>> getMainTeachers() {
         try {
             List<TeacherSubject> teachers = teacherService.getMainTeachers();

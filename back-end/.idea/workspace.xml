@@ -10,17 +10,202 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4fbd584e-7bd6-478b-8e4e-ed914d672ffe" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.cache/.Apifox_Helper/.toolWindow.db" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/ApifoxUploaderProjectSetting.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/ExamCourseDAO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/po/ExamCourse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/po/ExamCoursePK.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/781162ad-39bb-4c90-b309-bc01f38361ff.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/781162ad-39bb-4c90-b309-bc01f38361ff.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/781162ad-39bb-4c90-b309-bc01f38361ff/storage_v2/_src_/schema/DecoupledExam.olMUHQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/781162ad-39bb-4c90-b309-bc01f38361ff/storage_v2/_src_/schema/DecoupledExam.olMUHQ.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/aspect/AuthHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/aspect/AuthHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/META-INF/MANIFEST.MF" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/applicationContext.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/META-INF/beans.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/annotation/LogRecord$LogType.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/annotation/LogRecord.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/app/Base64Test.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/app/FaceTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/app/LoginDebugTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/app/TestMain.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/app/UserRegisterTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/app/testChatGLM.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/aspect/AuthHandler.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/aspect/LogAspect$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/aspect/LogAspect.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/aspect/SecurityEventAspect.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/CourseController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/ExamController$ExamCreateReq.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/ExamController$ExamUpdateReq.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/ExamController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/ExamPaperController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/LogController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/QuestionController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/QuestionTagsController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/QuestionTypeController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/SecurityEventLogController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/StudentGradeController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/SubjectController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/TeacherController$PositionRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/TeacherController$SubjectRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/TeacherController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/TestLogController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/UserController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/controller/UserLoginLogController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/CourseDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/ExamDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/ExamNotificationDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/ExamPaperDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/ExamPaperQuestionDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/ExamRecordDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/ExamSettingDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/QuestionDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/QuestionTagsDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/QuestionTypeDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/SecurityEventLogDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/StudentCourseDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/StudentGradeDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/SubjectDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/SystemOperationLogDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/TeacherPositionDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/TeacherSubjectDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/UserDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dao/UserLoginLogDAO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/ChangePasswordRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/DeepSeekRequest$Message.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/DeepSeekRequest$ResponseFormat.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/DeepSeekRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/DeepSeekResponse$Message.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/DeepSeekResponse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/ExamGenerationRequest$QuestionTypeRequirement.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/ExamGenerationRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/ExamPaperDTO$QuestionInfoDTO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/ExamPaperDTO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/ExamStudentDTO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/FaceImageRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/LoginRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/QuestionQueryDTO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/ResetPasswordRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/SimulateLoginRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/StudentGradeDTO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/UpdateUserInfoRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/dto/UpdateUserStatusRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/Course.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/Exam.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/ExamNotification.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/ExamPaper.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/ExamPaperQuestion.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/ExamPaperQuestionId.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/ExamRecord.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/ExamSetting.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/QuestionComponents.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/QuestionItems.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/QuestionTags.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/QuestionType.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/Questions.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/SecurityEventLog.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/StudentCourse.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/StudentCoursePK.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/StudentGrade.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/StudentVO.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/Subject.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/SystemOperationLog.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/TeacherPosition.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/TeacherSubject.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/TeacherSubjectId.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/User.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/po/UserLoginLog.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/CourseService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/ExamNotificationService$NotificationTask.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/ExamNotificationService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/ExamPaperService$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/ExamPaperService$2.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/ExamPaperService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/ExamService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/ExamSettingService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/QuestionService$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/QuestionService$2.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/QuestionService$3.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/QuestionService$4.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/QuestionService$QuestionList.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/QuestionService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/QuestionTagsService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/QuestionTypeService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/SecurityEventLogService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/StudentCourseService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/StudentGradeService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/SubjectService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/SystemOperationLogService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/TeacherService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/UserLoginLogService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/UserService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/i/SecurityEventLogService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/i/SystemOperationLogService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/service/i/UserLoginLogService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/Base64Util.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$2.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$3.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$4.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$5$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$5.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$6.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$7$1.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM$7.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/ChatGLM_N.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/Deekseek.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/FaceRec.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/HibernateUtil.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/IpUtils.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/Jwt.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/LoginLogger.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/PasswordEncoder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/Response.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/SM4test.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/SecurityLogger.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/UserContext.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/cn/edu/zjut/backend/util/sm4/SM4Utils.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/hibernate.cfg.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/classes/log4j2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/springmvc-servlet.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/artifacts/back_end_Web_exploded/WEB-INF/web.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/app/SM4test.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/app/SM4test.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/aspect/LogAspect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/aspect/LogAspect.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/CourseController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/CourseController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/ExamController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/ExamController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/ExamPaperController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/ExamPaperController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/LogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/LogController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/QuestionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/QuestionController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/QuestionTagsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/QuestionTagsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/QuestionTypeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/QuestionTypeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/SecurityEventLogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/SecurityEventLogController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/StudentGradeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/StudentGradeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/SubjectController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/SubjectController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/TeacherController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/TeacherController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/UserController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/springmvc-servlet.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/springmvc-servlet.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/src/apis/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/apis/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/src/components/navbar/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/components/navbar/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/src/routers/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/routers/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/src/views/admin/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/admin/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/src/views/admin/profile/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/profile/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/src/views/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/UserLoginLogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/UserLoginLogController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/ExamNotificationDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/ExamNotificationDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/ExamRecordDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/ExamRecordDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/SecurityEventLogDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/SecurityEventLogDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/StudentCourseDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/StudentCourseDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/SystemOperationLogDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/SystemOperationLogDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/UserLoginLogDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/UserLoginLogDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/po/SystemOperationLog.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/po/SystemOperationLog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/ExamNotificationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/ExamNotificationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/ExamService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/ExamService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/SecurityEventLogService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/SecurityEventLogService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/SystemOperationLogService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/SystemOperationLogService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/UserLoginLogService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/UserLoginLogService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/i/SecurityEventLogService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/i/SecurityEventLogService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/i/SystemOperationLogService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/i/SystemOperationLogService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/i/UserLoginLogService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/i/UserLoginLogService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/util/HibernateUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/util/HibernateUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/hibernate.cfg.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/hibernate.cfg.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,7 +264,7 @@
     "Tomcat Server.Tomcat 11.0.3.executor": "Run",
     "Tomcat 服务器.Tomcat 11.0.3.executor": "Run",
     "Tomcat 服务器.Tomcat 11.0.4.executor": "Run",
-    "git-widget-placeholder": "wxh",
+    "git-widget-placeholder": "正在合并 wxh",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/31986/Desktop/DecoupledExam/sql.sql",
     "node.js.detected.package.eslint": "true",

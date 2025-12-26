@@ -24,16 +24,20 @@ public class UserLoginLogController {
     public Map<String, Object> getLogs(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
-            String username,
-            Integer loginStatus) {
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) Integer loginStatus,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String ip,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo) {
 
-        List<UserLoginLog> logs = logService.getLogList(page, size, username, loginStatus);
-        Long total = logService.getTotalCount();
+        List<UserLoginLog> logs = logService.getLogList(page, size, username, loginStatus, userId, ip, dateFrom, dateTo);
+        Long total = logService.getTotalCount(username, loginStatus, userId, ip, dateFrom, dateTo);
 
         Map<String, Object> result = new HashMap<>();
         result.put("logs", logs);
         result.put("total", total);
-        result.put("pages", (total + size - 1) / size);
+        result.put("pages", (int) Math.ceil((double) total / size));
         return result;
     }
 }

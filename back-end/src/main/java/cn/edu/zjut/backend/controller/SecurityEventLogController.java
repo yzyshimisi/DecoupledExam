@@ -24,16 +24,20 @@ public class SecurityEventLogController {
     public Map<String, Object> getLogs(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
-            String eventType,
-            Integer riskLevel) {
+            @RequestParam(required = false) String eventType,
+            @RequestParam(required = false) Integer riskLevel,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String ip,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo) {
 
-        List<SecurityEventLog> logs = logService.getLogList(page, size, eventType, riskLevel);
-        Long total = logService.getTotalCount();
+        List<SecurityEventLog> logs = logService.getLogList(page, size, eventType, riskLevel, userId, ip, dateFrom, dateTo);
+        Long total = logService.getTotalCount(eventType, riskLevel, userId, ip, dateFrom, dateTo);
 
         Map<String, Object> result = new HashMap<>();
         result.put("logs", logs);
         result.put("total", total);
-        result.put("pages", (total + size - 1) / size);
+        result.put("pages", (int) Math.ceil((double) total / size));
         return result;
     }
 }

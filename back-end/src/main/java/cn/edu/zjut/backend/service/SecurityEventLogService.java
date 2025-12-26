@@ -22,33 +22,73 @@ public class SecurityEventLogService implements cn.edu.zjut.backend.service.i.Se
 
     @Override
     public void saveLog(SecurityEventLog log) {
-        Session session = HibernateUtil.getSession();
+        Session session = null;
         Transaction transaction = null;
 
         try {
+            // 使用独立的Session，避免与主线程事务冲突
+            session = HibernateUtil.getNewSession();
             transaction = session.beginTransaction();
             logDAO.setSession(session);
             logDAO.save(log);
             transaction.commit();
+            logger.debug("安全事件日志保存成功，事件类型: {}, 风险等级: {}", log.getEventType(), log.getRiskLevel());
         } catch (Exception e) {
+            logger.error("保存安全事件日志失败: {}", e.getMessage(), e);
             if (transaction != null) {
-                transaction.rollback();
+                try {
+                    transaction.rollback();
+                } catch (Exception rollbackEx) {
+                    logger.error("回滚事务失败: {}", rollbackEx.getMessage(), rollbackEx);
+                }
             }
-            logger.error("保存安全事件日志失败", e);
+            // 不抛出异常，避免影响主业务流程
+        } finally {
+            // 确保session被正确关闭
+            if (session != null && session.isOpen()) {
+                try {
+                    session.close();
+                } catch (Exception e) {
+                    logger.error("关闭Hibernate会话失败", e);
+                }
+            }
         }
     }
 
     @Override
     public List<SecurityEventLog> getLogList(int page, int size, String eventType, Integer riskLevel) {
+        return getLogList(page, size, eventType, riskLevel, null, null, null, null);
+    }
+    
+    @Override
+    public List<SecurityEventLog> getLogList(int page, int size, String eventType, Integer riskLevel, Long userId, String ip, String dateFrom, String dateTo) {
         Session session = HibernateUtil.getSession();
         logDAO.setSession(session);
-        return logDAO.queryAll(page, size, eventType, riskLevel);
+        try {
+            return logDAO.queryAll(page, size, eventType, riskLevel, userId, ip, dateFrom, dateTo);
+        } finally {
+            HibernateUtil.closeSession();
+        }
     }
 
     @Override
-    public Long getTotalCount() {
+    public Long getTotalCount(String eventType, Integer riskLevel) {
+        return getTotalCount(eventType, riskLevel, null, null, null, null);
+    }
+    
+    @Override
+    public Long getTotalCount(String eventType, Integer riskLevel, Long userId, String ip, String dateFrom, String dateTo) {
         Session session = HibernateUtil.getSession();
         logDAO.setSession(session);
-        return logDAO.getTotalCount();
+        try {
+            return logDAO.getTotalCount(eventType, riskLevel, userId, ip, dateFrom, dateTo);
+        } finally {
+            HibernateUtil.closeSession();
+        }
+    }
+    
+    @Override
+    public Long getTotalCount() {
+        return getTotalCount(null, null, null, null, null, null);
     }
 }

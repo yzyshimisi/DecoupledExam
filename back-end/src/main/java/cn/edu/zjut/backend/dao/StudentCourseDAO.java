@@ -5,10 +5,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
 
+@Repository
 public class StudentCourseDAO {
     private Session session;
     private final Log log = LogFactory.getLog(StudentCourseDAO.class);
@@ -74,6 +76,21 @@ public class StudentCourseDAO {
             return query.list();
         } catch (RuntimeException re) {
             log.error("query student courses by course id failed", re);
+            throw re;
+        }
+    }
+
+    /**
+     * 根据课程ID获取学生ID列表
+     */
+    public List<Long> getStudentsByCourseId(Long courseId) {
+        try {
+            String hql = "select studentId from StudentCourse where courseId = :courseId";
+            Query<Long> query = session.createQuery(hql, Long.class);
+            query.setParameter("courseId", courseId);
+            return query.list();
+        } catch (RuntimeException re) {
+            log.error("query student ids by course id failed", re);
             throw re;
         }
     }

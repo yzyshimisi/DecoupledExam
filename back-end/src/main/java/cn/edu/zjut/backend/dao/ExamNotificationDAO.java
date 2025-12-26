@@ -4,7 +4,6 @@ import cn.edu.zjut.backend.po.ExamNotification;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -23,17 +22,25 @@ public class ExamNotificationDAO {
         session.update(notification);
     }
 
-    public List<ExamNotification> findUnsentNotifications() {
-        String hql = "FROM ExamNotification WHERE isSent = false AND sendTime <= :currentTime";
+    public List<ExamNotification> findNotificationsByStudentId(Long studentId) {
+        String hql = "FROM ExamNotification WHERE studentId = :studentId ORDER BY sendTime DESC";
         return session.createQuery(hql, ExamNotification.class)
-                .setParameter("currentTime", new Date())
+                .setParameter("studentId", studentId)
                 .getResultList();
     }
-
-    public List<ExamNotification> findPendingNotifications() {
-        String hql = "FROM ExamNotification WHERE isSent = false AND sendTime > :currentTime";
+    
+    public List<ExamNotification> findNotificationsByStudentIdAndExamId(Long studentId, Long examId) {
+        String hql = "FROM ExamNotification WHERE studentId = :studentId AND examId = :examId ORDER BY sendTime DESC";
         return session.createQuery(hql, ExamNotification.class)
-                .setParameter("currentTime", new Date())
+                .setParameter("studentId", studentId)
+                .setParameter("examId", examId)
+                .getResultList();
+    }
+    
+    public List<ExamNotification> findNotificationsByExamId(Long examId) {
+        String hql = "FROM ExamNotification WHERE examId = :examId ORDER BY sendTime DESC";
+        return session.createQuery(hql, ExamNotification.class)
+                .setParameter("examId", examId)
                 .getResultList();
     }
 }

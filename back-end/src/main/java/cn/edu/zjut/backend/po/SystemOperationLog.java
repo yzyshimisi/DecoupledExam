@@ -25,7 +25,7 @@ public class SystemOperationLog {
     
 
     @Column(name = "user_role")
-    private Integer userRole;
+    private String userRole;  // 从 Integer 改为 String，与数据库 VARCHAR(20) 匹配
 
     @Column(name = "module")
     private String module;

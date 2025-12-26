@@ -1,5 +1,6 @@
 package cn.edu.zjut.backend.controller;
 
+import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.po.StudentGrade;
 import cn.edu.zjut.backend.service.StudentGradeService;
 import cn.edu.zjut.backend.util.Response;
@@ -21,6 +22,7 @@ public class StudentGradeController {
      */
     @RequestMapping(value = "", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "成绩管理", action = "添加成绩", targetType = "成绩", logType = LogRecord.LogType.OPERATION)
     public Response<Void> addStudentGrade(@RequestBody StudentGrade studentGrade) {
         try {
             System.out.println("接收到添加成绩请求: " + studentGrade.toString());
@@ -41,6 +43,7 @@ public class StudentGradeController {
      */
     @RequestMapping(value = "/{gradeId}", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "成绩管理", action = "根据ID获取成绩", targetType = "成绩", logType = LogRecord.LogType.OPERATION)
     public Response<StudentGrade> getStudentGradeById(@PathVariable Long gradeId) {
         try {
             StudentGrade grade = studentGradeService.getStudentGradeById(gradeId);
@@ -60,6 +63,7 @@ public class StudentGradeController {
      */
     @RequestMapping(value = "", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "成绩管理", action = "获取所有成绩", targetType = "成绩", logType = LogRecord.LogType.OPERATION)
     public Response<List<StudentGrade>> getAllStudentGrades() {
         try {
             List<StudentGrade> grades = studentGradeService.getAllStudentGrades();
@@ -75,6 +79,7 @@ public class StudentGradeController {
      */
     @RequestMapping(value = "/student/{studentId}", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "成绩管理", action = "根据学生ID获取成绩", targetType = "成绩", logType = LogRecord.LogType.OPERATION)
     public Response<List<StudentGrade>> getStudentGradesByStudentId(@PathVariable Long studentId) {
         try {
             List<StudentGrade> grades = studentGradeService.getStudentGradesByStudentId(studentId);
@@ -90,6 +95,7 @@ public class StudentGradeController {
      */
     @RequestMapping(value = "/course/{courseId}", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "成绩管理", action = "根据课程ID获取成绩", targetType = "成绩", logType = LogRecord.LogType.OPERATION)
     public Response<List<StudentGrade>> getStudentGradesByCourseId(@PathVariable Long courseId) {
         try {
             List<StudentGrade> grades = studentGradeService.getStudentGradesByCourseId(courseId);
@@ -105,6 +111,7 @@ public class StudentGradeController {
      */
     @RequestMapping(value = "/type/{gradeType}", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "成绩管理", action = "根据成绩类型获取成绩", targetType = "成绩", logType = LogRecord.LogType.OPERATION)
     public Response<List<StudentGrade>> getStudentGradesByGradeType(@PathVariable String gradeType) {
         try {
             List<StudentGrade> grades = studentGradeService.getStudentGradesByGradeType(gradeType);
@@ -120,6 +127,7 @@ public class StudentGradeController {
      */
     @RequestMapping(value = "", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "成绩管理", action = "更新成绩", targetType = "成绩", logType = LogRecord.LogType.OPERATION)
     public Response<Void> updateStudentGrade(@RequestBody StudentGrade studentGrade) {
         try {
             boolean result = studentGradeService.updateStudentGrade(studentGrade);
@@ -139,6 +147,7 @@ public class StudentGradeController {
      */
     @RequestMapping(value = "/{gradeId}", method = RequestMethod.DELETE)
     @ResponseBody
+    @LogRecord(module = "成绩管理", action = "删除成绩", targetType = "成绩", logType = LogRecord.LogType.OPERATION)
     public Response<Void> deleteStudentGrade(@PathVariable Long gradeId) {
         try {
             boolean result = studentGradeService.deleteStudentGrade(gradeId);

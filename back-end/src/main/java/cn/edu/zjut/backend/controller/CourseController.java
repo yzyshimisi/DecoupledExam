@@ -1,5 +1,6 @@
 package cn.edu.zjut.backend.controller;
 
+import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.po.Course;
 import cn.edu.zjut.backend.po.StudentCourse;
 import cn.edu.zjut.backend.service.CourseService;
@@ -33,6 +34,7 @@ public class CourseController {
      */
     @RequestMapping(value = "/api/course/create", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "课程管理", action = "创建课程", targetType = "课程", logType = LogRecord.LogType.OPERATION)
     public Response<Course> createCourse(@RequestBody Course course, HttpServletRequest request) {
         try {
             // 从request中获取用户信息（在实际应用中应该从JWT token中解析）
@@ -73,6 +75,7 @@ public class CourseController {
      */
     @RequestMapping(value = "/api/course/my", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "课程管理", action = "查看我的课程", targetType = "课程", logType = LogRecord.LogType.OPERATION)
     public Response<List<Course>> getMyCourses(HttpServletRequest request) {
         try {
             // 从request中获取用户信息
@@ -116,6 +119,7 @@ public class CourseController {
      */
     @RequestMapping(value = "/api/course/invite/{inviteCode}", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "课程管理", action = "根据邀请码查找课程", targetType = "课程", logType = LogRecord.LogType.OPERATION)
     public Response<Course> getCourseByInviteCode(@PathVariable("inviteCode") String inviteCode) {
         try {
             Course course = courseService.findCourseByInviteCode(inviteCode);
@@ -134,6 +138,7 @@ public class CourseController {
      */
     @RequestMapping(value = "/api/course/{courseId}", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "课程管理", action = "根据ID获取课程详情", targetType = "课程", logType = LogRecord.LogType.OPERATION)
     public Response<Course> getCourseById(@PathVariable("courseId") Long courseId) {
         try {
             Course course = courseService.findCourseById(courseId);
@@ -153,6 +158,7 @@ public class CourseController {
      */
     @RequestMapping(value = "/api/course/join", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "课程管理", action = "学生加入课程", targetType = "课程", logType = LogRecord.LogType.OPERATION)
     public Response<String> joinCourse(@RequestBody Map<String, String> requestBody,
                                        HttpServletRequest request) {
         try {
@@ -189,6 +195,7 @@ public class CourseController {
      */
     @RequestMapping(value = "/api/course/quit/{courseId}", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "课程管理", action = "学生退出课程", targetType = "课程", logType = LogRecord.LogType.OPERATION)
     public Response<String> quitCourse(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
         try {
             // 从request中获取学生ID
@@ -216,6 +223,7 @@ public class CourseController {
      */
     @RequestMapping(value = "/api/course/my/joined", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "课程管理", action = "查看我加入的课程", targetType = "课程", logType = LogRecord.LogType.OPERATION)
     public Response<List<StudentCourse>> getMyJoinedCourses(HttpServletRequest request) {
         try {
             // 从request中获取学生ID

@@ -1,5 +1,6 @@
 package cn.edu.zjut.backend.controller;
 
+import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.dto.QuestionQueryDTO;
 import cn.edu.zjut.backend.po.Questions;
 import cn.edu.zjut.backend.service.QuestionService;
@@ -23,6 +24,7 @@ public class QuestionController {
 
     @RequestMapping(value = "/api/question", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "题库管理", action = "添加题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<List<Questions>> addQuestion(@RequestBody Questions question) {
         if(questionServ.addQuestion(question)) {
             return Response.success();
@@ -33,6 +35,7 @@ public class QuestionController {
 
     @RequestMapping(value = "/api/question/import", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "题库管理", action = "批量导入题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<List<Questions>> importQuestion(@RequestBody List<Questions> questions) {
         if(questionServ.importQuestion(questions)) {
             return Response.success();
@@ -43,6 +46,7 @@ public class QuestionController {
 
     @RequestMapping(value = "/api/question/file", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "题库管理", action = "文件导入题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<List<Questions>> fileImportQuestion(@RequestBody Map<String, Object> request) {
 
         String fileContent = (String) request.get("file");
@@ -59,6 +63,7 @@ public class QuestionController {
 
     @RequestMapping(value = "/api/question", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "题库管理", action = "查询题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<Map<String, Object>> queryQuestion(QuestionQueryDTO filterDTO, Model model) {
         List<Questions> questions = questionServ.queryQuestion(filterDTO);
         if(questions==null || questions.isEmpty()) {
@@ -92,10 +97,12 @@ public class QuestionController {
         multiData.put("total", total);
 
         return Response.success(multiData);
+
     }
 
     @RequestMapping(value = "/api/question", method = RequestMethod.DELETE)
     @ResponseBody
+    @LogRecord(module = "题库管理", action = "删除题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<List<Questions>> deleteQuestion(@RequestBody List<Long> ids, Model model) {
         if(ids==null || ids.isEmpty()){
             return Response.error("未指定参数");
@@ -109,6 +116,7 @@ public class QuestionController {
 
     @RequestMapping(value = "/api/question", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "题库管理", action = "更新题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<List<Questions>> updateQuestion(@RequestBody Questions questions, Model model) {
         if(questions==null || questions.getId()==null || (questions.getQuestionItems() == null && questions.getQuestionComponents() == null)){
             return Response.error("参数错误");

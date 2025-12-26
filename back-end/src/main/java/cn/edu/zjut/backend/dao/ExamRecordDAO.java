@@ -12,6 +12,11 @@ import java.util.List;
 @Repository
 public class ExamRecordDAO {
     private final Log log = LogFactory.getLog(ExamRecordDAO.class);
+    private Session session;
+
+    public void setSession(Session session) {
+        this.session = session;
+    }
 
     /**
      * 添加考生到考试（创建考试记录）

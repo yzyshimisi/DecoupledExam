@@ -62,6 +62,17 @@ public class HibernateUtil {
         System.out.println("获取Hibernate Session: " + session);
         return session;
     }
+
+    // 创建一个新的独立Session，用于在没有事务上下文的情况下执行操作
+    public static Session getNewSession() throws HibernateException {
+        if (sessionFactory == null) {
+            rebuildSessionFactory();
+        }
+        Session session = sessionFactory.openSession();
+        System.out.println("创建新的独立Hibernate Session: " + session);
+        return session;
+    }
+    
     public static void closeSession() throws HibernateException {
         Session session = (Session) threadLocal.get();
         threadLocal.set(null);

@@ -1,5 +1,6 @@
 package cn.edu.zjut.backend.controller;
 
+import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.po.QuestionTags;
 import cn.edu.zjut.backend.service.QuestionTagsService;
 import cn.edu.zjut.backend.util.Response;
@@ -19,6 +20,7 @@ public class QuestionTagsController {
 
     @RequestMapping(value = "/api/question/tags", method = RequestMethod.POST)
     @ResponseBody
+    @LogRecord(module = "题目标签管理", action = "添加题目标签", targetType = "题目标签", logType = LogRecord.LogType.OPERATION)
     public Response<List<QuestionTags>> addQuestionTags(@RequestBody List<QuestionTags> questionTagsList, Model model) {
         if(questionTagsServ.addQuestionTags(questionTagsList)) {
             return Response.success();
@@ -29,6 +31,7 @@ public class QuestionTagsController {
 
     @RequestMapping(value = "/api/question/tags", method = RequestMethod.DELETE)
     @ResponseBody
+    @LogRecord(module = "题目标签管理", action = "删除题目标签", targetType = "题目标签", logType = LogRecord.LogType.OPERATION)
     public Response<List<QuestionTags>> deleteQuestionTags(@RequestBody List<Long> ids, Model model) {
         if(questionTagsServ.deleteQuestionTags(ids)) {
             return Response.success();
@@ -39,6 +42,7 @@ public class QuestionTagsController {
 
     @RequestMapping(value = "/api/question/tags", method = RequestMethod.PUT)
     @ResponseBody
+    @LogRecord(module = "题目标签管理", action = "更新题目标签", targetType = "题目标签", logType = LogRecord.LogType.OPERATION)
     public Response<List<QuestionTags>> updateQuestionTags(@RequestBody QuestionTags questionTags, Model model) {
         if(questionTagsServ.updateQuestionTags(questionTags)) {
             return Response.success();
@@ -49,6 +53,7 @@ public class QuestionTagsController {
 
     @RequestMapping(value = "/api/question/tags", method = RequestMethod.GET)
     @ResponseBody
+    @LogRecord(module = "题目标签管理", action = "查询题目标签", targetType = "题目标签", logType = LogRecord.LogType.OPERATION)
     public Response<List<QuestionTags>> queryQuestionTags(@RequestParam(value = "questionId", required = false) Long questionId, Model model) {
         if(questionId==null){
             return Response.error("参数禁止为空");

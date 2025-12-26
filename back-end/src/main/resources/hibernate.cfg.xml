@@ -41,5 +41,9 @@
         <mapping class="cn.edu.zjut.backend.po.SecurityEventLog"/>
         <mapping class="cn.edu.zjut.backend.po.UserLoginLog"/>
         <mapping class="cn.edu.zjut.backend.po.QuestionType"/>
+        <mapping class="cn.edu.zjut.backend.po.StudentCourse"/>
+        <mapping class="cn.edu.zjut.backend.po.StudentCoursePK"/>
+        <mapping class="cn.edu.zjut.backend.po.ExamCourse"/>
+        <mapping class="cn.edu.zjut.backend.po.ExamCoursePK"/>
     </session-factory>
 </hibernate-configuration>

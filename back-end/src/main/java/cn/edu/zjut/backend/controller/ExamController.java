@@ -4,13 +4,19 @@ import cn.edu.zjut.backend.po.Exam;
 import cn.edu.zjut.backend.po.ExamSetting;
 import cn.edu.zjut.backend.po.ExamRecord;
 import cn.edu.zjut.backend.po.StudentVO;
+import cn.edu.zjut.backend.po.Course;
+import cn.edu.zjut.backend.po.ExamNotification;
 import cn.edu.zjut.backend.service.ExamService;
 import cn.edu.zjut.backend.service.ExamSettingService;
+import cn.edu.zjut.backend.service.CourseService;
+import cn.edu.zjut.backend.service.ExamNotificationService;
 import cn.edu.zjut.backend.util.Response;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,15 +41,66 @@ public class ExamController {
     @Autowired
     @Qualifier("examSettingServ")
     private ExamSettingService examSettingService;
+    
+    @Autowired
+    private CourseService courseService;
+    
+    @Autowired
+    private ExamNotificationService examNotificationService;
 
     // 时间格式化常量（避免重复创建）
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
-     * 发布考试（修复空值/格式/参数校验）
+     * 1. 创建考试接口
+     * 用户类型: 教务老师、任课老师、管理员
+     * 测试方法示例:
+     * POST /api/exam
+     * Content-Type: application/json
+     * {
+     *   "title": "数学期末考试",
+     *   "paperId": 1,
+     *   "teacherId": 2,
+     *   "startTime": "2024-01-15 09:00:00",
+     *   "endTime": "2024-01-15 11:00:00",
+     *   "examCode": "MATH202401",
+     *   "durationMinute": 120,
+     *   "allowLateEnter": true,
+     *   "questionShuffle": true,
+     *   "optionShuffle": true,
+     *   "preventScreenSwitch": true,
+     *   "passingScore": 60.0,
+     *   "autoSubmit": true,
+     *   "allowViewPaper": true,
+     *   "allowViewScore": true,
+     *   "multiChoicePartialRatio": 0.5,
+     *   "fillCaseSensitive": false,
+     *   "fillIgnoreSymbols": true,
+     *   "fillManualMark": false,
+     *   "peerReview": false
+     * }
      */
     @PostMapping
-    public Response<Long> createExam(@RequestBody ExamCreateReq req) {
+    public Response<Long> createExam(@RequestBody ExamCreateReq req, HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+        
+        // 权限检查：只有教师和管理员可以创建考试
+        if (currentUserType != 0 && currentUserType != 1) { // 0=管理员, 1=教师
+            return Response.error("权限不足，只有教师和管理员可以创建考试");
+        }
+        
+        // 如果是教师，确保创建的考试属于当前教师
+        if (currentUserType == 1) { // 教师
+            req.setTeacherId(currentUserId);
+        }
+
         try {
             // ========== 1. 前置参数校验（优先拦截错误） ==========
             // 基础非空校验
@@ -136,15 +193,36 @@ public class ExamController {
     }
 
     /**
-     * 查询考试列表
-     * @param status 考试状态 (可选)
-     * @param teacherId 教师ID (可选)
-     * @return 考试列表
+     * 2. 查询考试列表接口
+     * 用户类型: 教务老师、任课老师、管理员、学生
+     * 测试方法示例:
+     * GET /api/exam?status=0&teacherId=2
+     * Authorization: Bearer {token}
      */
     @GetMapping
     public Response<List<Exam>> getExamList(
             @RequestParam(required = false) Byte status,
-            @RequestParam(required = false) Long teacherId) {
+            @RequestParam(required = false) Long teacherId,
+            HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+        
+        // 权限检查：教务老师可以查看所有考试，任课老师只能查看自己创建的考试，管理员可以查看所有考试
+        if (currentUserType == 1) { // 教师
+            if (examService.isAcademicAffairsTeacher(currentUserId)) {
+                // 教务老师可以查看所有考试
+            } else {
+                // 任课老师只能查看自己的考试
+                teacherId = currentUserId;
+            }
+        }
+
         try {
             List<Exam> exams = examService.getExamList(status, teacherId);
             return Response.success(exams);
@@ -155,15 +233,32 @@ public class ExamController {
     }
 
     /**
-     * 根据ID获取考试详情
-     * @param examId 考试ID
-     * @return 考试详情
+     * 3. 根据ID获取考试详情接口
+     * 用户类型: 教务老师、任课老师、管理员、学生
+     * 测试方法示例:
+     * GET /api/exam/1
+     * Authorization: Bearer {token}
      */
     @GetMapping("/{examId}")
-    public Response<Exam> getExamById(@PathVariable("examId") Long examId) {
+    public Response<Exam> getExamById(@PathVariable("examId") Long examId, HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
         try {
             Exam exam = examService.getExamById(examId);
             if (exam != null) {
+                // 权限检查：教务老师可以查看所有考试，任课老师只能查看自己创建的考试，管理员可以查看所有考试
+                if (currentUserType == 1) { // 教师
+                    if (!examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) {
+                        return Response.error("权限不足，无法查看其他教师的考试");
+                    }
+                }
                 return Response.success(exam);
             } else {
                 return Response.error("未找到指定的考试");
@@ -175,15 +270,41 @@ public class ExamController {
     }
 
     /**
-     * 根据考试记录ID获取考试记录
-     * @param recordId 考试记录ID
-     * @return 考试记录
+     * 4. 根据考试记录ID获取考试记录接口
+     * 用户类型: 教务老师、任课老师、管理员、学生
+     * 测试方法示例:
+     * GET /api/exam/record/1
+     * Authorization: Bearer {token}
      */
     @GetMapping("/record/{recordId}")
-    public Response<ExamRecord> getExamRecordById(@PathVariable("recordId") Long recordId) {
+    public Response<ExamRecord> getExamRecordById(@PathVariable("recordId") Long recordId, HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
         try {
             ExamRecord record = examService.getExamRecordById(recordId);
             if (record != null) {
+                // 权限检查：学生只能查看自己的考试记录，教师可以查看自己课程的考试记录，管理员可以查看所有
+                if (currentUserType == 2) { // 学生
+                    if (!record.getStudentId().equals(currentUserId)) {
+                        return Response.error("权限不足，无法查看其他学生的考试记录");
+                    }
+                } else if (currentUserType == 1) { // 教师
+                    // 需要检查该考试是否属于当前教师或当前教师是教务老师
+                    Exam exam = examService.getExamById(record.getExamId());
+                    if (exam == null) {
+                        return Response.error("考试不存在");
+                    }
+                    if (!examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) {
+                        return Response.error("权限不足，无法查看其他教师课程的考试记录");
+                    }
+                }
                 return Response.success(record);
             } else {
                 return Response.error("未找到指定的考试记录");
@@ -195,19 +316,41 @@ public class ExamController {
     }
 
     /**
-     * 更新考试信息 (使用POST方法作为主要接口)
-     * @param examId 考试ID
-     * @param req 更新请求参数
-     * @return 是否更新成功
+     * 5. 更新考试信息接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员
+     * 测试方法示例:
+     * POST /api/exam/1/update
+     * Content-Type: application/json
+     * {
+     *   "title": "更新后的考试标题",
+     *   "startTime": "2024-01-16 10:00:00",
+     *   "endTime": "2024-01-16 12:00:00",
+     *   "examCode": "MATH202401_UPDATED"
+     * }
      */
     @PostMapping("/{examId}/update")
     public Response<Boolean> updateExamWithPost(@PathVariable("examId") Long examId,
-                                             @RequestBody ExamUpdateReq req) {
+                                             @RequestBody ExamUpdateReq req,
+                                             HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
         try {
             // 获取原始考试信息
             Exam exam = examService.getExamById(examId);
             if (exam == null) {
                 return Response.error("未找到指定的考试");
+            }
+
+            // 权限检查：教务老师和考试创建者可以更新考试，管理员可以更新所有考试
+            if (currentUserType == 1 && !examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) { // 教师但不是教务老师也不是考试创建者
+                return Response.error("权限不足，无法更新其他教师的考试");
             }
 
             // 更新考试信息
@@ -217,7 +360,7 @@ public class ExamController {
             if (req.getPaperId() != null) {
                 exam.setPaperId(req.getPaperId());
             }
-            if (req.getTeacherId() != null) {
+            if (req.getTeacherId() != null && currentUserType == 0) { // 只有管理员可以更改教师
                 exam.setTeacherId(req.getTeacherId());
             }
             if (req.getStartTime() != null) {
@@ -253,13 +396,35 @@ public class ExamController {
     }
 
     /**
-     * 删除考试 (使用POST方法)
-     * @param examId 考试ID
-     * @return 是否删除成功
+     * 6. 删除考试接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员
+     * 测试方法示例:
+     * POST /api/exam/1/delete
+     * Authorization: Bearer {token}
      */
     @PostMapping("/{examId}/delete")
-    public Response<Boolean> deleteExamWithPost(@PathVariable("examId") Long examId) {
+    public Response<Boolean> deleteExamWithPost(@PathVariable("examId") Long examId, HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
         try {
+            // 获取原始考试信息
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                return Response.error("未找到指定的考试");
+            }
+
+            // 权限检查：教务老师和考试创建者可以删除考试，管理员可以删除所有考试
+            if (currentUserType == 1 && !examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) { // 教师但不是教务老师也不是考试创建者
+                return Response.error("权限不足，无法删除其他教师的考试");
+            }
+
             boolean success = examService.deleteExam(examId);
             return success ? Response.success(true) : Response.error("删除失败");
         } catch (Exception e) {
@@ -269,15 +434,38 @@ public class ExamController {
     }
 
     /**
-     * 为考试添加考生
-     * @param examId 考试ID
-     * @param studentIds 学生ID列表
-     * @return 是否添加成功
+     * 7. 为考试添加考生接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员
+     * 测试方法示例:
+     * POST /api/exam/1/students
+     * Content-Type: application/json
+     * [4, 5, 6]
      */
     @PostMapping("/{examId}/students")
     public Response<Boolean> addStudentsToExam(@PathVariable("examId") Long examId,
-                                          @RequestBody List<Long> studentIds) {
+                                          @RequestBody List<Long> studentIds,
+                                          HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
         try {
+            // 获取原始考试信息
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                return Response.error("未找到指定的考试");
+            }
+
+            // 权限检查：教务老师和考试创建者可以操作考试，管理员可以操作所有考试
+            if (currentUserType == 1 && !examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) { // 教师但不是教务老师也不是考试创建者
+                return Response.error("权限不足，无法为其他教师的考试添加考生");
+            }
+
             boolean success = examService.addStudentsToExam(examId, studentIds);
             return success ? Response.success(true) : Response.error("添加考生失败");
         } catch (Exception e) {
@@ -287,15 +475,38 @@ public class ExamController {
     }
 
     /**
-     * 从考试中移除考生
-     * @param examId 考试ID
-     * @param studentIds 学生ID列表
-     * @return 是否移除成功
+     * 8. 从考试中移除考生接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员
+     * 测试方法示例:
+     * DELETE /api/exam/1/students
+     * Content-Type: application/json
+     * [4, 5]
      */
     @DeleteMapping("/{examId}/students")
     public Response<Boolean> removeStudentsFromExam(@PathVariable("examId") Long examId,
-                                               @RequestBody List<Long> studentIds) {
+                                               @RequestBody List<Long> studentIds,
+                                               HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
         try {
+            // 获取原始考试信息
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                return Response.error("未找到指定的考试");
+            }
+
+            // 权限检查：教务老师和考试创建者可以操作考试，管理员可以操作所有考试
+            if (currentUserType == 1 && !examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) { // 教师但不是教务老师也不是考试创建者
+                return Response.error("权限不足，无法为其他教师的考试移除考生");
+            }
+
             boolean success = examService.removeStudentsFromExam(examId, studentIds);
             return success ? Response.success(true) : Response.error("移除考生失败");
         } catch (Exception e) {
@@ -305,13 +516,35 @@ public class ExamController {
     }
 
     /**
-     * 获取考试的所有考生
-     * @param examId 考试ID
-     * @return 考生列表
+     * 9. 获取考试的所有考生接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员、学生(自己的记录)
+     * 测试方法示例:
+     * GET /api/exam/1/students
+     * Authorization: Bearer {token}
      */
     @GetMapping("/{examId}/students")
-    public Response<List<ExamRecord>> getStudentsByExam(@PathVariable("examId") Long examId) {
+    public Response<List<ExamRecord>> getStudentsByExam(@PathVariable("examId") Long examId, HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
         try {
+            // 获取原始考试信息
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                return Response.error("未找到指定的考试");
+            }
+
+            // 权限检查：教务老师和考试创建者可以查看考试考生，管理员可以查看所有考试的考生
+            if (currentUserType == 1 && !examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) { // 教师但不是教务老师也不是考试创建者
+                return Response.error("权限不足，无法查看其他教师考试的考生");
+            }
+
             List<ExamRecord> records = examService.getStudentsByExam(examId);
             return Response.success(records);
         } catch (Exception e) {
@@ -321,13 +554,35 @@ public class ExamController {
     }
 
     /**
-     * 导出考试监考数据
-     * @param examId 考试ID
-     * @return CSV格式的监考数据
+     * 10. 导出考试监考数据接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员
+     * 测试方法示例:
+     * GET /api/exam/1/export
+     * Authorization: Bearer {token}
      */
     @GetMapping("/{examId}/export")
-    public ResponseEntity<String> exportExamMonitoringData(@PathVariable("examId") Long examId) {
+    public ResponseEntity<String> exportExamMonitoringData(@PathVariable("examId") Long examId, HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
         try {
+            // 获取原始考试信息
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            // 权限检查：教务老师和考试创建者可以导出数据，管理员可以导出所有考试的数据
+            if (currentUserType == 1 && !examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) { // 教师但不是教务老师也不是考试创建者
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+
             List<ExamRecord> records = examService.getStudentsByExam(examId);
 
             StringBuilder csvContent = new StringBuilder();
@@ -357,6 +612,335 @@ public class ExamController {
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * 11. 将考试发布到课程接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员
+     * 测试方法示例:
+     * POST /api/exam/1/publish
+     * Content-Type: application/json
+     * [1, 2]
+     */
+    @PostMapping("/{examId}/publish")
+    public Response<Boolean> publishExamToCourses(@PathVariable("examId") Long examId,
+                                                 @RequestBody List<Long> courseIds,
+                                                 HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
+        try {
+            // 获取原始考试信息
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                return Response.error("未找到指定的考试");
+            }
+
+            // 权限检查：
+            // 1. 教务老师可以发布考试到任意课程
+            // 2. 任课老师只能发布考试到自己创建的课程
+            // 3. 管理员可以发布考试到任意课程
+            if (currentUserType == 1) { // 教师
+                if (!examService.isAcademicAffairsTeacher(currentUserId)) {
+                    // 任课老师只能发布自己创建的考试
+                    if (!exam.getTeacherId().equals(currentUserId)) {
+                        return Response.error("权限不足，任课老师只能发布自己创建的考试");
+                    }
+                }
+            }
+
+            // 调用服务发布考试到课程
+            boolean success = examService.publishExamToCourses(examId, courseIds, currentUserId);
+            return success ? Response.success(true) : Response.error("发布考试到课程失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("发布考试到课程失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 12. 从课程中移除考试发布接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员
+     * 测试方法示例:
+     * POST /api/exam/1/unpublish
+     * Content-Type: application/json
+     * [1, 2]
+     */
+    @PostMapping("/{examId}/unpublish")
+    public Response<Boolean> removeExamFromCourses(@PathVariable("examId") Long examId,
+                                                  @RequestBody List<Long> courseIds,
+                                                  HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
+        try {
+            // 获取原始考试信息
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                return Response.error("未找到指定的考试");
+            }
+
+            // 权限检查：
+            // 1. 教务老师可以移除任意考试发布
+            // 2. 任课老师只能移除自己创建的考试发布
+            // 3. 管理员可以移除任意考试发布
+            if (currentUserType == 1) { // 教师
+                if (!examService.isAcademicAffairsTeacher(currentUserId)) {
+                    // 任课老师只能移除自己创建的考试发布
+                    if (!exam.getTeacherId().equals(currentUserId)) {
+                        return Response.error("权限不足，任课老师只能移除自己创建的考试发布");
+                    }
+                }
+            }
+
+            // 调用服务移除考试发布
+            boolean success = examService.removeExamFromCourses(examId, courseIds);
+            return success ? Response.success(true) : Response.error("移除考试发布失败");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("移除考试发布失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 13. 获取考试已发布的课程列表接口
+     * 用户类型: 教务老师、任课老师(自己创建的考试)、管理员
+     * 测试方法示例:
+     * GET /api/exam/1/courses
+     * Authorization: Bearer {token}
+     */
+    @GetMapping("/{examId}/courses")
+    public Response<List<Long>> getPublishedCourses(@PathVariable("examId") Long examId,
+                                                   HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
+        try {
+            // 获取原始考试信息
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                return Response.error("未找到指定的考试");
+            }
+
+            // 权限检查：
+            // 1. 教务老师可以查看任意考试发布的课程
+            // 2. 任课老师只能查看自己创建的考试发布的课程
+            // 3. 管理员可以查看任意考试发布的课程
+            if (currentUserType == 1) { // 教师
+                if (!examService.isAcademicAffairsTeacher(currentUserId)) {
+                    // 任课老师只能查看自己创建的考试发布的课程
+                    if (!exam.getTeacherId().equals(currentUserId)) {
+                        return Response.error("权限不足，任课老师只能查看自己创建的考试发布的课程");
+                    }
+                }
+            }
+
+            // 获取考试已发布的课程
+            List<Long> courseIds = examService.getCoursesByExam(examId);
+            return Response.success(courseIds);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("查询考试发布的课程失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 14. 获取课程中的考试列表接口
+     * 用户类型: 教务老师、任课老师、管理员、学生
+     * 测试方法示例:
+     * GET /api/exam/course/1/exams
+     * Authorization: Bearer {token}
+     */
+    @GetMapping("/course/{courseId}/exams")
+    public Response<List<Long>> getExamsByCourse(@PathVariable("courseId") Long courseId,
+                                                HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
+        try {
+            // 权限检查：
+            // 1. 教务老师可以查看任意课程中的考试
+            // 2. 任课老师只能查看自己创建的课程中的考试
+            // 3. 管理员可以查看任意课程中的考试
+            if (currentUserType == 1) { // 教师
+                if (!examService.isAcademicAffairsTeacher(currentUserId)) {
+                    // 任课老师只能查看自己创建的课程中的考试
+                    // 需要验证课程是否为自己创建
+                    Course course = courseService.findCourseById(courseId);
+                    if (course != null && !course.getTeacherId().equals(currentUserId)) {
+                        return Response.error("权限不足，任课老师只能查看自己创建的课程中的考试");
+                    }
+                }
+            }
+
+            // 获取课程中的考试
+            List<Long> examIds = examService.getExamsByCourse(courseId);
+            return Response.success(examIds);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("查询课程中的考试失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 15. 获取学生自己的考试列表接口
+     * 用户类型: 学生
+     * 测试方法示例:
+     * GET /api/exam/student/exams
+     * Authorization: Bearer {token}
+     */
+    @GetMapping("/student/exams")
+    public Response<List<Exam>> getExamsByStudent(HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
+        try {
+            // 权限检查：只有学生可以查看自己的考试
+            if (currentUserType != 2) { // 2=学生
+                return Response.error("权限不足，只有学生可以查看自己的考试");
+            }
+            
+            // 获取学生参加的考试列表
+            List<Exam> exams = examService.getExamsByStudentId(currentUserId);
+            return Response.success(exams);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("查询学生考试列表失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 16. 获取学生自己的考试通知列表接口
+     * 用户类型: 学生
+     * 测试方法示例:
+     * GET /api/exam/student/notifications
+     * Authorization: Bearer {token}
+     */
+    @GetMapping("/student/notifications")
+    public Response<List<ExamNotification>> getNotificationsByStudent(HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
+        try {
+            // 权限检查：只有学生可以查看自己的通知
+            if (currentUserType != 2) { // 2=学生
+                return Response.error("权限不足，只有学生可以查看自己的通知");
+            }
+            
+            // 获取学生的通知列表
+            List<ExamNotification> notifications = examNotificationService.getNotificationsByStudentId(currentUserId);
+            return Response.success(notifications);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("查询学生通知列表失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 17. 获取学生特定考试的通知接口
+     * 用户类型: 学生
+     * 测试方法示例:
+     * GET /api/exam/student/notifications/exam/1
+     * Authorization: Bearer {token}
+     */
+    @GetMapping("/student/notifications/exam/{examId}")
+    public Response<List<ExamNotification>> getNotificationsByStudentAndExam(@PathVariable("examId") Long examId,
+                                                                           HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
+        try {
+            // 权限检查：只有学生可以查看自己的通知
+            if (currentUserType != 2) { // 2=学生
+                return Response.error("权限不足，只有学生可以查看自己的通知");
+            }
+            
+            // 获取学生特定考试的通知列表
+            List<ExamNotification> notifications = examNotificationService.getNotificationsByStudentIdAndExamId(currentUserId, examId);
+            return Response.success(notifications);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("查询学生考试通知失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 18. 为所有现有考试创建通知接口（管理员专用）
+     * 用户类型: 管理员
+     * 测试方法示例:
+     * POST /api/exam/notifications/init
+     * Authorization: Bearer {token}
+     */
+    @PostMapping("/notifications/init")
+    public Response<Integer> initNotificationsForExistingExams(HttpServletRequest httpRequest) {
+        // 获取当前用户信息
+        Claims claims = (Claims) httpRequest.getAttribute("claims");
+        if (claims == null) {
+            return Response.error("用户未登录");
+        }
+
+        Long currentUserId = ((Number) claims.get("id")).longValue();
+        Integer currentUserType = (Integer) claims.get("userType");
+
+        try {
+            // 权限检查：只有管理员可以执行此操作
+            if (currentUserType != 0) { // 0=管理员
+                return Response.error("权限不足，只有管理员可以执行此操作");
+            }
+            
+            // 为所有现有考试创建通知
+            int processedCount = examService.createNotificationsForAllExistingExams();
+            Response<Integer> response = new Response<>();
+            response.setCode(200);
+            response.setMsg("已为 " + processedCount + " 个考试创建通知");
+            response.setData(processedCount);
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("初始化考试通知失败：" + e.getMessage());
         }
     }
 
