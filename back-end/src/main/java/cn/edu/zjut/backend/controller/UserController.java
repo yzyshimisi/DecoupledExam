@@ -595,19 +595,7 @@ public class UserController {
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
     @ResponseBody
     public Response<User> getUserById(@PathVariable("userId") Long userId, HttpServletRequest request) {
-        Claims claims = (Claims) request.getAttribute("claims");
-        if (claims == null) {
-            return Response.error("请先登录");
-        }
-        
-        Long currentUserId = ((Number) claims.get("id")).longValue();
-        Integer currentUserType = (Integer) claims.get("userType");
-        
-        // 普通用户只能查看自己的信息，管理员可以查看所有用户信息
-        if (!currentUserId.equals(userId) && currentUserType != 0) {
-            return Response.error("权限不足，只能查看自己的信息或管理员可查看所有用户信息");
-        }
-        
+        // 取消权限限制，所有用户都可以访问
         User user = userService.getUserById(userId);
         if (user != null) {
             // 清除密码信息再返回

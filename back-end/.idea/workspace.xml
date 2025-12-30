@@ -9,14 +9,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-<<<<<<< HEAD
+    <list default="true" id="4fbd584e-7bd6-478b-8e4e-ed914d672ffe" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/781162ad-39bb-4c90-b309-bc01f38361ff.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/781162ad-39bb-4c90-b309-bc01f38361ff.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/CourseController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/CourseController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/TeacherController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/TeacherController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/CourseDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/CourseDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/CourseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/CourseService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/StudentCourseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/StudentCourseService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/TeacherService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/TeacherService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/springmvc-servlet.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/springmvc-servlet.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/web.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/apis/Server/userAPI.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/apis/Server/userAPI.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/components/navbar/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/components/navbar/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/routers/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/routers/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/views/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/views/profile/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/profile/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/vite.config.js" afterDir="false" />
+    </list>
     <list default="true" id="937f70ff-fb78-4d5c-bf8c-2c0987a3a36e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/1a3b8b75-ed66-4a34-8a59-a515369eb169.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/1a3b8b75-ed66-4a34-8a59-a515369eb169.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
-=======
-    <list default="true" id="4fbd584e-7bd6-478b-8e4e-ed914d672ffe" name="Changes" comment="" />
->>>>>>> 3be8bb54016fe59a40b107d4f39af7684a8debcd
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -62,39 +79,39 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.Base64Test.executor": "Run",
-    "Application.ChatGLM.executor": "Run",
-    "Application.SM4test.executor": "Run",
-    "Application.TestMain (1).executor": "Run",
-    "Application.TestMain.executor": "Run",
-    "Application.testChatGLM.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "Tomcat Server.Tomcat 11.0.3.executor": "Run",
-    "Tomcat 服务器.Tomcat 11.0.3.executor": "Run",
-    "Tomcat 服务器.Tomcat 11.0.4.executor": "Run",
-    "git-widget-placeholder": "wxh",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/31986/Desktop/DecoupledExam/sql.sql",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "模块",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.32528734",
-    "settings.editor.selected.configurable": "Console",
-    "vue.rearranger.settings.migration": "true",
-    "应用程序.SM4test.executor": "Run"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Base64Test.executor&quot;: &quot;Run&quot;,
+    &quot;Application.ChatGLM.executor&quot;: &quot;Run&quot;,
+    &quot;Application.SM4test.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestMain (1).executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestMain.executor&quot;: &quot;Run&quot;,
+    &quot;Application.testChatGLM.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;Tomcat Server.Tomcat 11.0.3.executor&quot;: &quot;Run&quot;,
+    &quot;Tomcat 服务器.Tomcat 11.0.3.executor&quot;: &quot;Run&quot;,
+    &quot;Tomcat 服务器.Tomcat 11.0.4.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;wxh&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/31986/Desktop/DecoupledExam/sql.sql&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;模块&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.32528734&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Console&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
+    &quot;应用程序.SM4test.executor&quot;: &quot;Run&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Tomcat 服务器.Tomcat 11.0.4">
     <configuration name="Base64Test" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="cn.edu.zjut.backend.app.Base64Test" />
@@ -254,50 +271,21 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9f38398b9061-39b83d9b5494-intellij.indexing.shared.core-IU-241.15989.150" />
-        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-IU-241.15989.150" />
+        <option value="bundled-jdk-9f38398b9061-39b83d9b5494-intellij.indexing.shared.core-IU-241.18034.62" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-IU-241.18034.62" />
       </set>
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="937f70ff-fb78-4d5c-bf8c-2c0987a3a36e" name="Changes" comment="" />
       <created>1766638103450</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-<<<<<<< HEAD
       <updated>1766638103450</updated>
       <workItem from="1766638106124" duration="13638000" />
       <workItem from="1766682362251" duration="168000" />
       <workItem from="1766728145153" duration="11113000" />
-=======
-      <updated>1765426335437</updated>
-      <workItem from="1765426336611" duration="7371000" />
-      <workItem from="1765436047174" duration="4322000" />
-      <workItem from="1765440547624" duration="25121000" />
-      <workItem from="1765519501974" duration="5877000" />
-      <workItem from="1765782517462" duration="3241000" />
-      <workItem from="1765797619896" duration="6911000" />
-      <workItem from="1765856479373" duration="15453000" />
-      <workItem from="1765874583987" duration="8071000" />
-      <workItem from="1765882740091" duration="23726000" />
-      <workItem from="1765945736075" duration="14924000" />
-      <workItem from="1765972564900" duration="8708000" />
-      <workItem from="1766031833744" duration="18208000" />
-      <workItem from="1766058486619" duration="6592000" />
-      <workItem from="1766066461877" duration="245000" />
-      <workItem from="1766081122725" duration="3113000" />
-      <workItem from="1766212144413" duration="14592000" />
-      <workItem from="1766232753177" duration="24612000" />
-      <workItem from="1766290279226" duration="11252000" />
-      <workItem from="1766307984439" duration="23000" />
-      <workItem from="1766308023204" duration="318000" />
-      <workItem from="1766319285787" duration="3215000" />
-      <workItem from="1766322527232" duration="1859000" />
-      <workItem from="1766385787179" duration="30714000" />
-      <workItem from="1766554568290" duration="5565000" />
->>>>>>> 3be8bb54016fe59a40b107d4f39af7684a8debcd
     </task>
     <servers />
   </component>

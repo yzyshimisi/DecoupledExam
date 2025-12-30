@@ -98,4 +98,16 @@ public class CourseDAO {
             throw re;
         }
     }
+    
+    /**
+     * 删除课程
+     */
+    public void delete(Course course) {
+        try {
+            session.delete(course);
+        } catch (RuntimeException re) {
+            log.error("delete course failed", re);
+            throw re;
+        }
+    }
 }

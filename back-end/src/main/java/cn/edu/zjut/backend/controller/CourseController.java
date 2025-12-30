@@ -3,6 +3,7 @@ package cn.edu.zjut.backend.controller;
 import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.po.Course;
 import cn.edu.zjut.backend.po.StudentCourse;
+import cn.edu.zjut.backend.dto.StudentCourseDetailDTO;
 import cn.edu.zjut.backend.service.CourseService;
 import cn.edu.zjut.backend.service.StudentCourseService;
 import cn.edu.zjut.backend.service.TeacherService;
@@ -52,17 +53,28 @@ public class CourseController {
                 return Response.error("权限不足，只有管理员和教师可以创建课程");
             }
 
+            // ======== 问题1修复：添加参数验证 ========
+            // 验证课程名称不能为空
+            if (course.getCourseName() == null || course.getCourseName().trim().isEmpty()) {
+                return Response.error("课程名称不能为空");
+            }
+            
+            // 验证学科ID不能为空
+            if (course.getSubjectId() == null) {
+                return Response.error("学科ID不能为空");
+            }
+
             // 设置教师ID、创建时间和默认状态
             course.setTeacherId(userId);
             course.setCreateTime(new Date());
             course.setStatus("0"); // 默认状态为开设中
 
             // 创建课程
-            boolean success = courseService.createCourse(course);
-            if (success) {
+            String result = courseService.createCourse(course);
+            if (result == null || result.isEmpty()) {
                 return Response.success(course);
             } else {
-                return Response.error("课程创建失败");
+                return Response.error(result);
             }
         } catch (Exception e) {
             return Response.error("服务器内部错误: " + e.getMessage());
@@ -224,7 +236,7 @@ public class CourseController {
     @RequestMapping(value = "/api/course/my/joined", method = RequestMethod.GET)
     @ResponseBody
     @LogRecord(module = "课程管理", action = "查看我加入的课程", targetType = "课程", logType = LogRecord.LogType.OPERATION)
-    public Response<List<StudentCourse>> getMyJoinedCourses(HttpServletRequest request) {
+    public Response<List<StudentCourseDetailDTO>> getMyJoinedCourses(HttpServletRequest request) {
         try {
             // 从request中获取学生ID
             Claims claims = (Claims) request.getAttribute("claims");
@@ -236,7 +248,197 @@ public class CourseController {
 
             // 查询该学生加入的所有课程
             List<StudentCourse> studentCourses = studentCourseService.getStudentCourses(studentId);
-            return Response.success(studentCourses);
+            // 将 StudentCourse 转换为包含 Course 详情的 DTO
+            List<StudentCourseDetailDTO> details = new java.util.ArrayList<>();
+            if (studentCourses != null) {
+                for (StudentCourse sc : studentCourses) {
+                    StudentCourseDetailDTO dto = new StudentCourseDetailDTO();
+                    dto.setStudentId(sc.getStudentId());
+                    dto.setCourseId(sc.getCourseId());
+                    dto.setJoinTime(sc.getJoinTime());
+                    dto.setStatus(sc.getStatus());
+                    // 查询课程详情
+                    Course course = courseService.findCourseById(sc.getCourseId());
+                    dto.setCourse(course);
+                    details.add(dto);
+                }
+            }
+            return Response.success(details);
+        } catch (Exception e) {
+            return Response.error("服务器内部错误: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 教师删除自己创建的课程
+     */
+    @RequestMapping(value = "/api/course/delete/{courseId}", method = RequestMethod.DELETE)
+    @ResponseBody
+    @LogRecord(module = "课程管理", action = "删除课程", targetType = "课程", logType = LogRecord.LogType.OPERATION)
+    public Response<String> deleteCourse(@PathVariable("courseId") Long courseId, HttpServletRequest request) {
+        try {
+            // 从request中获取用户信息
+            Claims claims = (Claims) request.getAttribute("claims");
+            if (claims == null) {
+                return Response.error("用户未登录");
+            }
+
+            // 获取用户类型 0-管理员 1-教师 2-学生
+            Integer userType = (Integer) claims.get("userType");
+            Long userId = ((Number) claims.get("id")).longValue();
+            
+            // 只有管理员和教师可以删除课程
+            if (userType != 0 && userType != 1) {
+                return Response.error("权限不足，只有管理员和教师可以删除课程");
+            }
+            
+            // 教务老师可以删除所有课程，任课老师只能删除自己创建的课程
+            if (userType == 1) { // 教师
+                // 检查教师职位
+                boolean isAcademicAffairsTeacher = teacherService.isAcademicAffairsTeacher(userId);
+                if (!isAcademicAffairsTeacher) {
+                    // 任课老师只能删除自己创建的课程
+                    // deleteCourseById 方法会验证课程是否为该教师创建
+                }
+            }
+            
+            // 删除课程
+            boolean success = courseService.deleteCourseById(courseId, userId);
+            if (success) {
+                return Response.success("成功删除课程");
+            } else {
+                return Response.error("删除课程失败，可能课程不存在或您没有权限删除该课程");
+            }
+        } catch (Exception e) {
+            return Response.error("服务器内部错误: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 教师修改自己创建的课程信息（课程名称和课程描述）
+     */
+    @PutMapping("/api/course/update/{courseId}")
+    @ResponseBody
+    @LogRecord(module = "课程管理", action = "更新课程信息", targetType = "课程", logType = LogRecord.LogType.OPERATION)
+    public Response<String> updateCourse(@PathVariable("courseId") Long courseId, 
+                                       @RequestBody Map<String, Object> requestBody, 
+                                       HttpServletRequest request) {
+        try {
+            // 从request中获取用户信息
+            Claims claims = (Claims) request.getAttribute("claims");
+            if (claims == null) {
+                return Response.error("用户未登录");
+            }
+
+            // 获取用户类型 0-管理员 1-教师 2-学生
+            Integer userType = (Integer) claims.get("userType");
+            Long userId = ((Number) claims.get("id")).longValue();
+            
+            // 只有管理员和教师可以修改课程
+            if (userType != 0 && userType != 1) {
+                return Response.error("权限不足，只有管理员和教师可以修改课程");
+            }
+            
+            // 从请求体获取新的课程名称和描述
+            String courseName = (String) requestBody.get("courseName");
+            String description = (String) requestBody.get("description");
+            
+            // 检查是否至少提供了一个要更新的字段
+            if ((courseName == null || courseName.trim().isEmpty()) && description == null) {
+                return Response.error("至少需要提供课程名称或课程描述中的一个");
+            }
+            
+            // 教务老师可以修改所有课程，任课老师只能修改自己创建的课程
+            if (userType == 1) { // 教师
+                // 检查教师职位
+                boolean isAcademicAffairsTeacher = teacherService.isAcademicAffairsTeacher(userId);
+                if (!isAcademicAffairsTeacher) {
+                    // 任课老师只能修改自己创建的课程
+                    // updateCourseById 方法会验证课程是否为该教师创建
+                }
+            }
+            
+            // 更新课程
+            boolean success = courseService.updateCourseById(courseId, userId, courseName, description);
+            if (success) {
+                return Response.success("成功更新课程信息");
+            } else {
+                return Response.error("更新课程信息失败，可能课程不存在或您没有权限修改该课程");
+            }
+        } catch (Exception e) {
+            return Response.error("服务器内部错误: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 教师修改课程状态（开设/结课）
+     */
+    @PutMapping("/api/course/status/{courseId}")
+    @ResponseBody
+    @LogRecord(module = "课程管理", action = "修改课程状态", targetType = "课程", logType = LogRecord.LogType.OPERATION)
+    public Response<String> updateCourseStatus(@PathVariable("courseId") Long courseId, 
+                                            @RequestBody Map<String, Object> requestBody, 
+                                            HttpServletRequest request) {
+        try {
+            // 从request中获取用户信息
+            Claims claims = (Claims) request.getAttribute("claims");
+            if (claims == null) {
+                return Response.error("用户未登录");
+            }
+
+            // 获取用户类型 0-管理员 1-教师 2-学生
+            Integer userType = (Integer) claims.get("userType");
+            Long userId = ((Number) claims.get("id")).longValue();
+            
+            // 只有管理员和教师可以修改课程状态
+            if (userType != 0 && userType != 1) {
+                return Response.error("权限不足，只有管理员和教师可以修改课程状态");
+            }
+            
+            // 从请求体获取新的课程状态
+            String status = (String) requestBody.get("status");
+            
+            // 验证状态值是否有效
+            if (status == null || (!"0".equals(status) && !"1".equals(status))) {
+                return Response.error("课程状态值无效，应为: 0=开设, 1=结课");
+            }
+            
+            // 教务老师可以修改所有课程状态，任课老师只能修改自己创建的课程状态
+            if (userType == 1) { // 教师
+                // 检查教师职位
+                boolean isAcademicAffairsTeacher = teacherService.isAcademicAffairsTeacher(userId);
+                if (!isAcademicAffairsTeacher) {
+                    // 任课老师只能修改自己创建的课程状态
+                    // updateCourseStatus 方法会验证课程是否为该教师创建
+                }
+            }
+            
+            // 更新课程状态
+            boolean success = courseService.updateCourseStatus(courseId, userId, status);
+            if (success) {
+                String statusText = "0".equals(status) ? "开设" : "结课";
+                return Response.success("成功将课程状态更新为: " + statusText);
+            } else {
+                return Response.error("更新课程状态失败，可能课程不存在或您没有权限修改该课程");
+            }
+        } catch (Exception e) {
+            return Response.error("服务器内部错误: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取课程详情
+     */
+    @RequestMapping(value = "/api/course/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    @LogRecord(module = "课程管理", action = "获取课程详情", targetType = "课程", logType = LogRecord.LogType.OPERATION)
+    public Response<Course> getCourseById(@PathVariable("id") Long courseId, HttpServletRequest request) {
+        try {
+            Course course = courseService.findCourseById(courseId);
+            if (course == null) {
+                return Response.error("未找到对应课程");
+            }
+            return Response.success(course);
         } catch (Exception e) {
             return Response.error("服务器内部错误: " + e.getMessage());
         }
