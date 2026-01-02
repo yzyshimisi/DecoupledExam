@@ -66,7 +66,8 @@ public class QuestionController {
     @LogRecord(module = "题库管理", action = "查询题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<Map<String, Object>> queryQuestion(QuestionQueryDTO filterDTO, Model model) {
         List<Questions> questions = questionServ.queryQuestion(filterDTO);
-        if(questions==null || questions.isEmpty()) {
+
+        if(questions==null || questions.isEmpty() || filterDTO.getPageNum()==null || filterDTO.getPageSize()==null) {
             Map<String, Object> multiData = new HashMap<>();
             multiData.put("questions", questions);
             multiData.put("total", 0);
@@ -90,7 +91,6 @@ public class QuestionController {
         }catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(firstResult);
 
         Map<String, Object> multiData = new HashMap<>();
         multiData.put("questions", questions);
@@ -98,6 +98,17 @@ public class QuestionController {
 
         return Response.success(multiData);
 
+    }
+
+    @RequestMapping(value = "/api/question-id", method = RequestMethod.GET)
+    @ResponseBody
+    @LogRecord(module = "题库管理", action = "查询题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
+    public Response<Questions> queryQuestion(@RequestParam(required = false) Long questionId) {
+        if(questionId==null){
+            return Response.error("参数错误");
+        }
+        Questions question = questionServ.queryQuestion(questionId);
+        return Response.success(question);
     }
 
     @RequestMapping(value = "/api/question", method = RequestMethod.DELETE)

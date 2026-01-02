@@ -21,6 +21,16 @@
         <url-pattern>/</url-pattern>
     </servlet-mapping>
 
+    <!-- HiddenHttpMethodFilter用于将_method参数转换为HTTP方法 -->
+    <filter>
+        <filter-name>hiddenHttpMethodFilter</filter-name>
+        <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>hiddenHttpMethodFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
     <!-- 启动Spring框架，并加载applicationContext.xml配置文件 -->
     <listener>
         <listener-class>

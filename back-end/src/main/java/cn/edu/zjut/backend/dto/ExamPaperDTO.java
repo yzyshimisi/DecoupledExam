@@ -16,6 +16,9 @@ public class ExamPaperDTO {
     private Integer totalScore;
     private String isSealed;
     private Long creatorId;
+    private String composeType = "1";
+    private Date createTime =  new Date();
+    private Date updatedAt =  new Date();
 
     private List<QuestionInfoDTO> questions = new ArrayList<>();
 

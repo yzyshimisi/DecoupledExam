@@ -238,6 +238,7 @@ public class ExamPaperService {
     // 修改试卷
     public boolean updateExamPaper(ExamPaper examPaper) {
         examPaper.setUpdatedAt(new Date());
+        examPaper.setCreatorId(UserContext.getUserId());
 
         Session session = this.getSession();
         ExamPaperDAO dao = new ExamPaperDAO();
@@ -315,14 +316,16 @@ public class ExamPaperService {
     }
 
     // 修改试卷题目
-    public boolean updateExamPaperQuestion(ExamPaperQuestion examPaperQuestion) {
+    public boolean updateExamPaperQuestion(List<ExamPaperQuestion> examPaperQuestions) {
         Session session = this.getSession();
         ExamPaperQuestionDAO dao = new ExamPaperQuestionDAO();
         dao.setSession(session);
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            dao.update(examPaperQuestion);
+            for(ExamPaperQuestion examPaperQuestion : examPaperQuestions){
+                dao.update(examPaperQuestion);
+            }
             tran.commit();
             return true;
         } catch (Exception e) {

@@ -113,8 +113,9 @@ public class TeacherController {
     }
 
     /**
-     * 获取教师职位（仅管理员）
+     * 获取教师职位（需要登录）
      * @param teacherId 教师ID
+     * @param httpRequest HTTP请求对象
      * @return 教师职位信息
      */
     @GetMapping("/position")
@@ -124,15 +125,10 @@ public class TeacherController {
             @RequestParam("teacherId") Long teacherId,
             HttpServletRequest httpRequest) {
         try {
-            // 验证是否为管理员
+            // 验证用户是否已登录
             Claims claims = (Claims) httpRequest.getAttribute("claims");
             if (claims == null) {
                 return Response.error("用户未登录");
-            }
-            
-            Integer currentUserType = (Integer) claims.get("userType");
-            if (currentUserType != 0) { // 0=管理员
-                return Response.error("权限不足，仅管理员可执行此操作");
             }
             
             TeacherPosition position = teacherService.getTeacherPosition(teacherId);

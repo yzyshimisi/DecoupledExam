@@ -1,5 +1,6 @@
 package cn.edu.zjut.backend.dao;
 
+import cn.edu.zjut.backend.dto.ExamPaperQueryDTO;
 import cn.edu.zjut.backend.po.ExamPaper;
 import lombok.Setter;
 import org.apache.commons.logging.Log;
@@ -37,6 +38,20 @@ public class ExamPaperDAO {
         } finally{
         }
     }
+
+    /**
+     * 辅助方法：当 value 不为空时才绑定参数，避免空指针异常
+     * @param query    Hibernate Query 对象
+     * @param paramName 参数名
+     * @param value     要绑定的实际值
+     * @param checkValue 用于判空检查的值（通常就是 value 本身）
+     */
+    private void bindParameterIfNotNull(Query<ExamPaper> query, String paramName, Object value, Object checkValue) {
+        if (checkValue != null) {
+            query.setParameter(paramName, value);
+        }
+    }
+
 
     public void delete(Long paperId) {
         String hql = "delete from ExamPaper where paperId = :paperId";

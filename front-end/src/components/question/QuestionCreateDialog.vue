@@ -6,10 +6,12 @@
         <button class="btn btn-sm btn-circle btn-ghost">✕</button>
       </form>
 
-      <h3 class="font-bold text-xl mb-6">添加新题目</h3>
+      <h3 class="font-bold text-xl mb-6">
+          {{ isEditing ? '编辑题目' : '添加新题目' }}
+      </h3>
 
       <!-- 题型选择下拉框 -->
-      <div class="mb-8">
+      <div v-show="!isLoading" class="mb-8">
         <label for="questionTypeSelect" class="block text-base-content/80 text-base mb-2">
           请选择题型：
         </label>
@@ -30,18 +32,24 @@
       </div>
 
       <!-- 动态渲染题目表单组件 -->
-      <div v-if="selectedType && currentFormComponent" class="border-t border-base-300 pt-6">
+      <div v-show="!isLoading" v-if="selectedType && currentFormComponent" class="border-t border-base-300 pt-6">
         <component
             :is="currentFormComponent"
             :subjectList="subjectList"
+            :initialData="props.modelValue"
             @submit="handleSubmit"
             @cancel="handleCancel"
         />
       </div>
-
       <!-- 默认提示 -->
-      <div v-else class="text-center py-8 text-base-content/70">
+      <div v-show="!isLoading" v-else class="text-center py-8 text-base-content/70">
         <p class="text-base">请选择一种题型以继续</p>
+      </div>
+      <div v-show="isLoading" class="flex gap-2 justify-center h-[300px]">
+        <span class="loading loading-ring loading-xs"></span>
+        <span class="loading loading-ring loading-sm"></span>
+        <span class="loading loading-ring loading-md"></span>
+        <span class="loading loading-ring loading-lg"></span>
       </div>
     </div>
 
@@ -53,8 +61,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineAsyncComponent, onMounted } from 'vue'
-import { getSubjectAPI, addQuestionsAPI } from '../../apis';
+import {ref, computed, defineAsyncComponent, onMounted, watch} from 'vue'
+import {getSubjectAPI, addQuestionsAPI, modifyQuestionsAPI} from '../../apis';
 import { useRequest } from "vue-hooks-plus";
 import { ElNotification } from 'element-plus'
 
@@ -62,13 +70,23 @@ const varemit = defineEmits(["close"])
 
 // 定义 props
 const props = defineProps<{
-  questionTypes: Array<{
-    typeId: string
-    typeName: string
-  }>,
+  questionTypes
+  modelValue?: any // ← 新增：用于传入待编辑的题目（可选）
 }>()
 
-const selectedType = ref<string>('')
+const isLoading = ref(false)
+
+// 判断是否为编辑模式
+const isEditing = computed(() => !!props.modelValue?.id)
+
+// 初始化 selectedType
+const selectedType = ref<string>(
+    props.modelValue?.typeId ? String(props.modelValue.typeId) : ''
+)
+
+watch(()=>props.modelValue, ()=>{
+  selectedType.value = props.modelValue?.typeId ? String(props.modelValue.typeId) : ''
+})
 
 // 🔑 题型ID 到 表单组件的映射（按需加载，提升性能）
 const formComponentMap = {
@@ -88,10 +106,6 @@ const formComponentMap = {
   '14': defineAsyncComponent(() => import('./types/CodingQuestionForm.vue')),
   '15': defineAsyncComponent(() => import('./types/SpeakingQuestionForm.vue')),
   '17': defineAsyncComponent(() => import('./types/PollQuestionForm.vue')),
-  // 'multiple-choice': defineAsyncComponent(() => import('@/components/question/forms/MultipleChoiceForm.vue')),
-  // 'true-false': defineAsyncComponent(() => import('@/components/question/forms/TrueFalseForm.vue')),
-  // 'short-answer': defineAsyncComponent(() => import('@/components/question/forms/ShortAnswerForm.vue')),
-  // 'coding': defineAsyncComponent(() => import('@/components/question/forms/CodingForm.vue')),
   // 可继续扩展...
 }
 
@@ -101,7 +115,7 @@ onMounted(()=>{
   useRequest(() => getSubjectAPI(), {
     onSuccess(res) {
       if (res['code'] === 200) {
-        subjectList.value = res['data']
+        subjectList.value = res['data']['subjects']
       }
     }
   })
@@ -113,14 +127,40 @@ const currentFormComponent = computed(() => {
   return formComponentMap[selectedType.value as keyof typeof formComponentMap] || null
 })
 
+
 const handleSubmit = (req) => {
+  const apiCall = isEditing.value
+      ? modifyQuestion(req) // ← 你需要实现这个 API
+      : addQuestions(req)
+
+}
+
+const modifyQuestion = (req) => {
+  req.id = props.modelValue.id
+  useRequest(()=> modifyQuestionsAPI(req), {
+    onSuccess(res) {
+      if (res['code'] === 200) {
+        ElNotification({title: 'Success', message: "修改成功", type: 'success',})
+        varemit('close')
+      }
+    },
+  })
+}
+
+const addQuestions = (req) => {
   useRequest(()=> addQuestionsAPI(req), {
+    onBefore() {
+      isLoading.value = true
+    },
     onSuccess(res) {
       if (res['code'] === 200) {
         ElNotification({title: 'Success', message: "添加成功", type: 'success',})
         varemit('close')
       }
     },
+    onFinally() {
+      isLoading.value = false
+    }
   })
 }
 

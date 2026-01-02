@@ -98,3 +98,156 @@ export const uploadFaceImageAPI = async (file: File, token: string) => {
     data: formData
   })
 }
+
+// 加入课程接口
+export const joinCourseAPI = async (inviteCode: string, token: string) => {
+  return request("/api/course/join", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    data: {
+      inviteCode: inviteCode
+    }
+  })
+}
+
+// 获取当前用户已加入课程列表
+export const getJoinedCoursesAPI = async (token: string) => {
+  return request('/api/course/my/joined', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+}
+
+// 退出课程接口
+export const quitCourseAPI = async (courseId: number, token: string) => {
+  return request(`/api/course/quit/${courseId}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+}
+
+// 获取教师职位接口
+export interface TeacherPositionInfo {
+  id: number;
+  teacherId: number;
+  role: number; // 0: 任课老师, 1: 教务老师
+}
+
+export const getTeacherPositionAPI = async (teacherId: number, token: string) => {
+  return request(`/api/teacher/position?teacherId=${teacherId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+}
+
+// 学科接口
+export interface Subject {
+  createTime?: string;
+  gradeLevel?: number;
+  sortOrder?: number;
+  status?: number;
+  subjectCode?: string;
+  subjectId?: number;
+  subjectName?: string;
+}
+
+// 创建课程接口
+interface CreateCourseData {
+  courseName: string;
+  subjectId: number;
+  description: string;
+}
+
+export const createCourseAPI = async (data: CreateCourseData, token: string) => {
+  return request('/api/course/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    data: data
+  })
+}
+
+// 获取学科列表接口
+export const getSubjectListAPI = async (token: string) => {
+  return request('/api/subject', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+}
+
+// 获取教师课程列表接口
+export interface TeacherCourse {
+  courseId: number;
+  courseName: string;
+  inviteCode: string;
+  subjectId: number;
+  teacherId: number;
+  description: string;
+  status: string; // '0' 开设中，'1' 已结课
+  createTime: number;
+}
+
+export const getTeacherCoursesAPI = async (token: string) => {
+  return request('/api/course/my', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+}
+
+// 删除课程接口
+export const deleteCourseAPI = async (courseId: number, token: string) => {
+  return request(`/api/course/delete/${courseId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+}
+
+// 修改课程信息接口
+interface UpdateCourseData {
+  courseName?: string;
+  description?: string;
+}
+
+export const updateCourseInfoAPI = async (courseId: number, data: UpdateCourseData, token: string) => {
+  return request(`/api/course/update/${courseId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    data: data
+  })
+}
+
+// 修改课程状态接口
+interface UpdateCourseStatusData {
+  status: string;
+}
+
+export const updateCourseStatusAPI = async (courseId: number, status: number, token: string) => {
+  return request(`/api/course/status/${courseId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    data: { status: status.toString() }
+  })
+}

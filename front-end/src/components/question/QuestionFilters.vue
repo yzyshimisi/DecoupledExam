@@ -156,7 +156,7 @@ onMounted(() => {
   useRequest(() => getSubjectAPI(), {
     onSuccess(res) {
       if (res['code'] === 200) {
-        uniqueSubjects.value = res['data']
+        uniqueSubjects.value = res['data']['subjects']
       }
     }
   })

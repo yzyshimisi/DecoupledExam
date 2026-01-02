@@ -4,12 +4,14 @@ import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.dao.ExamPaperDAO;
 import cn.edu.zjut.backend.dto.ExamGenerationRequest;
 import cn.edu.zjut.backend.dto.ExamPaperDTO;
+import cn.edu.zjut.backend.dto.ExamPaperQueryDTO;
 import cn.edu.zjut.backend.po.ExamPaper;
 import cn.edu.zjut.backend.po.ExamPaperQuestion;
 import cn.edu.zjut.backend.po.ExamPaperQuestionId;
 import cn.edu.zjut.backend.po.Questions;
 import cn.edu.zjut.backend.service.ExamPaperService;
 import cn.edu.zjut.backend.util.Response;
+import cn.edu.zjut.backend.util.UserContext;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class ExamPaperController {
@@ -53,7 +57,7 @@ public class ExamPaperController {
     @ResponseBody
     @LogRecord(module = "试卷管理", action = "查询试卷", targetType = "试卷", logType = LogRecord.LogType.OPERATION)
     public Response<List<ExamPaperDTO>> queryExamPaper(@RequestParam(value="creatorId", required = false) Long creatorId, Model model) {
-        List<ExamPaperDTO> examPaperDTOS = examPaperServ.queryExamPaper(creatorId);
+        List<ExamPaperDTO> examPaperDTOS = examPaperServ.queryExamPaper(UserContext.getUserId());
         return Response.success(examPaperDTOS);
     }
 
@@ -83,7 +87,7 @@ public class ExamPaperController {
         if(examPaperServ.updateExamPaper(examPaper)) {
             return Response.success();
         }else{
-            return Response.error("删除失败");
+            return Response.error("修改失败");
         }
     }
 
@@ -112,8 +116,8 @@ public class ExamPaperController {
     @RequestMapping(value = "/api/examPaper/question", method = RequestMethod.PUT)
     @ResponseBody
     @LogRecord(module = "试卷管理", action = "更新试卷题目", targetType = "试卷题目", logType = LogRecord.LogType.OPERATION)
-    public Response<List<ExamPaperDTO>> updateExamPaperQuestion(@RequestBody(required = false) ExamPaperQuestion examPaperQuestion, Model model) {
-        if(examPaperServ.updateExamPaperQuestion(examPaperQuestion)) {
+    public Response<List<ExamPaperDTO>> updateExamPaperQuestion(@RequestBody(required = false) List<ExamPaperQuestion> examPaperQuestions, Model model) {
+        if(examPaperServ.updateExamPaperQuestion(examPaperQuestions)) {
             return Response.success();
         }else{
             return Response.error("修改试卷题目失败");

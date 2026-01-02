@@ -4,6 +4,7 @@ import cn.edu.zjut.backend.dao.QuestionDAO;
 import cn.edu.zjut.backend.dao.QuestionTagsDAO;
 import cn.edu.zjut.backend.dao.SubjectDAO;
 import cn.edu.zjut.backend.dto.QuestionQueryDTO;
+import cn.edu.zjut.backend.dto.SubjectQueryDTO;
 import cn.edu.zjut.backend.po.*;
 import cn.edu.zjut.backend.util.ChatGLM;
 import cn.edu.zjut.backend.util.ChatGLM_N;
@@ -726,6 +727,16 @@ public class QuestionService {
         return questions;
     }
 
+    public Questions queryQuestion(Long questionId){
+        Session session = getSession();
+        QuestionDAO dao = new QuestionDAO();
+        dao.setSession(session);
+        Questions questions = dao.query(questionId);
+
+        HibernateUtil.closeSession();
+        return questions;
+    }
+
     // 删除题目，支持批量删除
     public boolean deleteQuestion(List<Long> ids){
         Session session=this.getSession();
@@ -756,6 +767,9 @@ public class QuestionService {
     // 修改题目
     public boolean updateQuestion(Questions question){
         question.setUpdatedAt(new Date());
+        question.setCreatorId(UserContext.getUserId());
+
+        bindQuestionRelations(question);
 
         Session session=this.getSession();
         QuestionDAO dao = new QuestionDAO();
@@ -763,9 +777,10 @@ public class QuestionService {
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            if(Objects.equals(question.getCreatorId(), UserContext.getUserId())){
-                dao.update(question);
-            }
+//            if(Objects.equals(question.getCreatorId(), UserContext.getUserId())){
+//                dao.update(question);
+//            }
+            dao.update(question);
             tran.commit();
             return true;
         } catch (Exception e) {
@@ -951,7 +966,7 @@ public class QuestionService {
 
                 String askQuestion = buildPrompt(qContent, qType, retryCount);
                 System.out.println(askQuestion);
-                String res = ChatGLM.inquire(askQuestion);
+                String res = ChatGLM_N.inquire(askQuestion, false);
                 res = removeJsonCodeBlockMarkers(res);
 
                 // 预处理：尝试修复常见的JSON格式问题
@@ -970,7 +985,9 @@ public class QuestionService {
                     // 赋值学科ID
                     Subject subject = null;
                     try{
-                        subject = sdao.query(qSubject);
+                        SubjectQueryDTO subjectQueryDTO = new SubjectQueryDTO();
+                        subjectQueryDTO.setSubjectName(qSubject);
+                        subject = sdao.query(subjectQueryDTO).get(0);
                     }catch (Exception e){
                         System.err.println(e.getMessage());
                     }

@@ -76,7 +76,7 @@
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(question, index) in questions" :key="question.id" class="hover">
+              <tr v-for="(question, index) in questions" :key="question.id" class="hover" @contextmenu.prevent="openMenu($event, question.id)">
                 <!-- 多选框单元格 -->
                 <td v-if="showCheckboxes" class="text-center">
                   <input
@@ -148,19 +148,45 @@
   </div>
   <QuestionCreateDialog
     :questionTypes="questionTypes"
+    :modelValue="questions.find(question => question.id === nowId)"
     @close="close"
   />
   <QuestionImportDialog
     @close="closeQuestionImport"
     @getQuestions="getQuestions(false)"
   />
+  <QuestionDetailDialog
+      v-if="questionTypes.length > 0 && subjectsList.length > 0"
+      v-model="selectedQuestion"
+      :questionTypes="questionTypes"
+      :subjectsList="subjectsList"
+      @save="handleSaveQuestion"
+      @close="()=>{selectedQuestion = null; }"
+  />
+  <QuestionTagDialog
+      v-model="showTagDialog"
+      :tags="currentTags"
+      :questionId="nowId"
+      @save="handleSaveTags"
+  />
+  <!-- 右键菜单 -->
+  <ul
+      class="menu bg-base-300 rounded-box fixed"
+      :class="isShowMenu ? '' : 'invisible'"
+      :style="{left:menuPos.left+'px',top:menuPos.top+'px'}"
+  >
+    <li @click="deleteQuestions([nowId])"><a>删除</a></li>
+    <li @click="modifyQuestions"><a>修改</a></li>
+    <li @click="openQuestionDetail(questions.find(question => question.id === nowId))"><a>查看题目详情</a></li>
+    <li @click="openTagManager"><a>标签管理</a></li>
+  </ul>
 </template>
 
 <script setup lang="ts">
-import {ref, computed, watch, onMounted, nextTick} from 'vue'
-import { QuestionFilters, QuestionCreateDialog, QuestionImportDialog } from "../../components";
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { QuestionFilters, QuestionCreateDialog, QuestionImportDialog, QuestionDetailDialog, QuestionTagDialog } from "../../components";
 import { useRequest } from "vue-hooks-plus";
-import { getQuestionsAPI, getQuestionTypeAPI, getSubjectAPI } from '../../apis'
+import { getQuestionsAPI, getQuestionTypeAPI, getSubjectAPI, deleteQuestionsAPI, getQuestionTagsAPI } from '../../apis'
 
 // 审核状态映射（根据你的实际字段调整）
 const statusMap = {
@@ -185,8 +211,8 @@ const questions = ref<Question[]>([])
 
 const showSidebar = ref(window.innerWidth >= 1024)
 
-const questionTypes = ref()
-const subjectsList = ref()
+const questionTypes = ref([])
+const subjectsList = ref([])
 
 onMounted(()=>{
   useRequest(()=>getQuestionTypeAPI(), {
@@ -197,18 +223,78 @@ onMounted(()=>{
     }
   })
 
-  console.log(questionTypes)
-
   useRequest(()=>getSubjectAPI(), {
     onSuccess(res) {
       if (res['code'] === 200) {
-        subjectsList.value = res['data']
+        subjectsList.value = res['data']['subjects']
       }
     }
   })
 
   getQuestions(false)
 })
+
+// 模拟已有标签（来自 API）
+const currentTags = ref([])
+
+const showTagDialog = ref(false)
+
+const openTagManager = () => {
+  useRequest(()=>getQuestionTagsAPI({questionId: nowId.value}),{
+    onSuccess(res) {
+      if (res['code'] === 200) {
+        currentTags.value = res['data']
+      }
+    }
+  })
+  showTagDialog.value = true
+}
+
+const handleSaveTags = async (tagNames: string[]) => {
+  console.log('要保存的标签:', tagNames)
+  // 调用 API：PATCH /questions/:id/tags { tags: ['多态', '封装'] }
+  // await updateQuestionTags(questionId, tagNames)
+  // 更新本地状态...
+  // showTagDialog.value = false
+}
+
+const selectedQuestion = ref<Question | null>(null)
+
+const openQuestionDetail = (question: Question) => {
+  selectedQuestion.value = question
+}
+
+const handleSaveQuestion = async (updated: Question) => {
+  // 调用 API 更新
+  // await updateQuestionAPI(updated)
+  // 刷新列表
+  // getQuestions(false)
+}
+
+const isShowMenu = ref(false)
+const menuPos = ref({
+  left: 0,
+  top: 0
+})
+
+const nowId = ref(null)
+
+const openMenu = (event, id) => {
+
+  nowId.value = id
+
+  isShowMenu.value = true
+  menuPos.value.left = event.clientX
+  menuPos.value.top = event.clientY
+
+  window.addEventListener('scroll', closeMenu);    // 滚动页面，也要关闭菜单
+  window.addEventListener('click', closeMenu);
+}
+
+const closeMenu = () => {
+  isShowMenu.value = false
+  window.removeEventListener('scroll', closeMenu);
+}
 
 // ========== 筛选状态 ==========
 const filters = ref({
@@ -426,16 +512,34 @@ const formatDate = (isoString: string): string => {
 
 const handleBatchDelete = () => {
   if (selectedIds.value.length === 0) return
-  console.log('批量删除题目 IDs:', selectedIds.value)
-  // 调用 API 删除
-  // 删除成功后可刷新列表，并退出批量模式
-  // exitBatchMode()
+
+  deleteQuestions(selectedIds.value)
+}
+
+const deleteQuestions = (ids: (string | number)[]) => {
+  useRequest(()=>deleteQuestionsAPI(ids),{
+    onSuccess(res){
+      if(res['code']==200){
+        getQuestions(false)
+        alert('删除成功')
+        exitBatchMode()
+      }else{
+        alert('删除失败')
+      }
+    }
+  })
+}
+
+const modifyQuestions = () => {
+  questionCreateDialog.showModal()
 }
 
 const close = () => {
   questionCreateDialog.close()
+  getQuestions(false)
 }
 const closeQuestionImport = () => {
   importQuestionDialog.close()
+  getQuestions(false)
 }
 </script>

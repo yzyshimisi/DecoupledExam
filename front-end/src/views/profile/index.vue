@@ -376,10 +376,10 @@ const goToUserDashboard = () => {
       router.push('/admin');
       break;
     case 1: // 教师
-      router.push('/teacher/question'); // 或者其他教师主页面
+      router.push('/teacher'); // 或者其他教师主页面
       break;
     case 2: // 学生
-      router.push('/'); // 或者其他学生主页面
+      router.push('/student'); // 或者其他学生主页面
       break;
     default:
       router.push('/'); // 默认返回首页
