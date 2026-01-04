@@ -145,6 +145,7 @@ public class FaceRec {
     public R<DetectionResponse> faceQuery(Image image){
         FaceSearchParams params = new FaceSearchParams();
         R<DetectionResponse> res = faceRecModel.search(image, params);
+        System.out.println(res.toString());
         return res;
     }
 

@@ -2,15 +2,21 @@ package cn.edu.zjut.backend.service;
 
 import cn.edu.zjut.backend.dao.*;
 import cn.edu.zjut.backend.po.*;
-import cn.edu.zjut.backend.util.HibernateUtil;
+import cn.edu.zjut.backend.util.*;
+import cn.smartjavaai.common.entity.DetectionResponse;
+import cn.smartjavaai.common.entity.R;
+import com.google.gson.Gson;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 @Service("examServ")
 public class ExamService {
@@ -586,6 +592,141 @@ public class ExamService {
             if (session != null && session.isOpen()) {
                 session.close();
             }
+        }
+    }
+
+    public String verifyFace(String file, Long examId) throws Exception {
+
+        // 判断用户能否参与该考试（是否参加相应课程）
+
+        Session session = HibernateUtil.getSession();
+        ExamCourseDAO examCourseDAO = new ExamCourseDAO();
+        StudentCourseDAO studentCourseDAO = new StudentCourseDAO();
+        ExamDAO examDAO = new ExamDAO();
+        ExamSettingDAO examSettingDAO = new ExamSettingDAO();
+        examCourseDAO.setSession(session);
+        studentCourseDAO.setSession(session);
+        examDAO.setSession(session);
+
+        try{
+            List<Long> coursesIds = examCourseDAO.getCoursesByExamId(examId);   // 考试包含的课程ID
+
+            boolean flag = false;
+
+            for(Long courseId : coursesIds){
+                List<Long> studentIds = studentCourseDAO.getStudentsByCourseId(courseId);
+
+                for(Long studentId : studentIds){
+                    if(studentId == UserContext.getUserId()){
+                        flag = true;
+                        break;
+                    }
+                }
+
+                if(flag){
+                    break;
+                }
+            }
+
+            // 合法的
+            if(flag){
+
+                Exam exam = examDAO.getById(examId);
+                ExamSetting examSetting = examSettingDAO.getByExamId(session, examId);
+
+                // 是否允许迟入
+                if(String.valueOf(examSetting.getAllowLateEnter()).equals("0") && exam.getStartTime().before(new Date())){
+                    throw new Exception("迟到，不允许进入");
+                }
+
+                FaceRec faceRec = new FaceRec();
+
+                R<DetectionResponse> res = faceRec.faceRecognition(file);
+
+                if(res != null && res.getCode() == 0 && res.getMessage().equals("成功") && res.getData()!=null){
+
+                    Gson gson = new Gson();
+                    String metadata = res.getData().getDetectionInfoList().get(0).getFaceInfo().getFaceSearchResults().get(0).getMetadata();
+                    Map Metadata = gson.fromJson(metadata, Map.class);
+
+                    Long id = ((Number) Metadata.get("id")).longValue();
+
+                    if(id.equals(UserContext.getUserId())){     // 验证人脸识别与登录的是同一个用户
+                        Long duration = (exam.getEndTime().getTime() - exam.getStartTime().getTime()) / 1000 + 20 ;
+                        Jwt jwt = new Jwt();
+                        HibernateUtil.closeSession();
+                        return jwt.generateExamToken(UserContext.getUserId(), examId, duration);
+                    }else{
+                        throw new Exception("人脸与当前登录用户不匹配");
+                    }
+                }else{
+                    throw new Exception("人脸识别失败");
+                }
+            }else{
+                throw new Exception("未参与相关的考试班级");
+            }
+        }catch (Exception e){
+            throw e;
+        }finally {
+            HibernateUtil.closeSession();
+        }
+    }
+
+    public int handleViolation() throws Exception {
+        incrementViolationCount(ExamContext.getStudentId(), ExamContext.getExamId());
+        int cnt = getViolationCount(ExamContext.getStudentId(), ExamContext.getExamId());
+
+        if(cnt>=3){
+            Session session = HibernateUtil.getSession();
+            ExamRecordDAO examRecordDAO = new ExamRecordDAO();
+
+            Transaction tran = null;
+
+            try {
+                tran = session.beginTransaction();
+
+                List<ExamRecord> examRecords = examRecordDAO.getRecordsByExamId(session, ExamContext.getExamId());
+                for(ExamRecord examRecord : examRecords){
+                    if(examRecord.getStudentId().equals(ExamContext.getStudentId())){
+                        // 将对应学生的考试记录设置为已交，分数都设置为0分
+                        examRecord.setStatus("1");
+                        examRecord.setObjectiveScore(BigDecimal.valueOf(0));
+                        examRecord.setSubjectiveScore(BigDecimal.valueOf(0));
+                        examRecord.setTotalScore(BigDecimal.valueOf(0));
+                    }
+                }
+
+                tran.commit();
+            } catch (Exception e) {
+                System.out.println("save examRecord failed "+ e);
+                if (tran != null) {
+                    tran.rollback();
+                }
+                throw new Exception("数据库更新失败");
+            } finally {
+                HibernateUtil.closeSession();
+            }
+        }
+
+        return cnt;
+    }
+
+    public void incrementViolationCount(Long studentId, Long examId) {
+        try (Jedis jedis = JedisConnectionFactory.getJedis()) {
+            String key = "exam:violation:" + examId + ":" + studentId;
+            // 原子自增
+            long newCount = jedis.incr(key);
+            // 设置过期时间（比如考试结束后3小时自动清理）
+            jedis.expire(key, 10800); // 3小时
+            System.out.println("学生 " + studentId + " 违规次数更新为: " + newCount);
+        }
+    }
+
+    public int getViolationCount(Long studentId, Long examId) {
+        try (Jedis jedis = JedisConnectionFactory.getJedis()) {
+            String key = "exam:violation:" + examId + ":" + studentId;
+            String countStr = jedis.get(key);
+            return countStr == null ? 0 : Integer.parseInt(countStr);
         }
     }
 }

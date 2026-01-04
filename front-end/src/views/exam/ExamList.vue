@@ -442,7 +442,12 @@ const enterExam = (exam: any) => {
 const viewExam = (exam: any) => {
   // 使用多种可能的ID字段来确保正确跳转
   const examId = exam.id || exam.exam_id || exam.examId || exam.examid;
-  router.push(`/exam/${examId}`);
+
+  if(userType === '1'){
+    router.push(`/exam/${examId}`);
+  }else if(userType === '2'){
+    router.push(`/student/exam-page/${examId}`);
+  }
 };
 
 const editExam = (exam: any) => {

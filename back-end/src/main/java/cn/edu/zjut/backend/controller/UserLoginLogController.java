@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/login-logs")
+@RequestMapping("/api/admin/login-logs")
 public class UserLoginLogController {
 
     @Autowired

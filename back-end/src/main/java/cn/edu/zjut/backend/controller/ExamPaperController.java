@@ -95,6 +95,25 @@ public class ExamPaperController {
         return Response.success(examPaperDTOS);
     }
 
+    // 学生获取考试的试卷（验证过滤）
+    @RequestMapping(value = "/api/exam-paper/{examId}", method = RequestMethod.GET)
+    @ResponseBody
+    @LogRecord(module = "试卷管理", action = "查询试卷", targetType = "试卷", logType = LogRecord.LogType.OPERATION)
+    public Response<ExamPaperDTO> queryExamPaper(@PathVariable Long examId) {
+        try{
+            ExamPaperDTO examPaperDTO = examPaperServ.queryExamPaperByExamId(examId);
+
+            if(examPaperDTO==null){
+                return Response.error("试卷获取失败");
+            }else{
+                return Response.success(examPaperDTO);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return Response.error(e.getMessage());
+        }
+    }
+
     @RequestMapping(value = "/api/examPaper", method = RequestMethod.DELETE)
     @ResponseBody
     @LogRecord(module = "试卷管理", action = "删除试卷", targetType = "试卷", logType = LogRecord.LogType.OPERATION)

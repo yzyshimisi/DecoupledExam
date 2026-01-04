@@ -1,6 +1,5 @@
 package cn.edu.zjut.backend.util;
 
-
 import io.jsonwebtoken.Claims;
 
 public class UserContext {
@@ -8,6 +7,7 @@ public class UserContext {
     private static final ThreadLocal<Claims> CLAIMS_HOLDER = new ThreadLocal<>();
 
     public static void setClaims(Claims claims) {
+        clear();
         CLAIMS_HOLDER.set(claims);
     }
 

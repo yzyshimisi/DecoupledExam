@@ -51,7 +51,12 @@ export const getExamDetailAPI = (examId: number) => {
   return request<{ code: number; data: any; msg: string }>(
     `/api/exam/${examId}`,
     {
-      method: "GET",
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+            "Exam-Token": localStorage.getItem("examToken")
+        },
     }
   );
 };

@@ -5,13 +5,11 @@ import cn.edu.zjut.backend.dto.ExamGenerationRequest;
 import cn.edu.zjut.backend.dto.ExamPaperDTO;
 import cn.edu.zjut.backend.dto.QuestionQueryDTO;
 import cn.edu.zjut.backend.po.*;
-import cn.edu.zjut.backend.util.ChatGLM_N;
-import cn.edu.zjut.backend.util.HibernateUtil;
-import cn.edu.zjut.backend.util.JedisConnectionFactory;
-import cn.edu.zjut.backend.util.UserContext;
+import cn.edu.zjut.backend.util.*;
 import cn.hutool.core.bean.BeanUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.jsonwebtoken.Claims;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
@@ -234,6 +232,42 @@ public class ExamPaperService {
         }
 
         return examPaperDTOList;
+    }
+
+    public ExamPaperDTO queryExamPaperByExamId(Long examId) throws Exception {
+
+        Session session = this.getSession();
+        ExamDAO examDAO = new ExamDAO();
+        ExamSettingDAO examSettingDAO = new ExamSettingDAO();
+        ExamPaperDAO examPaperDAO = new ExamPaperDAO();
+        ExamPaperQuestionDAO examPaperQuestionDAO = new ExamPaperQuestionDAO();
+        examDAO.setSession(session);
+        examPaperDAO.setSession(session);
+        examPaperQuestionDAO.setSession(session);
+
+        Exam exam = examDAO.getById(examId);    // 获取考试
+        ExamSetting examSetting = examSettingDAO.getByExamId(session, examId);    // 获取考试设置
+        if(exam == null || examSetting==null) throw new Exception("考试获取失败");
+
+        // 过滤逻辑
+
+        ExamPaper examPaper = examPaperDAO.queryById(exam.getPaperId());
+
+        ExamPaperDTO examPaperDTO = new ExamPaperDTO(); // 试卷DTO
+        BeanUtil.copyProperties(examPaper, examPaperDTO);
+
+        List<ExamPaperQuestion> examPaperQuestions = examPaperQuestionDAO.query(examPaper.getPaperId());
+
+        for(ExamPaperQuestion examPaperQuestion : examPaperQuestions){
+            ExamPaperDTO.QuestionInfoDTO questionInfoDTO = new ExamPaperDTO.QuestionInfoDTO();
+            questionInfoDTO.setQuestionId(examPaperQuestion.getId().getQuestionId());   // 提取题目的ID
+            BeanUtil.copyProperties(examPaperQuestion, questionInfoDTO);
+
+            examPaperDTO.getQuestions().add(questionInfoDTO);
+        }
+
+        HibernateUtil.closeSession();
+        return examPaperDTO;
     }
 
     // 删除试卷

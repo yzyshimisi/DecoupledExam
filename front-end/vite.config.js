@@ -15,7 +15,7 @@ export default defineConfig({
       '/api': {  // 获取请求中带 /api 的请求
         target: 'http://127.0.0.1',  // 后台服务器的域名
         changeOrigin: true,   // 修改源
-      }
+      },
     }
   }
 })

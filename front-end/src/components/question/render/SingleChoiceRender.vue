@@ -65,6 +65,8 @@ watch(() => props.modelValue, (val) => {
 })
 
 onMounted(() => {
+  console.log("RenderOnMounted")
+
   try {
     const getComponentContent = (type: string) => {
       const comp = props.question.questionComponents.find((c: any) => c.componentType === type)

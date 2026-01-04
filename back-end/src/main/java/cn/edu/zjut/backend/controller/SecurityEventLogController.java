@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/security-events")
+@RequestMapping("/api/admin/security-events")
 public class SecurityEventLogController {
 
     @Autowired

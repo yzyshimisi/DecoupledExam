@@ -1,15 +1,14 @@
 package cn.edu.zjut.backend.controller;
 
-import cn.edu.zjut.backend.po.Exam;
-import cn.edu.zjut.backend.po.ExamSetting;
-import cn.edu.zjut.backend.po.ExamRecord;
-import cn.edu.zjut.backend.po.StudentVO;
-import cn.edu.zjut.backend.po.Course;
-import cn.edu.zjut.backend.po.ExamNotification;
+import cn.edu.zjut.backend.annotation.LogRecord;
+import cn.edu.zjut.backend.dao.ExamCourseDAO;
+import cn.edu.zjut.backend.dto.ExamPaperDTO;
+import cn.edu.zjut.backend.po.*;
 import cn.edu.zjut.backend.service.ExamService;
 import cn.edu.zjut.backend.service.ExamSettingService;
 import cn.edu.zjut.backend.service.CourseService;
 import cn.edu.zjut.backend.service.ExamNotificationService;
+import cn.edu.zjut.backend.util.ExamContext;
 import cn.edu.zjut.backend.util.Response;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 import cn.edu.zjut.backend.dto.ExamStudentDTO;
 import org.springframework.http.ResponseEntity;
@@ -941,6 +941,63 @@ public class ExamController {
         } catch (Exception e) {
             e.printStackTrace();
             return Response.error("初始化考试通知失败：" + e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/{examId}/verify-face", method = RequestMethod.POST)
+    @ResponseBody
+    public Response<String> verifyFace(@RequestBody Map<String, Object> loginRequest, @PathVariable Long examId) {
+
+        try{
+            if(loginRequest.get("video")==null){
+                return Response.error("参数禁止为空");
+            }
+
+            String videoBase64 = loginRequest.get("video").toString();
+            if(videoBase64==null || videoBase64.isEmpty()){
+                return Response.error("参数禁止为空");
+            }
+
+            String token = examService.verifyFace(videoBase64, examId);
+
+            if(token != null && !token.isEmpty()){
+                return Response.success(token);
+            }else{
+                return Response.error("验证失败");
+            }
+        }catch (Exception e){
+            return Response.error(e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/{examId}/exam-settings", method = RequestMethod.GET)
+    @ResponseBody
+    public Response<ExamSetting> getExamSettings(@PathVariable Long examId) {
+
+        try{
+            ExamSetting examSetting = examSettingService.getSettingByExamId(examId);
+
+            if(examSetting==null){
+                return Response.error("获取失败");
+            }else{
+                return Response.success(examSetting);
+            }
+
+        }catch (Exception e){
+            return Response.error(e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/violation", method = RequestMethod.GET)
+    @ResponseBody
+    public Response<Integer> handleViolation() {
+
+        try{
+            int cnt = examService.handleViolation();
+            return Response.success(cnt);
+
+        }catch (Exception e){
+            return Response.error(e.getMessage());
         }
     }
 

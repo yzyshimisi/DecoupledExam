@@ -1,6 +1,6 @@
 <template>
   <div data-theme="cupcake" class="flex flex-col justify-center items-center">
-    <Navbar></Navbar>
+    <Navbar v-if="!hideNavbar"></Navbar>
     <div class="min-h-screen w-screen">
       <router-view />
     </div>
@@ -11,12 +11,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Navbar, Footer } from './components';
 import { useMainStore } from "./stores";
-import useLoginStore from "./stores/service/loginStore";
+import {useRoute} from "vue-router";
 
-const isLogin = ref<boolean>(useLoginStore().loginSession)
+const isLogin = ref<boolean>(useMainStore().useLoginStore().loginSession)
+
+const route = useRoute()
+
+const hideNavbar = computed(() => {
+
+  return route.path.startsWith('/student/exam-page/')
+})
+
 </script>
 
 <style scoped>

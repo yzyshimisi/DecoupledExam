@@ -24,6 +24,9 @@
       <li><a href="/student/notifications">考试通知</a></li>
       <li><a href="/student/courses/join">加入课程</a></li>
     </ul>
+    <ul v-if="userType=='0'" class="menu menu-horizontal px-1 text-base">
+      <li><router-link to="/admin/logs">日志管理</router-link></li>
+    </ul>
   </div>
   <div v-if="userType" class="dropdown dropdown-end">
     <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">

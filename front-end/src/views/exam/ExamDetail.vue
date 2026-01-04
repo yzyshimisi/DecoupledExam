@@ -70,8 +70,6 @@
               </div>
             </div>
 
-
-
             <div v-if="exam?.description" class="flex flex-col">
               <p class="text-sm text-base-content/60">考试说明</p>
               <p class="text-sm text-base-content/80">{{ exam.description }}</p>

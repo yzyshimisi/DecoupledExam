@@ -16,7 +16,7 @@ axiosInstance.interceptors.response.use(
     error => {
         // 获取错误状态码
         if (error.response) {
-            switch (error.response.status) {
+            switch (error.response.code) {
                 case 401:
                     // 这里是关键：401 代表未授权（Token 无效/过期）
                     handleTokenInvalid()
@@ -51,7 +51,7 @@ axiosInstance.interceptors.response.use(
   },
   error => {
     console.error('API请求错误:', error);
-    if (error.response?.status === 401) {
+    if (error.response?.code === 401) {
       // 如果是认证错误，跳转到登录页面
       localStorage.removeItem('token');
       localStorage.removeItem('userType');
