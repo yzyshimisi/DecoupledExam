@@ -112,7 +112,10 @@
       </div>
     </div>
   </div>
-  <CameraRecorder @loginFace="loginFace"></CameraRecorder>
+  <CameraRecorder
+      :isLoading="isLoading"
+      @loginFace="loginFace"
+  />
 </template>
 
 <script setup lang="ts">
@@ -173,8 +176,12 @@ const handleLogin = () => {
 
   useRequest(()=>loginAPI(loginForm),{
     onSuccess(res){
+      console.log(res)
       if(res['code']==200){
         let token = res['data']
+
+        if(token==null || token=='') return
+
         const decoded = jwtDecode(token);
         localStorage.setItem('token', token)
         localStorage.setItem('userType', decoded['userType'])
@@ -208,12 +215,43 @@ const handleLogin = () => {
 
 const loginFace = (videoBase64:string) => {
   useRequest(()=>loginFaceAPI({"video":videoBase64}), {
+
+    onBefore(){
+      isLoading.value = true
+    },
+
     onSuccess(res){
       if(res['code']==200){
-        ElNotification({title: 'Success', message: "登录成功", type: 'success',})
+
+        cameraRecorderDia.close()
+
+        let token = res['data']
+
+        if(token==null || token=='') return
+
+        const decoded = jwtDecode(token);
+        localStorage.setItem('token', token)
+        localStorage.setItem('userType', decoded['userType'])
+        useMainStore().useLoginStore().setLogin(true)
+        router.push('/admin/teacher/register')
+        switch (decoded['userType']){
+          case 0:
+            router.push('/admin').then(()=>{window.location.reload();})
+            break
+          case 1:
+            router.push('/teacher').then(()=>{window.location.reload();})
+            break
+          case 2:
+            router.push('/student').then(()=>{window.location.reload();})
+            break
+        }
       }else{
         ElNotification({title: 'Warning', message: res['msg'], type: 'warning',})
       }
+    },
+
+    onFinally(){
+      isLoading.value = false
     }
   })
 }

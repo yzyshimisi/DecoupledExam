@@ -7,6 +7,7 @@ import cn.edu.zjut.backend.dto.QuestionQueryDTO;
 import cn.edu.zjut.backend.po.*;
 import cn.edu.zjut.backend.util.ChatGLM_N;
 import cn.edu.zjut.backend.util.HibernateUtil;
+import cn.edu.zjut.backend.util.JedisConnectionFactory;
 import cn.edu.zjut.backend.util.UserContext;
 import cn.hutool.core.bean.BeanUtil;
 import com.google.gson.Gson;
@@ -14,6 +15,7 @@ import com.google.gson.reflect.TypeToken;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class ExamPaperService {
 
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final String TASK_PREFIX = "task:";
 
     public Session getSession() {
         return HibernateUtil.getSession();
@@ -78,8 +81,10 @@ public class ExamPaperService {
     }
 
     // 智能组卷
-    public boolean generateExamPaper(ExamGenerationRequest examGenerationRequest) {
+    public boolean generateExamPaperAsync(ExamGenerationRequest examGenerationRequest, String taskId) {
 //        exportQuestionTagsToCsv("C:\\Users\\31986\\Desktop\\questionTags.csv");
+
+        updateTaskStatus(taskId, "running", 10, "开始获取题目...");   // 记录任务进度
 
         Session session = this.getSession();
         QuestionDAO dao = new QuestionDAO();
@@ -97,9 +102,12 @@ public class ExamPaperService {
             ExamPaper examPaper = new ExamPaper();
             BeanUtil.copyProperties(examGenerationRequest, examPaper);
             examPaper.setComposeType("2");
+            System.out.println(UserContext.getUserId());
             examPaper.setCreatorId(UserContext.getUserId());
 
             examPaperDAO.add(examPaper);
+
+            updateTaskStatus(taskId, "running", 25, "试卷框架已创建"); // 记录进度
 
             List<ExamGenerationRequest.QuestionTypeRequirement> questionTypeRequirements = examGenerationRequest.getQuestionTypes();
 
@@ -108,8 +116,17 @@ public class ExamPaperService {
             questionQueryDTO.setSelectedSubjects(List.of(examGenerationRequest.getSubjectId()));
             List<Questions> questions = dao.query(questionQueryDTO);
 
+            updateTaskStatus(taskId, "running", 40, "共加载 " + questions.size() + " 道备选题");   // 记录进度
+
             // 遍历每一个题型需求
-            for (ExamGenerationRequest.QuestionTypeRequirement questionTypeRequirement : questionTypeRequirements) {
+            int totalTypes = questionTypeRequirements.size();
+            for(int i = 0; i < totalTypes; i++) {
+                ExamGenerationRequest.QuestionTypeRequirement questionTypeRequirement = questionTypeRequirements.get(i);
+
+                // 动态计算进度：从 40% 到 90%
+                int progress = 40 + (int) Math.ceil(50.0 * (i + 1) / totalTypes);
+                updateTaskStatus(taskId, "running", progress, "正在处理题型: " + questionTypeRequirement.getTypeId());
+
                 // 过滤指定题型的Questions对象
                 List<Questions> questions1  = questions.stream()
                         .filter(question -> questionTypeRequirement.getTypeId().equals(question.getTypeId())) // 筛选条件
@@ -134,6 +151,9 @@ public class ExamPaperService {
                     for(Questions question : l){
                         ids.add(question.getId());
                     }
+
+                    updateTaskStatus(taskId, "running", progress, "题型 " + questionTypeRequirement.getTypeId() + " 候选不足，已随机补充");
+
                 }else{
                     StringBuilder stringBuilder = new StringBuilder();
                     for (Questions question : candidateQue) {
@@ -144,6 +164,9 @@ public class ExamPaperService {
     //            System.out.println("================================\n" + prompt + "================================\n");
                     String res = ChatGLM_N.inquire(prompt, false);
                     ids = gson.fromJson(res, new TypeToken<List<Long>>() {}.getType());
+
+                    updateTaskStatus(taskId, "running", progress, "题型 " + questionTypeRequirement.getTypeId() + " 已通过大模型选出题目");
+
                 }
 
                 // 遍历每一道题目，与试卷建立关联，插入数据库
@@ -163,12 +186,14 @@ public class ExamPaperService {
             }
 
             tran.commit();
+            updateTaskStatus(taskId, "completed", 100, "试卷生成成功！", examPaper.getPaperId());
             return true;
         } catch (Exception e) {
             System.out.println("save examPaper failed "+ e);
             if (tran != null) {
                 tran.rollback();
             }
+            updateTaskStatus(taskId, "failed", 0, "组卷失败: " + e.getMessage());
             return false;
         } finally {
             HibernateUtil.closeSession();
@@ -238,6 +263,7 @@ public class ExamPaperService {
     // 修改试卷
     public boolean updateExamPaper(ExamPaper examPaper) {
         examPaper.setUpdatedAt(new Date());
+        examPaper.setCreatorId(UserContext.getUserId());
 
         Session session = this.getSession();
         ExamPaperDAO dao = new ExamPaperDAO();
@@ -315,18 +341,57 @@ public class ExamPaperService {
     }
 
     // 修改试卷题目
-    public boolean updateExamPaperQuestion(ExamPaperQuestion examPaperQuestion) {
+    public boolean updateExamPaperQuestion(List<ExamPaperQuestion> examPaperQuestions) {
         Session session = this.getSession();
         ExamPaperQuestionDAO dao = new ExamPaperQuestionDAO();
         dao.setSession(session);
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            dao.update(examPaperQuestion);
+            for(ExamPaperQuestion examPaperQuestion : examPaperQuestions){
+                dao.update(examPaperQuestion);
+            }
             tran.commit();
             return true;
         } catch (Exception e) {
             System.out.println("update examPaperQuestion failed "+ e);
+            if (tran != null) {
+                tran.rollback();
+            }
+            return false;
+        } finally {
+            HibernateUtil.closeSession();
+        }
+    }
+
+    public boolean modifySealedStatus(List<Long> paperIds){
+        Session session = this.getSession();
+        ExamPaperDAO dao = new ExamPaperDAO();
+        dao.setSession(session);
+        Transaction tran = null;
+        try {
+            tran = session.beginTransaction();
+
+            for(Long paperId : paperIds){
+                ExamPaper examPaper = dao.queryById(paperId);
+                if(examPaper != null){
+                    String isSealed = examPaper.getIsSealed();
+                    if (isSealed.equals("0")) {
+                        examPaper.setIsSealed("1");
+                    } else {
+                        examPaper.setIsSealed("0");
+                    }
+
+                    examPaper.setUpdatedAt(new Date());
+
+                    dao.update(examPaper);
+                }
+            }
+
+            tran.commit();
+            return true;
+        } catch (Exception e) {
+            System.out.println("update examPaper failed "+ e);
             if (tran != null) {
                 tran.rollback();
             }
@@ -360,7 +425,7 @@ public class ExamPaperService {
         return available.subList(0, actualCount);
     }
 
-    // 用户输入提取标签（大模型）
+    // 从用户输入中提取标签（大模型）
     private String extractTags(
             ExamGenerationRequest.QuestionTypeRequirement questionTypeRequirement,
             List<Questions> questions){
@@ -535,6 +600,38 @@ public class ExamPaperService {
                 questionList,
                 requiredCount
         );
+    }
+
+    // 更新任务状态（Redis）
+    private void updateTaskStatus(String taskId, String status, int progress, String message) {
+        updateTaskStatus(taskId, status, progress, message, null);
+    }
+
+    private void updateTaskStatus(String taskId, String status, int progress, String message, Long paperId) {
+        try (Jedis jedis = JedisConnectionFactory.getJedis()) {
+            String key = TASK_PREFIX + taskId;
+            jedis.hset(key, "status", status);
+            jedis.hset(key, "progress", String.valueOf(progress));
+            jedis.hset(key, "message", message);
+            jedis.hset(key, "updateTime", dateFormatter.format(new Date()));
+            if (paperId != null) {
+                jedis.hset(key, "paperId", String.valueOf(paperId));
+            }
+            jedis.expire(key, 3600); // 刷新过期时间
+        }
+    }
+
+    // 查询任务进度（Redis）
+    public Map<String, String> getGenerateProgress(String taskId) {
+        try (Jedis jedis = JedisConnectionFactory.getJedis()) {
+            String key = TASK_PREFIX + taskId;
+            Map<String, String> hash = jedis.hgetAll(key);
+            if (hash.isEmpty()) {
+                hash.put("status", "not_found");
+                hash.put("message", "任务不存在或已过期");
+            }
+            return hash;
+        }
     }
 
     // 将候选题目转为紧凑格式（节省 token，提升模型注意力）

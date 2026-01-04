@@ -1,4 +1,4 @@
-import { request } from '../axios';
+import { request } from '../../axios';
 
 const importQuestionsAPI = async (data:{
     file: string

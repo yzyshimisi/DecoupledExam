@@ -15,13 +15,13 @@
           </div>
 
           <div class="form-control flex flex-row">
-            <label class="label text-gray-600 text-base">难度：</label>
+            <label class="label text-gray-600 text-base whitespace-nowrap">难度：</label>
             <div class="flex items-center space-x-2">
               <input
                   type="range"
                   min="1"
                   max="5"
-                  class="range range-xs w-96"
+                  class="range range-xs w-[23vw]"
                   :value="modelValue.maxDifficulty"
                   @input="update('maxDifficulty', Number(($event.target as HTMLInputElement).value))"
               />
@@ -156,7 +156,7 @@ onMounted(() => {
   useRequest(() => getSubjectAPI(), {
     onSuccess(res) {
       if (res['code'] === 200) {
-        uniqueSubjects.value = res['data']
+        uniqueSubjects.value = res['data']['subjects']
       }
     }
   })

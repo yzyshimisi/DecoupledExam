@@ -41,10 +41,10 @@ public class ExamController {
     @Autowired
     @Qualifier("examSettingServ")
     private ExamSettingService examSettingService;
-    
+
     @Autowired
     private CourseService courseService;
-    
+
     @Autowired
     private ExamNotificationService examNotificationService;
 
@@ -87,15 +87,15 @@ public class ExamController {
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
-        
+
         // 权限检查：只有教师和管理员可以创建考试
         if (currentUserType != 0 && currentUserType != 1) { // 0=管理员, 1=教师
             return Response.error("权限不足，只有教师和管理员可以创建考试");
         }
-        
+
         // 如果是教师，确保创建的考试属于当前教师
         if (currentUserType == 1) { // 教师
             req.setTeacherId(currentUserId);
@@ -209,10 +209,10 @@ public class ExamController {
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
-        
+
         // 权限检查：教务老师可以查看所有考试，任课老师只能查看自己创建的考试，管理员可以查看所有考试
         if (currentUserType == 1) { // 教师
             if (examService.isAcademicAffairsTeacher(currentUserId)) {
@@ -246,7 +246,7 @@ public class ExamController {
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
 
@@ -283,7 +283,7 @@ public class ExamController {
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
 
@@ -330,14 +330,14 @@ public class ExamController {
      */
     @PostMapping("/{examId}/update")
     public Response<Boolean> updateExamWithPost(@PathVariable("examId") Long examId,
-                                             @RequestBody ExamUpdateReq req,
-                                             HttpServletRequest httpRequest) {
+                                                @RequestBody ExamUpdateReq req,
+                                                HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
 
@@ -409,7 +409,7 @@ public class ExamController {
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
 
@@ -443,14 +443,14 @@ public class ExamController {
      */
     @PostMapping("/{examId}/students")
     public Response<Boolean> addStudentsToExam(@PathVariable("examId") Long examId,
-                                          @RequestBody List<Long> studentIds,
-                                          HttpServletRequest httpRequest) {
+                                               @RequestBody List<Long> studentIds,
+                                               HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
 
@@ -484,14 +484,14 @@ public class ExamController {
      */
     @DeleteMapping("/{examId}/students")
     public Response<Boolean> removeStudentsFromExam(@PathVariable("examId") Long examId,
-                                               @RequestBody List<Long> studentIds,
-                                               HttpServletRequest httpRequest) {
+                                                    @RequestBody List<Long> studentIds,
+                                                    HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
 
@@ -529,7 +529,7 @@ public class ExamController {
         if (claims == null) {
             return Response.error("用户未登录");
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
 
@@ -567,7 +567,7 @@ public class ExamController {
         if (claims == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        
+
         Long currentUserId = ((Number) claims.get("id")).longValue();
         Integer currentUserType = (Integer) claims.get("userType");
 
@@ -625,8 +625,8 @@ public class ExamController {
      */
     @PostMapping("/{examId}/publish")
     public Response<Boolean> publishExamToCourses(@PathVariable("examId") Long examId,
-                                                 @RequestBody List<Long> courseIds,
-                                                 HttpServletRequest httpRequest) {
+                                                  @RequestBody List<Long> courseIds,
+                                                  HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -675,8 +675,8 @@ public class ExamController {
      */
     @PostMapping("/{examId}/unpublish")
     public Response<Boolean> removeExamFromCourses(@PathVariable("examId") Long examId,
-                                                  @RequestBody List<Long> courseIds,
-                                                  HttpServletRequest httpRequest) {
+                                                   @RequestBody List<Long> courseIds,
+                                                   HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -724,7 +724,7 @@ public class ExamController {
      */
     @GetMapping("/{examId}/courses")
     public Response<List<Long>> getPublishedCourses(@PathVariable("examId") Long examId,
-                                                   HttpServletRequest httpRequest) {
+                                                    HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -772,7 +772,7 @@ public class ExamController {
      */
     @GetMapping("/course/{courseId}/exams")
     public Response<List<Long>> getExamsByCourse(@PathVariable("courseId") Long courseId,
-                                                HttpServletRequest httpRequest) {
+                                                 HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -806,7 +806,7 @@ public class ExamController {
             return Response.error("查询课程中的考试失败：" + e.getMessage());
         }
     }
-    
+
     /**
      * 15. 获取学生自己的考试列表接口
      * 用户类型: 学生
@@ -830,7 +830,7 @@ public class ExamController {
             if (currentUserType != 2) { // 2=学生
                 return Response.error("权限不足，只有学生可以查看自己的考试");
             }
-            
+
             // 获取学生参加的考试列表
             List<Exam> exams = examService.getExamsByStudentId(currentUserId);
             return Response.success(exams);
@@ -839,7 +839,7 @@ public class ExamController {
             return Response.error("查询学生考试列表失败：" + e.getMessage());
         }
     }
-    
+
     /**
      * 16. 获取学生自己的考试通知列表接口
      * 用户类型: 学生
@@ -863,7 +863,7 @@ public class ExamController {
             if (currentUserType != 2) { // 2=学生
                 return Response.error("权限不足，只有学生可以查看自己的通知");
             }
-            
+
             // 获取学生的通知列表
             List<ExamNotification> notifications = examNotificationService.getNotificationsByStudentId(currentUserId);
             return Response.success(notifications);
@@ -872,7 +872,7 @@ public class ExamController {
             return Response.error("查询学生通知列表失败：" + e.getMessage());
         }
     }
-    
+
     /**
      * 17. 获取学生特定考试的通知接口
      * 用户类型: 学生
@@ -882,7 +882,7 @@ public class ExamController {
      */
     @GetMapping("/student/notifications/exam/{examId}")
     public Response<List<ExamNotification>> getNotificationsByStudentAndExam(@PathVariable("examId") Long examId,
-                                                                           HttpServletRequest httpRequest) {
+                                                                             HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -897,7 +897,7 @@ public class ExamController {
             if (currentUserType != 2) { // 2=学生
                 return Response.error("权限不足，只有学生可以查看自己的通知");
             }
-            
+
             // 获取学生特定考试的通知列表
             List<ExamNotification> notifications = examNotificationService.getNotificationsByStudentIdAndExamId(currentUserId, examId);
             return Response.success(notifications);
@@ -906,7 +906,7 @@ public class ExamController {
             return Response.error("查询学生考试通知失败：" + e.getMessage());
         }
     }
-    
+
     /**
      * 18. 为所有现有考试创建通知接口（管理员专用）
      * 用户类型: 管理员
@@ -930,7 +930,7 @@ public class ExamController {
             if (currentUserType != 0) { // 0=管理员
                 return Response.error("权限不足，只有管理员可以执行此操作");
             }
-            
+
             // 为所有现有考试创建通知
             int processedCount = examService.createNotificationsForAllExistingExams();
             Response<Integer> response = new Response<>();

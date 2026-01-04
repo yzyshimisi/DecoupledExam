@@ -19,16 +19,16 @@
         <div class="p-6 space-y-6 text-base w-3/4">
           <!-- 操作区域 -->
           <div class="flex flex-wrap gap-3 items-center">
-            <button class="btn btn-primary" onclick="questionCreateDialog.showModal()">
+            <button v-if="!isComponent" class="btn btn-primary" onclick="questionCreateDialog.showModal()">
               创建题目
             </button>
 
-            <button class="btn btn-accent" onclick="importQuestionDialog.showModal()">
+            <button v-if="!isComponent" class="btn btn-accent" onclick="importQuestionDialog.showModal()">
               导入题目
             </button>
 
             <button
-                v-if="!showCheckboxes"
+                v-if="!showCheckboxes && !isComponent"
                 class="btn btn-secondary"
                 @click="enterBatchMode"
             >
@@ -38,16 +38,24 @@
             <div v-else class="flex items-center gap-3">
               <span class="text-sm">已选 {{ selectedIds.length }} 项</span>
               <button class="btn btn-outline btn-sm" @click="exitBatchMode">
-                退出批量
+                {{ isComponent ? '取消所有选择' : '退出批量' }}
               </button>
               <button
+                  v-if="!isComponent"
                   class="btn btn-error btn-sm"
                   :disabled="selectedIds.length === 0"
                   @click="handleBatchDelete"
               >
                 批量删除
               </button>
-              <!-- 可扩展更多批量操作 -->
+              <button
+                  v-else
+                  class="btn btn-success btn-sm"
+                  :disabled="selectedIds.length === 0"
+                  @click="emit('selectQuestions', selectedIds)"
+              >
+                批量添加
+              </button>
             </div>
           </div>
 
@@ -76,13 +84,14 @@
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(question, index) in questions" :key="question.id" class="hover">
+              <tr v-for="(question, index) in questions" :key="question.id" @click="toggleSelect(question.id)" class="hover cursor-pointer" @contextmenu.prevent="openMenu($event, question.id)">
                 <!-- 多选框单元格 -->
-                <td v-if="showCheckboxes" class="text-center">
+                <td v-if="showCheckboxes || isComponent" class="text-center">
                   <input
                       type="checkbox"
                       class="checkbox checkbox-sm"
                       :checked="selectedIds.includes(question.id)"
+                      @click.stop
                       @change="() => toggleSelect(question.id)"
                   />
                 </td>
@@ -148,19 +157,49 @@
   </div>
   <QuestionCreateDialog
     :questionTypes="questionTypes"
+    :modelValue="questions.find(question => question.id === nowId)"
     @close="close"
   />
   <QuestionImportDialog
     @close="closeQuestionImport"
     @getQuestions="getQuestions(false)"
   />
+  <QuestionPreviewDialog
+      v-if="questionTypes.length > 0 && subjectsList.length > 0 && selectedQuestion !== null"
+      v-model="selectedQuestion"
+      @close="closeQuestionPreview"
+  />
+  <QuestionTagDialog
+      v-model="showTagDialog"
+      :tags="currentTags"
+      :questionId="nowId"
+  />
+  <!-- 右键菜单 -->
+  <ul
+      class="menu bg-base-300 rounded-box fixed"
+      :class="isShowMenu ? '' : 'invisible'"
+      :style="{left:menuPos.left+'px',top:menuPos.top+'px'}"
+  >
+    <li @click="deleteQuestions([nowId])"><a>删除</a></li>
+    <li @click="modifyQuestions"><a>修改</a></li>
+    <li @click="openQuestionPreview(questions.find(question => question.id === nowId))"><a>题目预览</a></li>
+    <li @click="openTagManager"><a>标签管理</a></li>
+  </ul>
 </template>
 
 <script setup lang="ts">
-import {ref, computed, watch, onMounted, nextTick} from 'vue'
-import { QuestionFilters, QuestionCreateDialog, QuestionImportDialog } from "../../components";
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { QuestionFilters, QuestionCreateDialog, QuestionImportDialog, QuestionPreviewDialog, QuestionTagDialog } from "../../components";
 import { useRequest } from "vue-hooks-plus";
-import { getQuestionsAPI, getQuestionTypeAPI, getSubjectAPI } from '../../apis'
+import { getQuestionsAPI, getQuestionTypeAPI, getSubjectAPI, deleteQuestionsAPI, getQuestionTagsAPI } from '../../apis'
+
+const props = withDefaults(defineProps<{  // 用于在组卷中（作为一个组件中），可以进行选择
+  isComponent?: boolean
+}>(), {
+  isComponent: false // 在这里设置默认值
+})
+
+const emit = defineEmits(['selectQuestions'])   // 用于在组卷中（作为一个组件中），可以进行选择
 
 // 审核状态映射（根据你的实际字段调整）
 const statusMap = {
@@ -185,10 +224,11 @@ const questions = ref<Question[]>([])
 
 const showSidebar = ref(window.innerWidth >= 1024)
 
-const questionTypes = ref()
-const subjectsList = ref()
+const questionTypes = ref([])
+const subjectsList = ref([])
 
 onMounted(()=>{
+
   useRequest(()=>getQuestionTypeAPI(), {
     onSuccess(res) {
       if (res['code'] === 200) {
@@ -197,18 +237,73 @@ onMounted(()=>{
     }
   })
 
-  console.log(questionTypes)
-
   useRequest(()=>getSubjectAPI(), {
     onSuccess(res) {
       if (res['code'] === 200) {
-        subjectsList.value = res['data']
+        subjectsList.value = res['data']['subjects']
       }
     }
   })
 
   getQuestions(false)
 })
+
+// 模拟已有标签（来自 API）
+const currentTags = ref([])
+
+const showTagDialog = ref(false)
+
+const openTagManager = () => {
+  useRequest(()=>getQuestionTagsAPI({questionId: nowId.value}),{
+    onSuccess(res) {
+      if (res['code'] === 200) {
+        currentTags.value = res['data']
+      }
+    }
+  })
+  showTagDialog.value = true
+}
+
+const selectedQuestion = ref<Question | null>(null)
+
+const openQuestionPreview = (question: Question) => {
+  selectedQuestion.value = question
+  nextTick(()=>{
+    questionPreviewDialog.showModal()
+  })
+}
+
+const handleSaveQuestion = async (updated: Question) => {
+  // 调用 API 更新
+  // await updateQuestionAPI(updated)
+  // 刷新列表
+  // getQuestions(false)
+}
+
+const isShowMenu = ref(false)
+const menuPos = ref({
+  left: 0,
+  top: 0
+})
+
+const nowId = ref(null)
+
+const openMenu = (event, id) => {
+
+  nowId.value = id
+
+  isShowMenu.value = true
+  menuPos.value.left = event.clientX
+  menuPos.value.top = event.clientY
+
+  window.addEventListener('scroll', closeMenu);    // 滚动页面，也要关闭菜单
+  window.addEventListener('click', closeMenu);
+}
+
+const closeMenu = () => {
+  isShowMenu.value = false
+  window.removeEventListener('scroll', closeMenu);
+}
 
 // ========== 筛选状态 ==========
 const filters = ref({
@@ -348,7 +443,6 @@ const { run: runWithoutDebounce } = useRequest((filterParam)=>getQuestionsAPI(<a
   manual: true
 })
 
-
 // 重置方法
 const resetFilters = () => {
   filters.value = {
@@ -426,16 +520,42 @@ const formatDate = (isoString: string): string => {
 
 const handleBatchDelete = () => {
   if (selectedIds.value.length === 0) return
-  console.log('批量删除题目 IDs:', selectedIds.value)
-  // 调用 API 删除
-  // 删除成功后可刷新列表，并退出批量模式
-  // exitBatchMode()
+
+  deleteQuestions(selectedIds.value)
+}
+
+const deleteQuestions = (ids: (string | number)[]) => {
+  useRequest(()=>deleteQuestionsAPI(ids),{
+    onSuccess(res){
+      if(res['code']==200){
+        getQuestions(false)
+        alert('删除成功')
+        exitBatchMode()
+      }else{
+        alert('删除失败')
+      }
+    }
+  })
+}
+
+const modifyQuestions = () => {
+  questionCreateDialog.showModal()
+  nowId.value = null
 }
 
 const close = () => {
   questionCreateDialog.close()
+  getQuestions(false)
+  nowId.value = null
 }
+
 const closeQuestionImport = () => {
   importQuestionDialog.close()
+  nowId.value = null
+}
+
+const closeQuestionPreview = () => {
+  selectedQuestion.value = null;
+  questionPreviewDialog.close()
 }
 </script>

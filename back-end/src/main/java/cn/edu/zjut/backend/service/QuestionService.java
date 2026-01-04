@@ -4,17 +4,16 @@ import cn.edu.zjut.backend.dao.QuestionDAO;
 import cn.edu.zjut.backend.dao.QuestionTagsDAO;
 import cn.edu.zjut.backend.dao.SubjectDAO;
 import cn.edu.zjut.backend.dto.QuestionQueryDTO;
+import cn.edu.zjut.backend.dto.SubjectQueryDTO;
 import cn.edu.zjut.backend.po.*;
-import cn.edu.zjut.backend.util.ChatGLM;
-import cn.edu.zjut.backend.util.ChatGLM_N;
-import cn.edu.zjut.backend.util.HibernateUtil;
-import cn.edu.zjut.backend.util.UserContext;
+import cn.edu.zjut.backend.util.*;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.Data;
 import org.apache.poi.xwpf.usermodel.*;
 import org.hibernate.*;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -659,7 +658,10 @@ public class QuestionService {
     }
 
     // 批量导入题目（Docx文档）
-    public boolean fileImportQuestions(String fileContent){
+    public boolean fileImportQuestionsAsync(String fileContent, String taskId){
+
+        updateProgress(taskId, 0, "开始解析文档..."); // 记录进度
+
         Session session = this.getSession();
         Transaction tran = null;
 
@@ -667,16 +669,19 @@ public class QuestionService {
             tran = session.beginTransaction();
 
             XWPFDocument document = convertBase64ToDocument(fileContent);
-            System.out.println(document);
+//            System.out.println(document);
 
             // 题干与图片
             QuestionList questionList = extractQuestions(document);
             List<String> qs = questionList.getQuestions();
             List<List<String>> qis = questionList.getQuestionImages();
 
-            System.out.println(qs.size());
+            int total = qs.size();
+            System.out.println("共有（识别到）：" + total + "道题目");
 
-            for (int i = 0; i < qs.size(); i++) {
+            updateProgress(taskId, 10, "共发现 " + total + " 道题目");
+
+            for (int i = 0; i < total; i++) {
                 String q = qs.get(i);
                 List<String> qi = qis.get(i);
 
@@ -688,6 +693,8 @@ public class QuestionService {
                 qType = qType.equals("完形填空") || qType.equals("阅读理解") ? qType : qType + "题";
                 System.out.println(qSubject +" " + qType);
 
+//                Thread.sleep(10000);
+
 //                String askQuestion = "题目+答案+解析：\n“" + qContent + "”\n\n" + "JSON模板：\n" + QUESTION_JSON.get(qType) + "\n\n把题目按照JSON模板的格式，生成对应的JSON格式数据，有如下需要注意的点：\n1.typeId和creatorId可以直接照搬，其他的内容不要照搬\n2.给的模板中没有的字段不要自己添加上去，严格跟着格式的字段来（像option、answer、analysis、blank等，模板JSON中如果只有option和answer，就不要添加analysis和blank等不存在的字段）\n3.不要有重复的componentType，比如不要有两个answer或两个blank，都可以整合到一个questionComponent中）\n4.title可以包含全一点，感觉之前一些文字都没包含进去，比如“请从经济、文化、社会三个角度，论述科技创新对国家发展的战略意义。（字数不少于300字）”就会包含不进前面的那三个角度和后面的括号提示；还有“请编制相应的会计分录。”这样的题目描述，当然前提是不能把选项也包含进去\n5.解析不用太多，稍微介绍以下就好了\n7.如果是程序题，就将答案，整个程序编码为Base64放在questionComponent的answer里面，防止JSON格式错误\n6.直接给我完整的JSON数据，不要任何多余的东西，也不要```json这样的代码框，就直接一段JSON格式的字符串";
 //                System.out.println(askQuestion);
 //                System.out.println();
@@ -697,19 +704,27 @@ public class QuestionService {
 //
 //                Questions question = gson.fromJson(res, Questions.class);
 
+                int progress = 10 + (int) (80.0 * (i + 1) / total);
+                updateProgress(taskId, progress, "正在处理第 " + (i + 1) + "/" + total + " 题");
+
                 // 创建模板、生成数据、插入数据库
 
                 if(!generateQuestionWithRetry(qContent, qType, qSubject, qi)) {
                     throw new Exception();
                 }
+//                Thread.sleep(2000);
             }
 
             tran.commit();
+
+            updateProgress(taskId, 100, "导入成功！", "completed");
+
             return true;
         }catch (Exception e){
             if (tran != null) {
                 tran.rollback();
             }
+            updateProgress(taskId, -1, "失败: " + e.getMessage(), "failed");
             e.printStackTrace();
             return false;
         }
@@ -721,6 +736,16 @@ public class QuestionService {
         QuestionDAO dao = new QuestionDAO();
         dao.setSession(session);
         List<Questions> questions = dao.query(filterDTO);
+
+        HibernateUtil.closeSession();
+        return questions;
+    }
+
+    public Questions queryQuestion(Long questionId){
+        Session session = getSession();
+        QuestionDAO dao = new QuestionDAO();
+        dao.setSession(session);
+        Questions questions = dao.query(questionId);
 
         HibernateUtil.closeSession();
         return questions;
@@ -756,6 +781,9 @@ public class QuestionService {
     // 修改题目
     public boolean updateQuestion(Questions question){
         question.setUpdatedAt(new Date());
+        question.setCreatorId(UserContext.getUserId());
+
+        bindQuestionRelations(question);
 
         Session session=this.getSession();
         QuestionDAO dao = new QuestionDAO();
@@ -763,9 +791,10 @@ public class QuestionService {
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            if(Objects.equals(question.getCreatorId(), UserContext.getUserId())){
-                dao.update(question);
-            }
+//            if(Objects.equals(question.getCreatorId(), UserContext.getUserId())){
+//                dao.update(question);
+//            }
+            dao.update(question);
             tran.commit();
             return true;
         } catch (Exception e) {
@@ -818,6 +847,31 @@ public class QuestionService {
                 "]";
 
         return ChatGLM_N.inquire(prompt, false);
+    }
+
+    // 更新任务进度到Redis数据库
+
+    private void updateProgress(String taskId, int progress, String message) {
+        updateProgress(taskId, progress, message, "processing");
+    }
+
+    private void updateProgress(String taskId, int progress, String message, String status) {
+        String key = "task:" + taskId;
+        Jedis jedis = null;
+        try {
+            jedis = JedisConnectionFactory.getJedis();
+            jedis.hset(key, "progress", String.valueOf(progress));
+            jedis.hset(key, "message", message);
+            jedis.hset(key, "status", status);
+            jedis.expire(key, 3600 * 24); // 24小时过期
+        } catch (Exception e) {
+            // 建议记录日志（可用你项目的 Log 工具）
+            e.printStackTrace();
+        } finally {
+            if (jedis != null) {
+                jedis.close(); // 归还连接到池
+            }
+        }
     }
 
     // 将Base64文件解码为XWPFDocument对象
@@ -951,7 +1005,7 @@ public class QuestionService {
 
                 String askQuestion = buildPrompt(qContent, qType, retryCount);
                 System.out.println(askQuestion);
-                String res = ChatGLM.inquire(askQuestion);
+                String res = ChatGLM_N.inquire(askQuestion, false);
                 res = removeJsonCodeBlockMarkers(res);
 
                 // 预处理：尝试修复常见的JSON格式问题
@@ -970,7 +1024,9 @@ public class QuestionService {
                     // 赋值学科ID
                     Subject subject = null;
                     try{
-                        subject = sdao.query(qSubject);
+                        SubjectQueryDTO subjectQueryDTO = new SubjectQueryDTO();
+                        subjectQueryDTO.setSubjectName(qSubject);
+                        subject = sdao.query(subjectQueryDTO).get(0);
                     }catch (Exception e){
                         System.err.println(e.getMessage());
                     }

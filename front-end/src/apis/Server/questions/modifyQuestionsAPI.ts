@@ -1,11 +1,11 @@
-import { request } from '../axios';
+import { request } from '../../axios';
 
-const addQuestionsAPI = async (data) => {
+const modifyQuestionsAPI = async (data:{}) => {
     return request("/api/question", {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
         data: data
     });
 };
 
-export default addQuestionsAPI;
+export default modifyQuestionsAPI;

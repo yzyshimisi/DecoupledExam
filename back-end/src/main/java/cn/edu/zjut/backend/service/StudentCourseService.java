@@ -105,9 +105,8 @@ public class StudentCourseService {
                 return false; // 未找到选课记录
             }
             
-            // 更新状态为已退课
-            studentCourse.setStatus("1");
-            studentCourseDao.update(studentCourse);
+            // 直接删除选课记录
+            studentCourseDao.delete(studentCourse);
             transaction.commit();
             return true;
         } catch (Exception e) {

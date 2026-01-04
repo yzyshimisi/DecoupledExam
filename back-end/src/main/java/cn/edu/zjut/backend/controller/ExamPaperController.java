@@ -4,12 +4,16 @@ import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.dao.ExamPaperDAO;
 import cn.edu.zjut.backend.dto.ExamGenerationRequest;
 import cn.edu.zjut.backend.dto.ExamPaperDTO;
+import cn.edu.zjut.backend.dto.ExamPaperQueryDTO;
 import cn.edu.zjut.backend.po.ExamPaper;
 import cn.edu.zjut.backend.po.ExamPaperQuestion;
 import cn.edu.zjut.backend.po.ExamPaperQuestionId;
 import cn.edu.zjut.backend.po.Questions;
 import cn.edu.zjut.backend.service.ExamPaperService;
+import cn.edu.zjut.backend.util.ContextAwareRunnable;
+import cn.edu.zjut.backend.util.JedisConnectionFactory;
 import cn.edu.zjut.backend.util.Response;
+import cn.edu.zjut.backend.util.UserContext;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,8 +21,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import redis.clients.jedis.Jedis;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 
 @Controller
 public class ExamPaperController {
@@ -41,19 +51,47 @@ public class ExamPaperController {
     @RequestMapping(value = "/api/examPaper/generate", method = RequestMethod.POST)
     @ResponseBody
     @LogRecord(module = "试卷管理", action = "生成试卷", targetType = "试卷", logType = LogRecord.LogType.OPERATION)
-    public Response<List<ExamPaperDTO>> generateExamPaper(@RequestBody ExamGenerationRequest examGenerationRequest , Model model) {
-        if(examPaperServ.generateExamPaper(examGenerationRequest)) {
-            return Response.success();
-        }else{
-            return Response.error("题目添加失败");
-        }
+    public Response<String> generateExamPaperAsync(@RequestBody ExamGenerationRequest examGenerationRequest , Model model) {
+
+        String taskId = UUID.randomUUID().toString();
+
+        CompletableFuture.runAsync(
+            new ContextAwareRunnable(()->{
+                try {
+                    // 执行实际导入，并传入 taskId 用于更新进度
+                    examPaperServ.generateExamPaperAsync(examGenerationRequest, taskId);
+                } catch (Exception e) {
+                    // 记录失败
+                    Jedis jedis = null;
+                    try {
+                        jedis = JedisConnectionFactory.getJedis();
+                        jedis.hset("task:" + taskId, "status", "failed");
+                        jedis.hset("task:" + taskId, "message", "系统异常: " + e.getMessage());
+                        jedis.hset("task:" + taskId, "progress", "-1");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        if (jedis != null) jedis.close();
+                    }
+                    e.printStackTrace();
+                }
+            }), Executors.newCachedThreadPool());
+
+        return Response.success(taskId);
+    }
+
+    @RequestMapping(value = "/api/examPaper/generate/progress/{taskId}", method = RequestMethod.GET)
+    @ResponseBody
+    public Response<Map<String, String>> getGenerateProgress(@PathVariable String taskId) {
+        Map<String, String> progress = examPaperServ.getGenerateProgress(taskId);
+        return Response.success(progress);
     }
 
     @RequestMapping(value = "/api/examPaper", method = RequestMethod.GET)
     @ResponseBody
     @LogRecord(module = "试卷管理", action = "查询试卷", targetType = "试卷", logType = LogRecord.LogType.OPERATION)
     public Response<List<ExamPaperDTO>> queryExamPaper(@RequestParam(value="creatorId", required = false) Long creatorId, Model model) {
-        List<ExamPaperDTO> examPaperDTOS = examPaperServ.queryExamPaper(creatorId);
+        List<ExamPaperDTO> examPaperDTOS = examPaperServ.queryExamPaper(UserContext.getUserId());
         return Response.success(examPaperDTOS);
     }
 
@@ -83,7 +121,7 @@ public class ExamPaperController {
         if(examPaperServ.updateExamPaper(examPaper)) {
             return Response.success();
         }else{
-            return Response.error("删除失败");
+            return Response.error("修改失败");
         }
     }
 
@@ -112,8 +150,19 @@ public class ExamPaperController {
     @RequestMapping(value = "/api/examPaper/question", method = RequestMethod.PUT)
     @ResponseBody
     @LogRecord(module = "试卷管理", action = "更新试卷题目", targetType = "试卷题目", logType = LogRecord.LogType.OPERATION)
-    public Response<List<ExamPaperDTO>> updateExamPaperQuestion(@RequestBody(required = false) ExamPaperQuestion examPaperQuestion, Model model) {
-        if(examPaperServ.updateExamPaperQuestion(examPaperQuestion)) {
+    public Response<List<ExamPaperDTO>> updateExamPaperQuestion(@RequestBody(required = false) List<ExamPaperQuestion> examPaperQuestions, Model model) {
+        if(examPaperServ.updateExamPaperQuestion(examPaperQuestions)) {
+            return Response.success();
+        }else{
+            return Response.error("修改试卷题目失败");
+        }
+    }
+
+    @RequestMapping(value = "/api/examPaper/seal", method = RequestMethod.PUT)
+    @ResponseBody
+    @LogRecord(module = "试卷管理", action = "更新试卷题目", targetType = "试卷题目", logType = LogRecord.LogType.OPERATION)
+    public Response<String> modifySealedStatus(@RequestBody List<Long> paperIds) {
+        if(examPaperServ.modifySealedStatus(paperIds)) {
             return Response.success();
         }else{
             return Response.error("修改试卷题目失败");

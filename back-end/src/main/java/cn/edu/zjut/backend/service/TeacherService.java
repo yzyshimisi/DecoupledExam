@@ -96,14 +96,17 @@ public class TeacherService {
      * @return 教师职位信息，找不到返回null
      */
     public TeacherPosition getTeacherPosition(Long teacherId) {
-        Session session = getSession();
+        // 使用独立的 session 来避免影响调用者线程的 thread-local session
+        Session session = HibernateUtil.getNewSession();
         TeacherPositionDAO positionDAO = new TeacherPositionDAO();
         positionDAO.setSession(session);
 
         try {
             return positionDAO.findByTeacherId(teacherId);
         } finally {
-            HibernateUtil.closeSession();
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 

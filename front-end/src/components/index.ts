@@ -4,6 +4,14 @@ import QuestionFilters from "./question/QuestionFilters.vue";
 import CameraRecorder from "./cameraRecorderDia/index.vue";
 import QuestionCreateDialog from "./question/QuestionCreateDialog.vue";
 import QuestionImportDialog from "./question/QuestionImportDialog.vue";
+import QuestionPreviewDialog from "./question/QuestionPreviewDialog.vue";
+import QuestionTagDialog from "./question/QuestionTagDialog.vue";
+import ExamPaperFilter from "./examPaper/ExamPaperFilter.vue"
+import ManualComposeDialog from "./examPaper/ManualComposeDialog.vue";
+import SmartComposeDialog from "./examPaper/SmartComposeDialog.vue";
+import EditExamPaperDialog from "./examPaper/EditExamPaperDialog.vue"
+import AddQuestionToPaperDialog from "./examPaper/AddQuestionToPaperDialog.vue";
+import PaperPreview from "./examPaper/PaperPreview.vue";
 
 export {
     Navbar,
@@ -12,4 +20,12 @@ export {
     CameraRecorder,
     QuestionCreateDialog,
     QuestionImportDialog,
+    QuestionPreviewDialog,
+    QuestionTagDialog,
+    ExamPaperFilter,
+    ManualComposeDialog,
+    SmartComposeDialog,
+    EditExamPaperDialog,
+    AddQuestionToPaperDialog,
+    PaperPreview,
 }

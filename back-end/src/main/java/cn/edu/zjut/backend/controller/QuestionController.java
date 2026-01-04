@@ -4,6 +4,8 @@ import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.dto.QuestionQueryDTO;
 import cn.edu.zjut.backend.po.Questions;
 import cn.edu.zjut.backend.service.QuestionService;
+import cn.edu.zjut.backend.util.ContextAwareRunnable;
+import cn.edu.zjut.backend.util.JedisConnectionFactory;
 import cn.edu.zjut.backend.util.Response;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,10 +13,15 @@ import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import redis.clients.jedis.Jedis;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Controller
 public class QuestionController {
@@ -47,17 +54,60 @@ public class QuestionController {
     @RequestMapping(value = "/api/question/file", method = RequestMethod.POST)
     @ResponseBody
     @LogRecord(module = "题库管理", action = "文件导入题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
-    public Response<List<Questions>> fileImportQuestion(@RequestBody Map<String, Object> request) {
+    public Response<String> fileImportQuestionsAsync(@RequestBody Map<String, Object> request) {
 
         String fileContent = (String) request.get("file");
         if (fileContent == null || fileContent.isEmpty()) {
             return Response.error("文件内容为空");
         }
 
-        if(questionServ.fileImportQuestions(fileContent)) {
-            return Response.success();
-        } else {
-            return Response.error("导入失败");
+        String taskId = UUID.randomUUID().toString();
+
+        CompletableFuture.runAsync(
+            new ContextAwareRunnable(()->{
+                try {
+                    // 执行实际导入，并传入 taskId 用于更新进度
+                    questionServ.fileImportQuestionsAsync(fileContent, taskId);
+                } catch (Exception e) {
+                    // 记录失败
+                    Jedis jedis = null;
+                    try {
+                        jedis = JedisConnectionFactory.getJedis();
+                        jedis.hset("task:" + taskId, "status", "failed");
+                        jedis.hset("task:" + taskId, "message", "系统异常: " + e.getMessage());
+                        jedis.hset("task:" + taskId, "progress", "-1");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        if (jedis != null) jedis.close();
+                    }
+                    e.printStackTrace();
+                }
+            }),Executors.newCachedThreadPool());
+
+        return Response.success(taskId);
+    }
+
+    // 进度查询接口
+    @RequestMapping(value = "/api/taskProgress/{taskId}", method = RequestMethod.GET)
+    @ResponseBody
+    public Response<Map<String, String>> getTaskProgress(@PathVariable String taskId) {
+        String key = "task:" + taskId;
+        Jedis jedis = null;
+        try {
+            jedis = JedisConnectionFactory.getJedis();
+            Map<String, String> result = jedis.hgetAll(key);
+            if (result == null || result.isEmpty()) {
+                result = Map.of("status", "not_found");
+            }
+            return Response.success(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.error("查询进度失败");
+        } finally {
+            if (jedis != null) {
+                jedis.close();
+            }
         }
     }
 
@@ -66,7 +116,8 @@ public class QuestionController {
     @LogRecord(module = "题库管理", action = "查询题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<Map<String, Object>> queryQuestion(QuestionQueryDTO filterDTO, Model model) {
         List<Questions> questions = questionServ.queryQuestion(filterDTO);
-        if(questions==null || questions.isEmpty()) {
+
+        if(questions==null || questions.isEmpty() || filterDTO.getPageNum()==null || filterDTO.getPageSize()==null) {
             Map<String, Object> multiData = new HashMap<>();
             multiData.put("questions", questions);
             multiData.put("total", 0);
@@ -90,7 +141,6 @@ public class QuestionController {
         }catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(firstResult);
 
         Map<String, Object> multiData = new HashMap<>();
         multiData.put("questions", questions);
@@ -98,6 +148,17 @@ public class QuestionController {
 
         return Response.success(multiData);
 
+    }
+
+    @RequestMapping(value = "/api/question-id", method = RequestMethod.GET)
+    @ResponseBody
+    @LogRecord(module = "题库管理", action = "查询题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
+    public Response<Questions> queryQuestion(@RequestParam(required = false) Long questionId) {
+        if(questionId==null){
+            return Response.error("参数错误");
+        }
+        Questions question = questionServ.queryQuestion(questionId);
+        return Response.success(question);
     }
 
     @RequestMapping(value = "/api/question", method = RequestMethod.DELETE)

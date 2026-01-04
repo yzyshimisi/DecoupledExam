@@ -7,6 +7,9 @@ import cn.edu.zjut.backend.util.Jwt;
 import cn.edu.zjut.backend.util.Response;
 import cn.edu.zjut.backend.util.LoginLogger;
 import cn.edu.zjut.backend.util.UserContext;
+import cn.smartjavaai.common.entity.DetectionResponse;
+import cn.smartjavaai.common.entity.R;
+import com.google.gson.Gson;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,9 @@ import cn.edu.zjut.backend.annotation.LogRecord;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
@@ -127,13 +133,31 @@ public class UserController {
     @ResponseBody
     @LogRecord(module = "用户认证", action = "人脸登录", targetType = "用户", logType = LogRecord.LogType.LOGIN)
     public Response<String> loginFace(@RequestBody Map<String, Object> loginRequest) {
+//        FaceRec faceRec = FaceRec.getInstance();
         FaceRec faceRec = new FaceRec();
+
         String videoBase64 = loginRequest.get("video").toString();
         if(videoBase64==null || videoBase64.isEmpty()){
             return Response.error("参数禁止为空");
         }
-        if(faceRec.faceRecognition(videoBase64)){
-            return Response.success("人脸登录成功");
+
+        R<DetectionResponse> res = faceRec.faceRecognition(videoBase64);
+
+        if(res != null && res.getCode() == 0 && res.getMessage().equals("成功") && res.getData()!=null){
+
+            Gson gson = new Gson();
+            String metadata = res.getData().getDetectionInfoList().get(0).getFaceInfo().getFaceSearchResults().get(0).getMetadata();
+            Map Metadata = gson.fromJson(metadata, Map.class);
+
+            Jwt jwt = new Jwt();
+
+            Long id = ((Number) Metadata.get("id")).longValue();
+            String username = (String) Metadata.get("username");
+            Integer userType = ((Number) Metadata.get("userType")).intValue();
+
+            String token = jwt.generateJwtToken(id, username, userType);
+
+            return Response.success(token);
         }else{
             return Response.error("人脸登录失败！");
         }
@@ -277,6 +301,7 @@ public class UserController {
     @ResponseBody
     @LogRecord(module = "用户管理", action = "上传用户人脸图像", targetType = "用户", logType = LogRecord.LogType.OPERATION)
     public Response<String> uploadUserFaceImage(@RequestParam("file") MultipartFile file, HttpServletRequest httpRequest) {
+
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
             return Response.error("请先登录");
@@ -289,47 +314,21 @@ public class UserController {
             return Response.error("请选择要上传的文件");
         }
 
-        try {
-        // 确保目录存在
-            String uploadDir = "D:/JAVAfile/JavaEEprogram/DecoupledExam/uploads/face_images";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            // 生成唯一文件名
-            String originalFilename = file.getOriginalFilename();
-            String fileExtension = "";
-            if (originalFilename != null && originalFilename.contains(".")) {
-                fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-            String newFileName = "face_" + currentUserId + "_" + System.currentTimeMillis() + fileExtension;
-
-            // 保存文件到指定目录
-            String filePath = uploadDir + "/" + newFileName;
-            file.transferTo(new File(filePath));
-
-            // 生成访问URL
-            String fileUrl = "/uploads/face_images/" + newFileName;
-
-            // 更新用户的人脸图像URL
-            User userToUpdate = new User();
-            userToUpdate.setUserId(currentUserId);
-            userToUpdate.setFaceImg(fileUrl);
-
-            if (userService.updateUser(userToUpdate)) {
-                return Response.success(fileUrl);
-            } else {
-                // 如果更新数据库失败，删除已上传的文件
-                File uploadedFile = new File(filePath);
-                if (uploadedFile.exists()) {
-                    uploadedFile.delete();
-                }
-                return Response.error("人脸图像上传失败");
-            }
-        } catch (Exception e) {
+        String fileBase64 = "";
+        try{
+            byte[] fileBytes = file.getBytes();
+            fileBase64 = Base64.getEncoder().encodeToString(fileBytes);
+        }catch (IOException e){
             e.printStackTrace();
-            return Response.error("人脸图像上传失败：" + e.getMessage());
+            return Response.error("文件处理失败");
+        }
+
+        FaceRec faceRec = FaceRec.getInstance();
+
+        if(faceRec.faceRegister(fileBase64)){
+            return Response.success("人脸图像上传成功");
+        }else{
+            return Response.error("人脸图像上传失败");
         }
     }
 
@@ -359,7 +358,7 @@ public class UserController {
 
         try {
             // 确保目录存在
-            String uploadDir = "D:/JAVAfile/JavaEEprogram/DecoupledExam/uploads/avatars";
+            String uploadDir = "C:\\Users\\31986\\Desktop\\resources\\uploads\\avatars";
             File dir = new File(uploadDir);
             if (!dir.exists()) {
                 dir.mkdirs();
@@ -400,7 +399,6 @@ public class UserController {
             return Response.error("头像上传失败：" + e.getMessage());
         }
     }
-
 
     /**
      * 更新用户信息
@@ -455,12 +453,12 @@ public class UserController {
         }
         
         Long currentUserId = ((Number) claims.get("id")).longValue();
-        
+
         // 构建要更新的用户对象
         User userToUpdate = new User();
         userToUpdate.setUserId(currentUserId);
         userToUpdate.setFaceImg(request.getFaceImageUrl());
-        
+
         if (userService.updateUser(userToUpdate)) {
             return Response.success("人脸图像更新成功");
         } else {
@@ -595,19 +593,7 @@ public class UserController {
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
     @ResponseBody
     public Response<User> getUserById(@PathVariable("userId") Long userId, HttpServletRequest request) {
-        Claims claims = (Claims) request.getAttribute("claims");
-        if (claims == null) {
-            return Response.error("请先登录");
-        }
-        
-        Long currentUserId = ((Number) claims.get("id")).longValue();
-        Integer currentUserType = (Integer) claims.get("userType");
-        
-        // 普通用户只能查看自己的信息，管理员可以查看所有用户信息
-        if (!currentUserId.equals(userId) && currentUserType != 0) {
-            return Response.error("权限不足，只能查看自己的信息或管理员可查看所有用户信息");
-        }
-        
+        // 取消权限限制，所有用户都可以访问
         User user = userService.getUserById(userId);
         if (user != null) {
             // 清除密码信息再返回

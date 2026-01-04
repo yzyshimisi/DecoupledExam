@@ -1,6 +1,7 @@
 package cn.edu.zjut.backend.service;
 
 import cn.edu.zjut.backend.dao.SubjectDAO;
+import cn.edu.zjut.backend.dto.SubjectQueryDTO;
 import cn.edu.zjut.backend.po.Subject;
 import cn.edu.zjut.backend.util.HibernateUtil;
 import org.hibernate.Session;
@@ -64,22 +65,13 @@ public class SubjectService {
         }
     }
 
-    public List<Subject> getSubject(int id) {
+    public List<Subject> getSubject(SubjectQueryDTO filterDTO) {
         Session session = getSession();
         SubjectDAO dao = new SubjectDAO();
         dao.setSession(session);
-        List<Subject> subjects = dao.query(id);
+        List<Subject> subjects = dao.query(filterDTO);
         HibernateUtil.closeSession();
         return subjects;
-    }
-
-    public Subject getSubject(String subjectName) {
-        Session session = getSession();
-        SubjectDAO dao = new SubjectDAO();
-        dao.setSession(session);
-        Subject subject = dao.query(subjectName);
-        HibernateUtil.closeSession();
-        return subject;
     }
 
     public boolean deleteSubject(List<Integer> ids) {

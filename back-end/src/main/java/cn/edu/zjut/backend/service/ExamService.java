@@ -20,22 +20,22 @@ public class ExamService {
 
     @Autowired
     private ExamSettingDAO examSettingDAO;
-    
+
     @Autowired
     private ExamRecordDAO examRecordDAO;
-    
+
     @Autowired
     private ExamNotificationService examNotificationService;
-    
+
     @Autowired
     private ExamCourseDAO examCourseDAO;
-    
+
     @Autowired
     private StudentCourseDAO studentCourseDAO;
-    
+
     @Autowired
     private CourseService courseService;
-    
+
     @Autowired
     private TeacherService teacherService;
 
@@ -75,7 +75,7 @@ public class ExamService {
 
             // 步骤3：保存ExamSetting
             examSettingDAO.saveSetting(session, setting);
-            
+
             // 步骤4：不再创建预考试通知，只在发布考试时发送通知
             // examNotificationService.createPreExamNotification(exam, session); // 已禁用定时通知
 
@@ -101,6 +101,7 @@ public class ExamService {
         Session session = null;
         try {
             session = HibernateUtil.getSession();
+            examDAO.setSession(session);
             return examDAO.queryByStatus(status, teacherId);
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,15 +173,15 @@ public class ExamService {
         try {
             session = HibernateUtil.getSession();
             transaction = session.beginTransaction();
-            
+
             // 设置各DAO的session
             examDAO.setSession(session);
             examCourseDAO.setSession(session);
             examRecordDAO.setSession(session);
-            
+
             // 1. 删除考试与课程的关联记录
             examCourseDAO.deleteByExamId(examId);
-            
+
             // 2. 删除考试记录（考试成绩相关）
             // 注意：这里不能直接删除，因为exam_record表中有外键约束
             // 由于exam_record表的外键设置了ON DELETE CASCADE，删除exam时会自动删除相关记录
@@ -189,7 +190,7 @@ public class ExamService {
             org.hibernate.query.Query deleteRecordQuery = session.createQuery(hql);
             deleteRecordQuery.setParameter("examId", examId);
             deleteRecordQuery.executeUpdate();
-            
+
             // 3. 删除考试设置（通过exam_setting表的外键级联删除会自动处理）
             // 由于exam_setting表设置了ON DELETE CASCADE，删除exam时会自动删除设置
             // 但为确保完整性，显式删除考试设置
@@ -197,16 +198,16 @@ public class ExamService {
             org.hibernate.query.Query deleteSettingQuery = session.createQuery(deleteSettingHql);
             deleteSettingQuery.setParameter("examId", examId);
             deleteSettingQuery.executeUpdate();
-            
+
             // 4. 删除考试通知（已移除相关方法，使用HQL直接删除）
             String deleteNotificationHql = "DELETE FROM ExamNotification WHERE examId = :examId";
             org.hibernate.query.Query deleteNotificationQuery = session.createQuery(deleteNotificationHql);
             deleteNotificationQuery.setParameter("examId", examId);
             deleteNotificationQuery.executeUpdate();
-            
+
             // 5. 最后删除考试本身
             examDAO.deleteExam(examId);
-            
+
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -234,17 +235,17 @@ public class ExamService {
         try {
             session = HibernateUtil.getSession();
             transaction = session.beginTransaction();
-            
+
             // 检查考试是否存在
             examDAO.setSession(session);
             Exam exam = examDAO.getById(examId);
             if (exam == null) {
                 throw new RuntimeException("考试不存在");
             }
-            
+
             // 添加学生到考试
             examRecordDAO.addStudentsToExam(session, examId, studentIds);
-            
+
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -272,17 +273,17 @@ public class ExamService {
         try {
             session = HibernateUtil.getSession();
             transaction = session.beginTransaction();
-            
+
             // 检查考试是否存在
             examDAO.setSession(session);
             Exam exam = examDAO.getById(examId);
             if (exam == null) {
                 throw new RuntimeException("考试不存在");
             }
-            
+
             // 从考试中移除学生
             examRecordDAO.removeStudentsFromExam(session, examId, studentIds);
-            
+
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -323,7 +324,7 @@ public class ExamService {
             }
         }
     }
-    
+
     /**
      * 根据考试记录ID获取考试记录
      * @param recordId 考试记录ID
@@ -343,7 +344,7 @@ public class ExamService {
             }
         }
     }
-    
+
     /**
      * 检查教师是否为教务老师
      * @param teacherId 教师ID
@@ -352,7 +353,7 @@ public class ExamService {
     public boolean isAcademicAffairsTeacher(Long teacherId) {
         return teacherService.isAcademicAffairsTeacher(teacherId);
     }
-    
+
     /**
      * 将考试发布到课程
      * @param examId 考试ID
@@ -366,16 +367,16 @@ public class ExamService {
         try {
             session = HibernateUtil.getSession();
             transaction = session.beginTransaction();
-            
+
             examCourseDAO.setSession(session);
-            
+
             // 检查考试是否存在
             examDAO.setSession(session);
             Exam exam = examDAO.getById(examId);
             if (exam == null) {
                 throw new RuntimeException("考试不存在");
             }
-            
+
             // 为每个课程添加考试发布记录
             for (Long courseId : courseIds) {
                 // 检查课程是否存在
@@ -383,28 +384,28 @@ public class ExamService {
                 if (course == null) {
                     throw new RuntimeException("课程不存在，ID: " + courseId);
                 }
-                
+
                 // 检查考试是否已经发布到该课程
                 if (examCourseDAO.isExamPublishedToCourse(examId, courseId)) {
                     continue; // 如果已发布，跳过
                 }
-                
+
                 // 创建考试课程关联记录
                 ExamCourse examCourse = new ExamCourse();
                 ExamCoursePK id = new ExamCoursePK(examId, courseId);
                 examCourse.setId(id);
                 examCourse.setPublishTime(new java.util.Date());
                 examCourse.setPublisherId(publisherId);
-                
+
                 examCourseDAO.addExamToCourse(examCourse);
-                
+
                 // 将该课程的所有学生添加到考试中
                 addCourseStudentsToExam(session, examId, courseId);
             }
-            
+
             // 为考试创建即时通知（发送给相关学生）
             examNotificationService.createImmediateNotificationForExam(exam, courseIds);
-            
+
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -419,7 +420,7 @@ public class ExamService {
             }
         }
     }
-    
+
     /**
      * 从课程中移除考试发布
      * @param examId 考试ID
@@ -432,13 +433,13 @@ public class ExamService {
         try {
             session = HibernateUtil.getSession();
             transaction = session.beginTransaction();
-            
+
             examCourseDAO.setSession(session);
-            
+
             for (Long courseId : courseIds) {
                 examCourseDAO.deleteByExamIdAndCourseId(examId, courseId);
             }
-            
+
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -453,7 +454,7 @@ public class ExamService {
             }
         }
     }
-    
+
     /**
      * 获取考试已发布的所有课程
      * @param examId 考试ID
@@ -474,7 +475,7 @@ public class ExamService {
             }
         }
     }
-    
+
     /**
      * 获取课程中的所有考试
      * @param courseId 课程ID
@@ -495,7 +496,7 @@ public class ExamService {
             }
         }
     }
-    
+
     /**
      * 将课程的学生添加到考试中
      * @param session Hibernate会话
@@ -505,16 +506,16 @@ public class ExamService {
     private void addCourseStudentsToExam(Session session, Long examId, Long courseId) {
         studentCourseDAO.setSession(session);
         examRecordDAO.setSession(session);
-        
+
         // 获取课程中的所有学生
         List<Long> studentIds = studentCourseDAO.getStudentsByCourseId(courseId);
-        
+
         if (studentIds != null && !studentIds.isEmpty()) {
             // 将这些学生添加到考试中
             examRecordDAO.addStudentsToExam(session, examId, studentIds);
         }
     }
-    
+
     /**
      * 获取学生参加的考试列表
      * @param studentId 学生ID
@@ -526,23 +527,23 @@ public class ExamService {
             session = HibernateUtil.getSession();
             examDAO.setSession(session);
             examRecordDAO.setSession(session);
-            
+
             // 从exam_record表中获取学生参加的考试ID列表
             String hql = "SELECT r.examId FROM ExamRecord r WHERE r.studentId = :studentId";
             org.hibernate.query.Query<Long> examIdQuery = session.createQuery(hql, Long.class);
             examIdQuery.setParameter("studentId", studentId);
             List<Long> examIds = examIdQuery.getResultList();
-            
+
             if (examIds.isEmpty()) {
                 return new ArrayList<>();
             }
-            
+
             // 根据考试ID列表查询考试详情
             String examHql = "FROM Exam e WHERE e.examId IN (:examIds) ORDER BY e.startTime DESC";
             org.hibernate.query.Query<Exam> examQuery = session.createQuery(examHql, Exam.class);
             examQuery.setParameter("examIds", examIds);
             List<Exam> exams = examQuery.getResultList();
-            
+
             return exams;
         } catch (Exception e) {
             e.printStackTrace();
@@ -553,7 +554,7 @@ public class ExamService {
             }
         }
     }
-    
+
     /**
      * 为所有现有考试创建通知（用于初始化或修复通知）
      * @return 成功处理的考试数量
@@ -563,19 +564,19 @@ public class ExamService {
         try {
             session = HibernateUtil.getSession();
             examDAO.setSession(session);
-            
+
             // 获取所有考试
             String hql = "FROM Exam ORDER BY examId";
             org.hibernate.query.Query<Exam> examQuery = session.createQuery(hql, Exam.class);
             List<Exam> exams = examQuery.getResultList();
-            
+
             int processedCount = 0;
             for (Exam exam : exams) {
                 // 为每个考试创建通知
                 examNotificationService.createNotificationForExistingExam(exam);
                 processedCount++;
             }
-            
+
             System.out.println("已为 " + processedCount + " 个考试创建通知");
             return processedCount;
         } catch (Exception e) {

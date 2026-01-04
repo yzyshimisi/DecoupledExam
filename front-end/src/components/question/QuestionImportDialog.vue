@@ -29,7 +29,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
           <p class="text-gray-600">拖拽 .docx 文件到这里，或点击选择</p>
-          <p class="text-xs text-gray-500">仅支持 Microsoft Word (.docx) 格式，单个文件 ≤10MB</p>
+          <p class="text-xs text-gray-500">仅支持 Microsoft Word (.docx) 格式，单个文件 ≤20MB</p>
         </div>
         <div v-else class="flex items-center justify-between">
           <div class="flex items-center gap-2">
@@ -40,6 +40,26 @@
             <span class="text-xs text-gray-500">({{ formatFileSize(selectedFile.size) }})</span>
           </div>
           <button class="btn btn-sm btn-circle btn-ghost" @click="clearFile">✕</button>
+        </div>
+      </div>
+
+      <!-- 进度状态区 -->
+      <div v-if="isUploading" class="mt-4 p-4 bg-base-100 rounded-lg border">
+        <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-gray-700">
+          {{ progress?.message || '正在处理...' }}
+        </span>
+          <span class="text-xs text-gray-500">{{ progress?.progress || 0 }}%</span>
+        </div>
+        <progress
+            class="progress progress-success w-full h-2"
+            :value="progress?.progress || 0"
+            max="100"
+        ></progress>
+
+        <!-- 可选：显示详细信息 -->
+        <div v-if="progress?.details" class="mt-2 text-xs text-gray-500">
+          {{ progress.details }}
         </div>
       </div>
 
@@ -75,9 +95,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
-import { importQuestionsAPI } from "../../apis"
+import {onMounted, ref} from "vue"
+import {getImportProgressAPI, importQuestionsAPI} from "../../apis"
 import { useRequest } from "vue-hooks-plus/es";
+
+onMounted(()=>{
+  taskId.value = localStorage.getItem("importQuestionTaskId");
+  if(taskId.value !== null && taskId.value !== ""){
+    isUploading.value = true
+    startPolling()
+  }
+})
 
 const varemit = defineEmits(["close", "getQuestions"])
 
@@ -106,8 +134,8 @@ const handleFileSelect = (e: Event) => {
       alert('仅支持 .docx 文件')
       return
     }
-    if (file.size > 10 * 1024 * 1024) {
-      alert('文件大小不能超过 10MB')
+    if (file.size > 20 * 1024 * 1024) {
+      alert('文件大小不能超过 20MB')
       return
     }
     selectedFile.value = file
@@ -124,7 +152,7 @@ const handleDrop = (e: DragEvent) => {
       return
     }
     if (file.size > 10 * 1024 * 1024) {
-      alert('文件大小不能超过 10MB')
+      alert('文件大小不能超过 20MB')
       return
     }
     selectedFile.value = file
@@ -152,7 +180,7 @@ const uploadFile = async () => {
     // 获取 Base64 字符串
     let base64String = await fileToBase64(selectedFile.value)
     base64String = base64String.split(',')[1]
-    console.log('文件 Base64:', base64String)
+    // console.log('文件 Base64:', base64String)
 
     useRequest(()=> importQuestionsAPI({file: base64String}),{
       onBefore(){
@@ -160,24 +188,104 @@ const uploadFile = async () => {
       },
       onSuccess(res){
         if(res['code']==200){
-          varemit("getQuestions")
-          closeImportDialog()
-          alert('题目导入成功！')
+
+          taskId.value = res['data']
+
+          localStorage.setItem('importQuestionTaskId', res['data'])
+
+          startPolling()
+
+          // 监听页面可见性变化
+          document.addEventListener('visibilitychange', handleVisibilityChange);
+
         }else{
+          isUploading.value = false
           alert('题目导入失败！')
         }
       },
       onError(error){
+        isUploading.value = false
         alert('题目导入失败！')
       },
-      onFinally(){
-        isUploading.value = false
-      }
     })
 
   } catch (error) {
     console.error('Base64 转换失败:', error)
   } finally {
+  }
+}
+
+const pollingInterval = ref<number>(2000); // 默认2秒
+let pollTimer = null;  // 定时器对象
+const taskId = ref<string | null>('');
+const progress = ref(null);
+
+// 开始轮询
+const startPolling = () => {
+  checkProgress();
+  pollTimer = setInterval(checkProgress, pollingInterval.value);
+}
+
+// 停止轮询
+const stopPolling = () => {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+// 查看进度
+const checkProgress = () => {
+
+  if(!isUploading.value) return
+
+  useRequest(()=> getImportProgressAPI(taskId.value),{
+    onSuccess(res){
+      if(res['code']==200){
+
+        progress.value = res['data'];
+
+        if (progress.value.status === 'completed') {
+          stopPolling();
+          window.removeEventListener('visibilitychange', handleVisibilityChange)
+          localStorage.removeItem('importQuestionTaskId')
+          isUploading.value = false
+          varemit("getQuestions")
+          closeImportDialog()
+          alert('导入成功')
+
+        }else if(progress.value.status === 'failed'){
+          stopPolling()
+          isUploading.value = false
+          localStorage.removeItem('importQuestionTaskId')
+          window.removeEventListener('visibilitychange', handleVisibilityChange)
+          alert('导入失败')
+        }
+      }
+    },
+
+    onError(err){
+      alert('轮询失败:' + err);
+      stopPolling()
+      window.removeEventListener('visibilitychange', handleVisibilityChange)
+      isUploading.value = false
+    }
+  })
+}
+
+const handleVisibilityChange = () => {
+  if (!isUploading.value) return;
+
+  if (document.hidden) {
+    // 页面隐藏：降低频率
+    stopPolling();
+    pollingInterval.value = 10000; // 10秒
+    setTimeout(startPolling, pollingInterval.value); // 延迟启动
+  } else {
+    // 页面恢复：立即查一次 + 恢复1秒频率
+    stopPolling();
+    pollingInterval.value = 2000;
+    startPolling();
   }
 }
 

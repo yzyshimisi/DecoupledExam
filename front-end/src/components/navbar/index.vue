@@ -5,8 +5,22 @@
   </div>
   <div class="flex-none">
     <ul v-if="userType=='1'" class="menu menu-horizontal px-1 text-base">
-      <li><a href="/teacher/question">题库管理</a></li>
-      <li><a>试卷管理</a></li>
+      <li><router-link to="/teacher/courses">课程管理</router-link></li>
+      <li><router-link to="/teacher/question">题库管理</router-link></li>
+      <li><router-link to="/teacher/exam-paper">试卷管理</router-link></li>
+      <li><router-link to="/exam">考试管理</router-link></li>
+    </ul>
+    <ul v-else-if="userType=='0'" class="menu menu-horizontal px-1 text-base">
+      <li><router-link to="/admin/subject">学科管理</router-link></li>
+      <li><a href="/admin/teachers">教师管理</a></li>
+      <li><a href="/exam">考试管理</a></li>
+      <li><router-link to="/teacher/question">题库管理</router-link></li>
+      <li><router-link to="/teacher/exam-paper">试卷管理</router-link></li>
+    </ul>
+    <ul v-else-if="userType=='2'" class="menu menu-horizontal px-1 text-base">
+      <li><a href="/exam">我的考试</a></li>
+      <li><a href="/student/notifications">考试通知</a></li>
+      <li><a href="/student/courses/join">加入课程</a></li>
     </ul>
     <ul v-if="userType=='0'" class="menu menu-horizontal px-1 text-base">
       <li><router-link to="/admin/logs">日志管理</router-link></li>
@@ -24,15 +38,41 @@
         tabindex="0"
         class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
       <li>
+        <a class="justify-between">
+          个人资料
+          <span class="badge">New</span>
+        </a>
+        <a @click="routeToHome">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10.5L12 4l9 6.5V20a1 1 0 01-1 1h-4v-6H8v6H4a1 1 0 01-1-1V10.5z" />
+          </svg>
+          <span>主页</span>
+        </a>
+      </li>
+      <li>
         <router-link to="/profile">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
           <span>个人资料</span>
         </router-link>
       </li>
-      <li><a>设置</a></li>
-      <li><a @click="logout">退出登录</a></li>
+      <li>
+        <a>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0a1.724 1.724 0 002.461 1.049c.88-.51 1.985.264 1.648 1.22a1.724 1.724 0 001.316 2.145c.966.327 1.43 1.77.725 2.482a1.724 1.724 0 00-.347 1.921c.36.826-.414 1.93-1.37 1.62a1.724 1.724 0 00-1.89.63c-.47.663-1.538.663-2.008 0a1.724 1.724 0 00-1.89-.63c-.956.31-1.73-.794-1.37-1.62.312-.715-.005-1.574-.347-1.921-.705-.712-.241-2.155.725-2.482a1.724 1.724 0 001.316-2.145c-.337-.956.768-1.73 1.648-1.22.87.503 2.066-.128 2.461-1.049z" />
+          </svg>
+          <span>设置</span>
+        </a>
+      </li>
+      <li>
+        <a @click="logout">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+          </svg>
+          <span>退出登录</span>
+        </a>
+      </li>
     </ul>
   </div>
 </div>
@@ -94,6 +134,16 @@ const loadUserAvatar = async () => {
 onMounted(() => {
   loadUserAvatar();
 });
+
+const routeToHome = () => {
+  if(userType.value=='1'){
+    router.push('/teacher')
+  }else if(userType.value=='2'){
+    router.push('/student')
+  }else if(userType.value=='0'){
+    router.push('/admin')
+  }
+}
 
 const logout = () => {
   localStorage.removeItem("token")

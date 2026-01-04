@@ -130,9 +130,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import {ref, watch, watchEffect} from 'vue'
 
-const props = defineProps(['subjectList'])
+const props = defineProps(['subjectList', "initialData"])
 
 // ====== Emits ======
 const emit = defineEmits<{
@@ -158,6 +158,12 @@ interface SubmitPayload {
   }>
 }
 
+interface OptionItem {
+  label: string
+  value: string
+  isCorrect: boolean
+}
+
 // ====== Data ======
 const labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
@@ -174,6 +180,77 @@ const formData = ref({
 })
 
 const correctIndex = ref<number | null>(null)
+
+// 初始化逻辑
+watch(
+    () => props.initialData,
+    (data) => {
+      if (!data) {
+        // 创建模式
+        formData.value = {
+          title: '',
+          difficulty: 1,
+          subjectId: 1,
+          options: [
+            { value: '', isCorrect: false },
+            { value: '', isCorrect: false }
+          ],
+          answerDesc: '',
+          analysisDesc: ''
+        }
+        correctIndex.value = null // 重置
+        return
+      }
+
+      // 编辑模式
+      const { subjectId, difficulty, title, questionComponents } = data
+
+      let options: OptionItem[] = []
+      let answerDesc = ''
+      let analysisDesc = ''
+
+      for (const comp of questionComponents || []) {
+        try {
+          if (comp.componentType === 'option') {
+            const parsed = JSON.parse(comp.content)
+            options = parsed.options || []
+          } else if (comp.componentType === 'answer') {
+            const parsed = JSON.parse(comp.content)
+            answerDesc = parsed.answerDesc || ''
+          } else if (comp.componentType === 'analysis') {
+            const parsed = JSON.parse(comp.content)
+            analysisDesc = parsed.analysisDesc || ''
+          }
+        } catch (e) {
+          console.warn('Failed to parse component content:', comp)
+        }
+      }
+
+      // 补足至少2个选项
+      while (options.length < 2) {
+        options.push({
+          label: String.fromCharCode(65 + options.length),
+          value: '',
+          isCorrect: false
+        })
+      }
+
+      // 赋值表单
+      formData.value = {
+        title: title ?? '',
+        difficulty: difficulty ?? 1,
+        subjectId: subjectId ?? 1,
+        options,
+        answerDesc,
+        analysisDesc
+      }
+
+      // 🔥 关键修复：根据 isCorrect 设置 correctIndex
+      const correctIdx = options.findIndex(opt => opt.isCorrect)
+      correctIndex.value = correctIdx >= 0 ? correctIdx : null
+    },
+    { immediate: true }
+)
 
 // Refs for DOM
 const fileInputRef = ref<HTMLInputElement | null>(null)

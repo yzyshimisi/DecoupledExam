@@ -98,7 +98,13 @@
         </div>
 
         <!-- 拍摄结果展示 -->
-        <div class="mt-8">
+        <div v-show="isLoading" class="mt-8 flex gap-4 justify-center items-center h-64">
+          <span class="loading loading-ring loading-xs"></span>
+          <span class="loading loading-ring loading-sm"></span>
+          <span class="loading loading-ring loading-md"></span>
+          <span class="loading loading-ring loading-lg"></span>
+        </div>
+        <div v-show="!isLoading" class="mt-8">
           <h2 class="text-xl font-bold mb-4 flex items-center">
             <svg class="w-6 h-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
@@ -177,6 +183,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+
+const props = withDefaults(defineProps<{
+  isLoading?: boolean
+}>(), {
+  isLoading: false
+})
 
 const varemit = defineEmits(["loginFace"])
 
@@ -346,6 +358,8 @@ const switchCamera = async () => {
 // ============ 开始录制 ============
 const startRecording = () => {
   if (!mediaStream) return
+
+  recordedSeconds.value = 0
 
   try {
     recordedChunks = []

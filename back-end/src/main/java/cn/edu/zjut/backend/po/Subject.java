@@ -22,7 +22,7 @@ public class Subject {
     private Byte gradeLevel;
 
     @Column(name = "sort_order", nullable = false, columnDefinition = "INT(11) DEFAULT 0") // 7. 使用 columnDefinition 来实现默认值
-    private Integer sortOrder;
+    private Integer sortOrder = 1;
 
     @Column(name = "status", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
     private Byte status;

@@ -2,6 +2,7 @@ package cn.edu.zjut.backend.app;
 
 import cn.edu.zjut.backend.util.FaceRec;
 import cn.smartjavaai.common.cv.SmartImageFactory;
+import cn.smartjavaai.common.entity.DetectionResponse;
 import cn.smartjavaai.common.entity.R;
 import cn.smartjavaai.common.entity.face.LivenessResult;
 import cn.smartjavaai.face.config.FaceDetConfig;
@@ -26,7 +27,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
+import java.util.Map;
+
 import ai.djl.modality.cv.Image;
 import io.milvus.param.MetricType;
 import io.milvus.response.*;
@@ -38,18 +43,43 @@ public class FaceTest {
 
     public static void main(String[] args) throws IOException {
 
-        FaceRec faceRec = new FaceRec();
+        String base64String = "";
+
+        try {
+            // 1. 读取文件的全部字节
+            Path path = Paths.get("C:\\Users\\31986\\Desktop\\2.mp4");
+            byte[] videoBytes = Files.readAllBytes(path);
+
+            // 2. 转换为 Base64 字符串
+            base64String = Base64.getEncoder().encodeToString(videoBytes);
+
+            // 3. (可选) 如果你需要 Data URI 格式（用于前端 video 标签播放）
+            // 注意：这里 MIME type 写 video/mp4，如果是其他格式请自行修改
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        FaceRec faceRec = FaceRec.getInstance();
 
 //        Image image = SmartImageFactory.getInstance().fromFile(Paths.get("C:\\Users\\31986\\Desktop\\证件\\5032083c6c526f82552cab483fc7a25.jpg"));
         String file = Files.readString(Paths.get("C:\\Users\\31986\\Desktop\\output_base64.txt"));
 
-        faceRec.faceRegister(file);
+//        faceRec.faceRegister(file);
 
-//        if(faceRec.faceRecognition(file)){
-//            System.out.println("识别成功");
-//        }else {
-//            System.out.println("识别失败");
-//        }
-//        faceRec.faceRegister("1", "{测试一下}", image);
+        R<DetectionResponse> res = faceRec.faceRecognition(base64String);
+
+        String metadata = res.getData().getDetectionInfoList().get(0).getFaceInfo().getFaceSearchResults().get(0).getMetadata();
+
+        Map Metadata = new Gson().fromJson(metadata, Map.class);
+
+        Long id = ((Number) Metadata.get("id")).longValue();
+        String username = (String) Metadata.get("username");
+        Integer userType = ((Number) Metadata.get("userType")).intValue();
+
+        System.out.println(id);
+        System.out.println(username);
+        System.out.println(userType);
     }
 }

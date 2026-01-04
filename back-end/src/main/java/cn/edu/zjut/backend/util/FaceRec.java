@@ -22,6 +22,7 @@ import cn.smartjavaai.face.model.liveness.LivenessDetModel;
 import cn.smartjavaai.face.vector.config.SQLiteConfig;
 
 import ai.djl.modality.cv.Image;
+import com.google.gson.Gson;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -31,13 +32,23 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
 public class FaceRec {
 
+    private static FaceRec instance;
     private final LivenessDetModel livenessDetModel;
     private final FaceRecModel faceRecModel;
+
+    public static FaceRec getInstance() {
+        if (instance == null) {
+            instance = new FaceRec();
+        }
+        return instance;
+    }
 
     public FaceRec(){
         // 人脸检测模型
@@ -63,19 +74,21 @@ public class FaceRec {
         faceRecConfig.setModelPath(resourcePath + "\\FaceModel\\FaceNet");
         faceRecConfig.setCropFace(true);
         faceRecConfig.setAlign(true);
+        faceRecConfig.setAutoLoadFace(true);
         faceRecConfig.setDetectModel(faceDetModel);
 
-        // 配置Milvus数据库
+        // 配置SQLITE数据库
         SQLiteConfig vectorDBConfig = new SQLiteConfig();
         vectorDBConfig.setDbPath( resourcePath + "\\face.db");
         vectorDBConfig.setSimilarityType(SimilarityType.IP);
 
         faceRecConfig.setVectorDBConfig(vectorDBConfig);
         faceRecModel = FaceRecModelFactory.getInstance().getModel(faceRecConfig);
+//        faceRecModel.loadFaceFeatures();
     }
 
     // 人脸识别
-    public boolean faceRecognition(String file){
+    public R<DetectionResponse> faceRecognition(String file){
         InputStream inputStream = Base64Util.base64ToInputStream(file);
         R<LivenessResult> status = livenessDetModel.detectVideo(inputStream);
         System.out.println(status.getData().toString());
@@ -83,38 +96,43 @@ public class FaceRec {
             try {
                 BufferedImage bufferedImage = extractRandomFrame(file);
                 Image image = SmartImageFactory.getInstance().fromBufferedImage(bufferedImage);
-                R<DetectionResponse> res = faceQuery(image);
-                System.out.println(res.toString());
-                if(res.getCode().intValue() == 0 && res.getMessage().toString().equals("成功") && res.getData()!=null){
-                    return true;
-                }else{
-                    return false;
-                }
+
+                return faceQuery(image);
+
             } catch (Exception e) {
-                System.err.println(e.getMessage());
-                return false;
+                e.printStackTrace();
+                return null;
             }
         }else{
-            return false;
+            return null;
         }
     }
 
     // 人脸注册
     public boolean faceRegister(String file){
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("id", UserContext.getUserId());
+        metadata.put("userType", UserContext.getUserType());
+        metadata.put("username", UserContext.getUsername());
+
+        Gson gson = new Gson();
+
         try {
             InputStream inputStream = Base64Util.base64ToInputStream(file);
             Image faceImg = SmartImageFactory.getInstance().fromInputStream(inputStream);
-            String uuid = UUID.randomUUID().toString().replace("-", "");;
+            String uuid = UUID.randomUUID().toString().replace("-", "");
 
-            faceRecModel.loadFaceFeatures();
+//            faceRecModel.loadFaceFeatures();
+
             if(faceRecModel.isLoadFaceCompleted()){
                 FaceRegisterInfo faceRegisterInfo = new FaceRegisterInfo();
                 faceRegisterInfo.setId(uuid);
-                faceRegisterInfo.setMetadata("NullNull");
+                faceRegisterInfo.setMetadata(gson.toJson(metadata));
                 R<String> res = faceRecModel.register(faceRegisterInfo, faceImg);
                 System.out.println(res);
 
-                faceRecModel.releaseFaceFeatures();
+//                faceRecModel.releaseFaceFeatures();
             }
             return true;
         }catch (Exception e){
@@ -136,7 +154,7 @@ public class FaceRec {
             faceRecModel.removeRegister(id);
             return true;
         }catch (Exception e){
-            System.err.println(e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -147,7 +165,7 @@ public class FaceRec {
             faceRecModel.clearFace();
             return true;
         }catch (Exception e){
-            System.err.println(e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -194,7 +212,7 @@ public class FaceRec {
             }
 
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
