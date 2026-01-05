@@ -1,11 +1,14 @@
 package cn.edu.zjut.backend.po;
 
+import lombok.Data;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
 @Table(name = "exam_record")
+@Data
 public class ExamRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

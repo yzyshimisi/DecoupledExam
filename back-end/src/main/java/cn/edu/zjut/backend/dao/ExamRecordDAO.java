@@ -131,4 +131,15 @@ public class ExamRecordDAO {
             throw re;
         }
     }
+
+    public void updateExamRecord(Session session, ExamRecord record) {
+        try {
+            session.save(record);
+            log.debug("save successful");
+        } catch (RuntimeException re) {
+            log.error("save failed", re);
+            throw re;
+        } finally{
+        }
+    }
 }

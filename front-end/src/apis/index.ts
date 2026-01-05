@@ -67,6 +67,8 @@ import {
     getSecurityEventLogsAPI,
     getUserLoginLogsAPI
 } from "./Server/getLogsAPI";
+import judgeEligibleAPI from "./Server/exam/judgeEligibleAPI";
+import uploadInvigilationVideoAPI from "./Server/exam/uploadInvigilationVideoAPI";
 
 export {
     loginAPI,
@@ -130,5 +132,7 @@ export {
     handleViolationAPI,
     getSystemOperationLogsAPI,
     getSecurityEventLogsAPI,
-    getUserLoginLogsAPI
+    getUserLoginLogsAPI,
+    judgeEligibleAPI,
+    uploadInvigilationVideoAPI,
 }

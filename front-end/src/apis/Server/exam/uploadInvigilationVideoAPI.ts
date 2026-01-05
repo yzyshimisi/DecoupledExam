@@ -1,10 +1,8 @@
 import { request } from '../../axios';
 
-const addExamAnswerAPI = async (data:{
-    answers: any,
-    examId: number,
-}) => {
-    return request("/api/examAnswer", {
+const uploadInvigilationVideoAPI = async (data:{ video: string}) => {
+    let url = `/api/exam/invigilation`
+    return request(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -15,4 +13,4 @@ const addExamAnswerAPI = async (data:{
     });
 };
 
-export default addExamAnswerAPI;
+export default uploadInvigilationVideoAPI;

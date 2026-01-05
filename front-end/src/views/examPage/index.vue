@@ -3,7 +3,6 @@
   <h1 class="text-2xl font-bold text-gray-800">
     基于教考分离的考试系统
   </h1>
-
   <ExamPreparation
       :exam="exam"
       @verify-face-success="verifyFaceSuccess"
@@ -33,9 +32,19 @@
     🔒 全屏开始考试
   </button>
 </div>
-<div v-if="examPaper && isFullScreen" class="flex justify-center items-start min-h-screen p-4">
-  <main v-if="examPaper" class="exam-main">
-    <div class="paper-preview max-w-4xl mx-auto p-6 bg-white shadow rounded-lg">
+<div v-if="examPaper && isFullScreen && isExamStarted" class="flex justify-center items-start min-h-screen p-4">
+
+  <div class="fixed w-[20vw] left-[2.5vw]">
+    <ExamCameraMonitor
+      :auto-start="true"
+      :interval="30"
+      :attention-score="attentionScore"
+      @capture="uploadInvigilationVideo"
+    />
+  </div>
+
+  <main v-if="examPaper" class="exam-main w-[50vw]">
+    <div class="paper-preview w-full mx-auto p-6 bg-white shadow rounded-lg">
       <div class="text-center mb-8">
         <h1 class="text-2xl font-bold">{{ examPaper['paperName'] || "暂无" }}</h1>
         <p class="text-gray-500 mt-2">总分：{{ examPaper.totalScore }} 分</p>
@@ -76,9 +85,9 @@
   </main>
 
   <!-- 右侧导航栏 -->
-  <div class="fixed right-4 min-w-[20vw] max-w-[20vw] max-h-[80vh] border-l border-gray-200 p-3 flex flex-col gap-4 overflow-y-auto bg-gray-50">
+  <div class="answer-panel fixed right-[2.5vw] min-w-[20vw] max-w-[20vw] max-h-[90vh] border-l border-gray-200 p-3 flex flex-col gap-4 overflow-y-auto bg-gray-50">
     <div class="text-xl font-bold">
-      试卷导航
+      试卷导航面板
     </div>
     <!-- 每个题型的导航组 -->
     <div
@@ -125,16 +134,19 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, nextTick, onBeforeMount, onMounted, onUnmounted, ref, watch} from "vue"
 import { useRoute } from "vue-router"
-import { ExamPreparation } from "../../components"
+import { ExamPreparation, ExamCameraMonitor } from "../../components"
 import { useRequest } from "vue-hooks-plus";
 import {
   addExamAnswerAPI,
   getExam_PapersAPI,
-  getExamDetailAPI, getExamSettingsAPI,
+  getExamDetailAPI,
+  getExamSettingsAPI,
   getQuestionsByIdAPI,
-  getQuestionTypeAPI, handleViolationAPI
+  getQuestionTypeAPI,
+  handleViolationAPI, judgeEligibleAPI, uploadInvigilationVideoAPI,
 } from "../../apis";
 import { ElNotification } from "element-plus";
+import routers from "../../routers";
 
 const route = useRoute()
 const examId = ref<number>(Number(route.params.examId))
@@ -152,6 +164,8 @@ const questions = ref([]);  // 试卷题目
 
 const answers = ref<Record<number, any>>({}) // key: questionId, value: 任意结构的答案
 
+const attentionScore = ref<number>(0)
+
 watch(()=>answers.value, (newValue) => {
   console.log('answers:', newValue);
 }, {deep: true})
@@ -160,16 +174,39 @@ const hasQuestions = computed(() => {
   return examPaper.value.questions.some(item => item.question != null)
 })
 
-onBeforeMount(()=>{
-
+onBeforeMount(()=> {
   examToken.value = localStorage.getItem('examToken')
 
   answers.value = JSON.parse(localStorage.getItem('localAnswers')) || {} // 加载时，先同步本地存储的答案，不需要全部重选
 
-  getQuestionTypes()  // 获取题目类型列表
-  getExamDetail() // 获取考试信息
-  getExamPaper()  // 获取考试试卷
+  judgeEligible()
+
+  // examToken.value = "djasldjlakd";
+  //
+  // getQuestionTypes()
+  // getExamDetail()
+  // getExamPaper()
+  // isFullScreen.value = true
+  // isExamStarted.value = true
 })
+
+const judgeEligible = () => {
+  useRequest(()=>judgeEligibleAPI(examId.value),{
+    onSuccess: (res) => {
+      if(res['code'] === 200){
+        getExamDetail() // 获取考试信息
+      }else{
+        routers.push('/exam').then(()=>{
+          ElNotification.error({
+            title: '提示',
+            message: res['msg'],
+            duration: 3000
+          })
+        })
+      }
+    }
+  })
+}
 
 const getExamDetail = () => {
   useRequest(()=>getExamDetailAPI(examId.value), {  // 获取考试信息
@@ -177,7 +214,6 @@ const getExamDetail = () => {
       if(res['code'] === 200){
         exam.value = res['data']
         console.log('exam:', exam.value);
-        getExamSettings() // 获取考试设置信息
       }
     }
   })
@@ -208,7 +244,6 @@ const startCountdown = (endTime: number) => {
 // 组件卸载时清理
 onUnmounted(() => {
   if (countdownTimer) clearTimeout(countdownTimer);
-  document.removeEventListener('visibilitychange', handleVisibilityChange)
 });
 
 const getQuestionTypes = () => {
@@ -222,7 +257,7 @@ const getQuestionTypes = () => {
 }
 
 const getExamPaper = () => {
-  useRequest(()=>getExam_PapersAPI(examId.value, { examToken: examToken.value}),{
+  useRequest(()=>getExam_PapersAPI(examId.value),{
     onSuccess: (res) => {
       if(res['code'] === 200){
         examPaper.value = res['data']
@@ -416,6 +451,9 @@ const getQuestionComponent = (typeId: number) => {
 const verifyFaceSuccess = () => {
   examToken.value = localStorage.getItem('examToken')
   isExamStarted.value = true
+  getQuestionTypes()  // 获取题目类型列表
+  getExamPaper()  // 获取考试试卷
+  getExamSettings() // 获取考试设置信息
 }
 
 // 所有题目是否都已作答
@@ -431,7 +469,7 @@ const allAnswered = computed(() => {
 
 // 滚动到具体题目
 const scrollToQuestion = (questionId: number) => {
-  window.document.getElementById(questionId)?.scrollIntoView({
+  window.document.getElementById(String(questionId))?.scrollIntoView({
     behavior: 'smooth',
     block: 'start',
   })
@@ -449,7 +487,7 @@ const submitExam = () => {
 }
 
 const addExamAnswer = () => {
-  useRequest(()=>addExamAnswerAPI({answers: answers.value, examId: examId.value, examToken: examToken.value}),{
+  useRequest(()=>addExamAnswerAPI({answers: answers.value, examId: examId.value}),{
     onBefore(){
       localStorage.setItem('localAnswers', JSON.stringify(answers.value)) // 保存本地答案
     },
@@ -458,7 +496,10 @@ const addExamAnswer = () => {
       if(res['code']==200){
         answers.value = {}
         localStorage.removeItem('localAnswers') // 提交成功，删除本地答案
-        ElNotification({title: 'Success', message: '提交成功！', type: 'success',})
+        localStorage.removeItem('examToken')  // 删除考试令牌
+        routers.push("/exam").then(()=>{
+          ElNotification({title: 'Success', message: '提交成功！', type: 'success',})
+        })
       }else{
         ElNotification({title: 'Warning', message: res['msg'], type: 'warning',})
       }
@@ -468,8 +509,26 @@ const addExamAnswer = () => {
     },
   })
 }
+
+const uploadInvigilationVideo = (base64: string) => {
+  useRequest(()=>uploadInvigilationVideoAPI({video: base64}),{
+    onSuccess(res){
+      if(res['code']==200){
+
+        attentionScore.value = res['data']['attentionScore']
+
+        if(res['data']['isViolation']){
+
+        }else{
+
+        }
+      }else{
+        ElNotification({title: 'Warning', message: res['msg'], type: 'warning',})
+      }
+    },
+  })
+}
 </script>
 
 <style scoped>
-
 </style>

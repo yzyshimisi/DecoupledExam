@@ -16,7 +16,7 @@ axiosInstance.interceptors.response.use(
     error => {
         // 获取错误状态码
         if (error.response) {
-            switch (error.response.code) {
+            switch (error.response.status) {
                 case 401:
                     // 这里是关键：401 代表未授权（Token 无效/过期）
                     handleTokenInvalid()
@@ -45,21 +45,21 @@ axiosInstance.interceptors.request.use(
 );
 
 // 响应拦截器，处理通用错误
-axiosInstance.interceptors.response.use(
-  response => {
-    return response;
-  },
-  error => {
-    console.error('API请求错误:', error);
-    if (error.response?.code === 401) {
-      // 如果是认证错误，跳转到登录页面
-      localStorage.removeItem('token');
-      localStorage.removeItem('userType');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
+// axiosInstance.interceptors.response.use(
+//   response => {
+//     return response;
+//   },
+//   error => {
+//     console.error('API请求错误:', error);
+//     if (error.response?.code === 401) {
+//       // 如果是认证错误，跳转到登录页面
+//       localStorage.removeItem('token');
+//       localStorage.removeItem('userType');
+//       window.location.href = '/login';
+//     }
+//     return Promise.reject(error);
+//   }
+// );
 
 const request = <ResponseType = unknown>(  //创建request
     url: string,                             //上面如果给了baseURL，这里可以直接传入子路径
@@ -79,6 +79,8 @@ const request = <ResponseType = unknown>(  //创建request
 
 // 处理 Token 无效的函数
 const handleTokenInvalid = () => {
+    console.log( 'Token 无效')
+
     // 1. 清除 localStorage 中的 Token
     localStorage.removeItem('token')
     localStorage.removeItem('userType')

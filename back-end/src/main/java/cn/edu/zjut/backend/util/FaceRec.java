@@ -4,18 +4,15 @@ import cn.smartjavaai.common.cv.SmartImageFactory;
 import cn.smartjavaai.common.entity.DetectionResponse;
 import cn.smartjavaai.common.entity.R;
 import cn.smartjavaai.common.entity.face.LivenessResult;
+import cn.smartjavaai.common.enums.DeviceEnum;
 import cn.smartjavaai.common.enums.SimilarityType;
-import cn.smartjavaai.face.config.FaceDetConfig;
-import cn.smartjavaai.face.config.FaceRecConfig;
-import cn.smartjavaai.face.config.LivenessConfig;
+import cn.smartjavaai.face.config.*;
 import cn.smartjavaai.face.entity.FaceRegisterInfo;
 import cn.smartjavaai.face.entity.FaceSearchParams;
-import cn.smartjavaai.face.enums.FaceDetModelEnum;
-import cn.smartjavaai.face.enums.FaceRecModelEnum;
-import cn.smartjavaai.face.enums.LivenessModelEnum;
-import cn.smartjavaai.face.factory.FaceDetModelFactory;
-import cn.smartjavaai.face.factory.FaceRecModelFactory;
-import cn.smartjavaai.face.factory.LivenessModelFactory;
+import cn.smartjavaai.face.enums.*;
+import cn.smartjavaai.face.factory.*;
+import cn.smartjavaai.face.model.attribute.FaceAttributeModel;
+import cn.smartjavaai.face.model.expression.ExpressionModel;
 import cn.smartjavaai.face.model.facedect.FaceDetModel;
 import cn.smartjavaai.face.model.facerec.FaceRecModel;
 import cn.smartjavaai.face.model.liveness.LivenessDetModel;
@@ -42,7 +39,8 @@ public class FaceRec {
     private static FaceRec instance;
     private final LivenessDetModel livenessDetModel;
     private final FaceRecModel faceRecModel;
-
+    private final FaceAttributeModel faceAttributeModel;
+    private final ExpressionModel faceExpressionModel;
     public static FaceRec getInstance() {
         if (instance == null) {
             instance = new FaceRec();
@@ -85,10 +83,24 @@ public class FaceRec {
         faceRecConfig.setVectorDBConfig(vectorDBConfig);
         faceRecModel = FaceRecModelFactory.getInstance().getModel(faceRecConfig);
 //        faceRecModel.loadFaceFeatures();
+
+        // 人脸属性检测模型
+        FaceAttributeConfig faceAttributeConfig = new FaceAttributeConfig();
+        faceAttributeConfig.setModelEnum(FaceAttributeModelEnum.SEETA_FACE6_MODEL);
+        faceAttributeConfig.setModelPath( resourcePath + "\\FaceModel\\sf3.0_models");
+        faceAttributeModel = FaceAttributeModelFactory.getInstance().getModel(faceAttributeConfig);
+
+        // 表情检测模型
+        FaceExpressionConfig faceExpressionConfig = new FaceExpressionConfig();
+        faceExpressionConfig.setModelEnum(ExpressionModelEnum.FrEmotion);
+        faceExpressionConfig.setModelPath(  resourcePath + "\\FaceModel\\FrEmotion\\fr_expression.onnx");
+        faceExpressionConfig.setAlign(true);
+        faceExpressionConfig.setDetectModel(faceDetModel);
+        faceExpressionModel = ExpressionModelFactory.getInstance().getModel(faceExpressionConfig);
     }
 
     // 人脸识别
-    public R<DetectionResponse> faceRecognition(String file){
+    public R<DetectionResponse> faceRecognition(String file){   // 传入视频
         InputStream inputStream = Base64Util.base64ToInputStream(file);
         R<LivenessResult> status = livenessDetModel.detectVideo(inputStream);
         System.out.println(status.getData().toString());
@@ -106,6 +118,20 @@ public class FaceRec {
         }else{
             return null;
         }
+    }
+
+    // 人脸属性检测
+    public DetectionResponse faceAttributeRecognition(String file){ // 传入视频
+        BufferedImage bufferedImage = extractRandomFrame(file);
+        Image image = SmartImageFactory.getInstance().fromBufferedImage(bufferedImage);
+        return faceAttributeModel.detect(image);
+    }
+
+    // 表情识别
+    public R<DetectionResponse> faceExpressionRecognition(String file){
+        BufferedImage bufferedImage = extractRandomFrame(file);
+        Image image = SmartImageFactory.getInstance().fromBufferedImage(bufferedImage);
+        return faceExpressionModel.detect(image);
     }
 
     // 人脸注册

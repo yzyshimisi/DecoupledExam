@@ -13,6 +13,7 @@ import EditExamPaperDialog from "./examPaper/EditExamPaperDialog.vue"
 import AddQuestionToPaperDialog from "./examPaper/AddQuestionToPaperDialog.vue";
 import PaperPreview from "./examPaper/PaperPreview.vue";
 import ExamPreparation from "./examPage/ExamPreparation.vue";
+import ExamCameraMonitor from "./examPage/ExamCameraMonitor.vue";
 
 export {
     Navbar,
@@ -30,4 +31,5 @@ export {
     AddQuestionToPaperDialog,
     PaperPreview,
     ExamPreparation,
+    ExamCameraMonitor,
 }

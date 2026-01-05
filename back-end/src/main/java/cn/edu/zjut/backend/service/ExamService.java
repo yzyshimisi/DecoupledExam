@@ -1,10 +1,12 @@
 package cn.edu.zjut.backend.service;
 
 import cn.edu.zjut.backend.dao.*;
+import cn.edu.zjut.backend.dto.InvigilationResDTO;
 import cn.edu.zjut.backend.po.*;
 import cn.edu.zjut.backend.util.*;
 import cn.smartjavaai.common.entity.DetectionResponse;
 import cn.smartjavaai.common.entity.R;
+import cn.smartjavaai.common.entity.face.FaceAttribute;
 import com.google.gson.Gson;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -13,10 +15,7 @@ import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 @Service("examServ")
 public class ExamService {
@@ -597,73 +596,40 @@ public class ExamService {
 
     public String verifyFace(String file, Long examId) throws Exception {
 
-        // 判断用户能否参与该考试（是否参加相应课程）
+        // 判断用户能否参与该考试（是否参加相应课程，同时考试记录的状态要为0）
 
         Session session = HibernateUtil.getSession();
-        ExamCourseDAO examCourseDAO = new ExamCourseDAO();
-        StudentCourseDAO studentCourseDAO = new StudentCourseDAO();
         ExamDAO examDAO = new ExamDAO();
-        ExamSettingDAO examSettingDAO = new ExamSettingDAO();
-        examCourseDAO.setSession(session);
-        studentCourseDAO.setSession(session);
         examDAO.setSession(session);
 
         try{
-            List<Long> coursesIds = examCourseDAO.getCoursesByExamId(examId);   // 考试包含的课程ID
 
-            boolean flag = false;
+            if(!isEligible(examId)) throw new Exception("无法参加考试");
 
-            for(Long courseId : coursesIds){
-                List<Long> studentIds = studentCourseDAO.getStudentsByCourseId(courseId);
+            Exam exam = examDAO.getById(examId);
 
-                for(Long studentId : studentIds){
-                    if(studentId == UserContext.getUserId()){
-                        flag = true;
-                        break;
-                    }
-                }
+            FaceRec faceRec = new FaceRec();
 
-                if(flag){
-                    break;
-                }
-            }
+            R<DetectionResponse> res = faceRec.faceRecognition(file);
 
-            // 合法的
-            if(flag){
+            if(res != null && res.getCode() == 0 && res.getMessage().equals("成功") && res.getData()!=null){
 
-                Exam exam = examDAO.getById(examId);
-                ExamSetting examSetting = examSettingDAO.getByExamId(session, examId);
+                Gson gson = new Gson();
+                String metadata = res.getData().getDetectionInfoList().get(0).getFaceInfo().getFaceSearchResults().get(0).getMetadata();
+                Map Metadata = gson.fromJson(metadata, Map.class);
 
-                // 是否允许迟入
-                if(String.valueOf(examSetting.getAllowLateEnter()).equals("0") && exam.getStartTime().before(new Date())){
-                    throw new Exception("迟到，不允许进入");
-                }
+                Long id = ((Number) Metadata.get("id")).longValue();
 
-                FaceRec faceRec = new FaceRec();
-
-                R<DetectionResponse> res = faceRec.faceRecognition(file);
-
-                if(res != null && res.getCode() == 0 && res.getMessage().equals("成功") && res.getData()!=null){
-
-                    Gson gson = new Gson();
-                    String metadata = res.getData().getDetectionInfoList().get(0).getFaceInfo().getFaceSearchResults().get(0).getMetadata();
-                    Map Metadata = gson.fromJson(metadata, Map.class);
-
-                    Long id = ((Number) Metadata.get("id")).longValue();
-
-                    if(id.equals(UserContext.getUserId())){     // 验证人脸识别与登录的是同一个用户
-                        Long duration = (exam.getEndTime().getTime() - exam.getStartTime().getTime()) / 1000 + 20 ;
-                        Jwt jwt = new Jwt();
-                        HibernateUtil.closeSession();
-                        return jwt.generateExamToken(UserContext.getUserId(), examId, duration);
-                    }else{
-                        throw new Exception("人脸与当前登录用户不匹配");
-                    }
+                if(id.equals(UserContext.getUserId())){     // 验证人脸识别与登录的是同一个用户
+                    Long duration = (exam.getEndTime().getTime() - exam.getStartTime().getTime()) / 1000 + 20 ;
+                    Jwt jwt = new Jwt();
+                    HibernateUtil.closeSession();
+                    return jwt.generateExamToken(UserContext.getUserId(), examId, duration);
                 }else{
-                    throw new Exception("人脸识别失败");
+                    throw new Exception("人脸与当前登录用户不匹配");
                 }
             }else{
-                throw new Exception("未参与相关的考试班级");
+                throw new Exception("人脸识别失败");
             }
         }catch (Exception e){
             throw e;
@@ -672,6 +638,7 @@ public class ExamService {
         }
     }
 
+    // 处理违规行为
     public int handleViolation() throws Exception {
         incrementViolationCount(ExamContext.getStudentId(), ExamContext.getExamId());
         int cnt = getViolationCount(ExamContext.getStudentId(), ExamContext.getExamId());
@@ -683,6 +650,7 @@ public class ExamService {
             Transaction tran = null;
 
             try {
+                assert session != null;
                 tran = session.beginTransaction();
 
                 List<ExamRecord> examRecords = examRecordDAO.getRecordsByExamId(session, ExamContext.getExamId());
@@ -728,5 +696,185 @@ public class ExamService {
             String countStr = jedis.get(key);
             return countStr == null ? 0 : Integer.parseInt(countStr);
         }
+    }
+
+    public boolean isEligible(Long examId) throws Exception {    // 1.学生参加考试相关的课程 2.学生的考试记录状态是0 3.迟到
+
+        Session session = HibernateUtil.getSession();
+        ExamRecordDAO examRecordDAO = new ExamRecordDAO();
+        ExamCourseDAO examCourseDAO = new ExamCourseDAO();
+        StudentCourseDAO studentCourseDAO = new StudentCourseDAO();
+        ExamDAO examDAO = new ExamDAO();
+        ExamSettingDAO examSettingDAO = new ExamSettingDAO();
+        examDAO.setSession(session);
+        examCourseDAO.setSession(session);
+        studentCourseDAO.setSession(session);
+
+        // 判断迟到
+        Exam exam = examDAO.getById(examId);
+        ExamSetting examSetting = examSettingDAO.getByExamId(session, examId);
+        // 是否允许迟到进入
+        if(String.valueOf(examSetting.getAllowLateEnter()).equals("0") && exam.getStartTime().before(new Date())){
+            throw new Exception("迟到，不允许进入");
+        }
+
+        List<ExamRecord> examRecords = examRecordDAO.getRecordsByExamId(session, examId);
+
+        // 判断考试记录的状态，是否是“未考（0）”
+        for(ExamRecord examRecord : examRecords){
+            if(examRecord.getStudentId().equals(UserContext.getUserId())){
+                if(!examRecord.getStatus().equals("0")){
+                    throw new Exception("试卷已提交");
+                }else{
+                    break;
+                }
+            }
+        }
+
+        List<Long> coursesIds = examCourseDAO.getCoursesByExamId(examId);   // 考试包含的课程ID
+
+        for(Long courseId : coursesIds){
+            List<Long> studentIds = studentCourseDAO.getStudentsByCourseId(courseId);
+
+            for(Long studentId : studentIds){
+                if(Objects.equals(studentId, UserContext.getUserId())){
+                    return true;
+                }
+            }
+
+        }
+
+        return false;
+    }
+
+    // 处理监考（人脸识别身份验证 + 注意力分数）
+    public InvigilationResDTO handleInvigilation(String videoBase64) throws Exception{
+
+        InvigilationResDTO resDTO = new InvigilationResDTO();
+
+        FaceRec faceRec = new FaceRec();
+
+        try{
+            // 人脸识别
+            R<DetectionResponse> recRes = faceRec.faceRecognition(videoBase64);
+
+            if(recRes != null && recRes.getCode() == 0 && recRes.getMessage().equals("成功") && recRes.getData()!=null) {
+
+                Gson gson = new Gson();
+                String metadata = recRes.getData().getDetectionInfoList().get(0).getFaceInfo().getFaceSearchResults().get(0).getMetadata();
+                Map Metadata = gson.fromJson(metadata, Map.class);
+
+                Long id = ((Number) Metadata.get("id")).longValue();
+
+                if (id.equals(UserContext.getUserId())) {     // 验证人脸识别与登录的是同一个用户
+                    // 人脸属性
+                    DetectionResponse attributeRes = faceRec.faceAttributeRecognition(videoBase64);
+                    FaceAttribute faceInfo = attributeRes.getDetectionInfoList().get(0).getFaceInfo().getFaceAttribute();
+
+                    // 表情识别
+                    R<DetectionResponse> expressRes = faceRec.faceExpressionRecognition(videoBase64);
+                    String emotion = expressRes.getData().getDetectionInfoList().get(0).getFaceInfo().getExpressionResult().getExpression().toString();
+
+                    // 计算注意力分数
+                    int score = computeAttentionScore(faceInfo, emotion);
+                    System.out.println("最终的注意力分数为：" + score);
+
+                    resDTO.setViolation(false);
+                    resDTO.setAttentionScore(score);
+                    resDTO.setMessage("成功");
+                }else{
+                    throw new Exception("人脸不匹配");
+                }
+            }else{
+                throw new Exception("人脸识别未通过");
+            }
+        }catch (Exception e){
+            handleViolation();  // 人脸识别不通过，违规处理
+            resDTO.setViolation(true);
+            resDTO.setAttentionScore(0);
+            resDTO.setMessage(e.getMessage());
+        }
+
+        return resDTO;  // 返回数据
+    }
+
+    private int computeAttentionScore(FaceAttribute faceInfo, String emotion) {
+        int score = 100;
+
+        // === 1. 眼睛状态 ===
+        boolean leftOpen = faceInfo.getLeftEyeStatus().toString().equals("OPEN");
+        boolean rightOpen = faceInfo.getRightEyeStatus().toString().equals("OPEN");
+
+        System.out.println("眼睛状态 - 左眼: " + (leftOpen ? "睁开" : "闭合") +
+                ", 右眼: " + (rightOpen ? "睁开" : "闭合"));
+
+        if (!leftOpen && !rightOpen) {
+            score -= 40; // 双眼闭合 → 打瞌睡
+        } else if (!leftOpen || !rightOpen) {
+            score -= 20; // 单眼闭合 → 可能眨眼或走神
+        }
+
+        // === 2. 头部姿态（角度单位：度）===
+        double pitch = Math.abs(faceInfo.getHeadPose().getPitch()); // 低头/抬头
+        double yaw = Math.abs(faceInfo.getHeadPose().getYaw());     // 左右转头
+        double roll = Math.abs(faceInfo.getHeadPose().getRoll());   // 歪头
+
+        System.out.println("头部姿态 - 低头/抬头角度: " + pitch +
+                ", 左右转头角度: " + yaw +
+                ", 歪头角度: " + roll);
+
+        // 低头/仰头超过 25 度
+        if (pitch > 25) {
+            score -= 25;
+        } else if (pitch > 15) {
+            score -= 10;
+        }
+
+        // 转头超过 30 度
+        if (yaw > 30) {
+            score -= 30;
+        } else if (yaw > 20) {
+            score -= 15;
+        }
+
+        // 歪头严重
+        if (roll > 20) {
+            score -= 10;
+        }
+
+        // === 3. 表情影响（关键新增！）===
+        if (emotion != null) {
+
+            System.out.println("检测到表情: " + emotion);
+
+            switch (emotion.toLowerCase()) {
+                case "surprise":   // 惊讶 → 可能收到外部信号
+                    score -= 20;
+                    break;
+                case "disgust":    // 厌恶 → 可能看到不该看的内容
+                case "anger":      // 愤怒 → 异常情绪
+                    score -= 15;
+                    break;
+                case "fear":       // 恐惧 → 过度紧张
+                case "sad":        // 悲伤 → 状态不佳
+                    score -= 10;
+                    break;
+                case "happy":      // 高兴 → 宽容处理
+                    // 可选：轻微扣分（如 -5）或不扣
+                     score -= 5;
+                    break;
+                case "neutral":
+                default:
+                    // 中性表情，不扣分
+                    break;
+            }
+        }
+
+        Random random = new Random();   // 为了有变化，这里让score随机减去0~10的数
+        int randomNumber = random.nextInt(11);
+        score -= randomNumber;
+
+        // 保证分数在 0～100 范围内
+        return Math.max(0, Math.min(100, score));
     }
 }

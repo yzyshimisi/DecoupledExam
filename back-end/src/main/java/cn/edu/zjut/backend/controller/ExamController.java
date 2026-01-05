@@ -3,13 +3,18 @@ package cn.edu.zjut.backend.controller;
 import cn.edu.zjut.backend.annotation.LogRecord;
 import cn.edu.zjut.backend.dao.ExamCourseDAO;
 import cn.edu.zjut.backend.dto.ExamPaperDTO;
+import cn.edu.zjut.backend.dto.InvigilationResDTO;
 import cn.edu.zjut.backend.po.*;
 import cn.edu.zjut.backend.service.ExamService;
 import cn.edu.zjut.backend.service.ExamSettingService;
 import cn.edu.zjut.backend.service.CourseService;
 import cn.edu.zjut.backend.service.ExamNotificationService;
 import cn.edu.zjut.backend.util.ExamContext;
+import cn.edu.zjut.backend.util.FaceRec;
 import cn.edu.zjut.backend.util.Response;
+import cn.smartjavaai.common.entity.DetectionResponse;
+import cn.smartjavaai.common.entity.R;
+import cn.smartjavaai.common.entity.face.FaceAttribute;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -944,6 +949,21 @@ public class ExamController {
         }
     }
 
+    @RequestMapping(value = "/{examId}/eligible", method = RequestMethod.GET)
+    @ResponseBody
+    public Response<String> isEligible(@PathVariable Long examId) { // 对于参与考试请求，判断学生是否有资格
+
+        try{
+            if(examService.isEligible(examId)){
+                return Response.success();
+            }else{
+                return Response.error("无法参加考试");
+            }
+        }catch (Exception e){
+            return Response.error(e.getMessage());
+        }
+    }
+
     @RequestMapping(value = "/{examId}/verify-face", method = RequestMethod.POST)
     @ResponseBody
     public Response<String> verifyFace(@RequestBody Map<String, Object> loginRequest, @PathVariable Long examId) {
@@ -995,6 +1015,28 @@ public class ExamController {
         try{
             int cnt = examService.handleViolation();
             return Response.success(cnt);
+
+        }catch (Exception e){
+            return Response.error(e.getMessage());
+        }
+    }
+
+    @RequestMapping(value = "/invigilation", method = RequestMethod.POST)
+    @ResponseBody
+    public Response<InvigilationResDTO> handleInvigilation(@RequestBody Map<String, Object> loginRequest) {
+
+        try{
+            if(loginRequest.get("video")==null){
+                return Response.error("参数禁止为空");
+            }
+
+            String videoBase64 = loginRequest.get("video").toString();
+            if(videoBase64==null || videoBase64.isEmpty()){
+                return Response.error("参数禁止为空");
+            }
+
+            InvigilationResDTO resDTO = examService.handleInvigilation(videoBase64);
+            return Response.success(resDTO);
 
         }catch (Exception e){
             return Response.error(e.getMessage());
