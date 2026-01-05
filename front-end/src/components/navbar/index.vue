@@ -8,6 +8,7 @@
       <li><router-link to="/teacher/courses">课程管理</router-link></li>
       <li><router-link to="/teacher/question">题库管理</router-link></li>
       <li><router-link to="/teacher/exam-paper">试卷管理</router-link></li>
+      <li><router-link to="/teacher/student-grade">成绩管理</router-link></li>
       <li><router-link to="/exam">考试管理</router-link></li>
     </ul>
     <ul v-else-if="userType=='0'" class="menu menu-horizontal px-1 text-base">
@@ -19,6 +20,7 @@
     </ul>
     <ul v-else-if="userType=='2'" class="menu menu-horizontal px-1 text-base">
       <li><a href="/exam">我的考试</a></li>
+      <li><a href="/student/grades">我的成绩</a></li>
       <li><a href="/student/notifications">考试通知</a></li>
       <li><a href="/student/courses/join">加入课程</a></li>
     </ul>

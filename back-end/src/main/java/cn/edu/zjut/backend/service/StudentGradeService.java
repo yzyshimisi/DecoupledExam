@@ -11,7 +11,7 @@ import java.util.List;
 
 @Service
 public class StudentGradeService {
-    
+
     public Session getSession() {
         return HibernateUtil.getSession();
     }
@@ -31,7 +31,7 @@ public class StudentGradeService {
         } catch (Exception e) {
             System.err.println("添加成绩时发生异常: " + e.getMessage());
             e.printStackTrace();
-            
+
             if (transaction != null) {
                 transaction.rollback();
             }
@@ -184,4 +184,21 @@ public class StudentGradeService {
             }
         }
     }
+
+    public List<StudentGrade> getStudentGradesByTeacher(Long teacherId) {
+        Session session = getSession();
+        StudentGradeDAO dao = new StudentGradeDAO();
+        dao.setSession(session);
+        try {
+            return dao.getByTeacherId(teacherId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+    }
+
 }

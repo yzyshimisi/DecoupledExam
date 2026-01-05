@@ -8,6 +8,7 @@ export const createExamAPI = (data: {
   startTime: string;
   endTime: string;
   examCode: string;
+  status?: number;
   durationMinute: number;
   allowLateEnter: boolean;
   questionShuffle: boolean;
@@ -17,11 +18,14 @@ export const createExamAPI = (data: {
   autoSubmit: boolean;
   allowViewPaper: boolean;
   allowViewScore: boolean;
-  multiChoicePartialRatio: number;
+  generateExamCode?: boolean;
+  peerReview: boolean;
   fillCaseSensitive: boolean;
   fillIgnoreSymbols: boolean;
   fillManualMark: boolean;
-  peerReview: boolean;
+  multiChoicePartialScore?: boolean;
+  multiChoicePartialRatio: number;
+  sortQuestionScorePerBlank?: boolean;
 }) => {
   return request<{ code: number; data: number; msg: string }>(
     "/api/exam",
@@ -73,10 +77,33 @@ export const getExamRecordAPI = (recordId: number) => {
 
 // 更新考试信息
 export const updateExamAPI = (examId: number, data: {
+  // 考试基本信息字段
   title?: string;
+  paperId?: number;
+  teacherId?: number;
   startTime?: string;
   endTime?: string;
   examCode?: string;
+  status?: number;
+
+  // 考试设置字段
+  durationMinute?: number;
+  allowLateEnter?: number;
+  questionShuffle?: number;
+  optionShuffle?: number;
+  preventScreenSwitch?: number;
+  passingScore?: number;
+  autoSubmit?: number;
+  allowViewPaper?: number;
+  allowViewScore?: number;
+  generateExamCode?: number;
+  peerReview?: number;
+  fillCaseSensitive?: number;
+  fillIgnoreSymbols?: number;
+  fillManualMark?: number;
+  multiChoicePartialScore?: number;
+  multiChoicePartialRatio?: number;
+  sortQuestionScorePerBlank?: number;
 }) => {
   return request<{ code: number; data: boolean; msg: string }>(
     `/api/exam/${examId}/update`,

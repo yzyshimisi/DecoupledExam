@@ -70,4 +70,11 @@ public class StudentGradeDAO {
         query.setParameter("courseId", courseId);
         return query.list();
     }
+
+    public List<StudentGrade> getByTeacherId(Long teacherId) {
+        String hql = "FROM StudentGrade WHERE courseId IN (SELECT courseId FROM Course WHERE teacherId = :teacherId) ORDER BY recordTime DESC";
+        Query<StudentGrade> query = session.createQuery(hql, StudentGrade.class);
+        query.setParameter("teacherId", teacherId);
+        return query.list();
+    }
 }

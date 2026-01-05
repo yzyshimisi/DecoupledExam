@@ -37,8 +37,8 @@ import registerAPI  from "./Server/registerAPI";
 import teacherRegisterAPI from "./Server/teacherRegisterAPI";
 import userAPI from "./Server/userAPI";
 import getSubjectsAPI from "./Server/subject/getSubjectsAPI";
-import createSubjectsAPI from "./Server/subject/createSubjectsAPI"
-import deleteSubjectsAPI from "./Server/subject/deleteSubjectsAPI"
+import createSubjectsAPI from "./Server/subject/createSubjectsAPI";
+import deleteSubjectsAPI from "./Server/subject/deleteSubjectsAPI";
 import importSubjectsAPI from "./Server/subject/importSubjectsAPI";
 import deleteQuestionsAPI from "./Server/questions/deleteQuestionsAPI";
 import getQuestionTagsAPI from "./Server/questionTags/getQuestionTagsAPI";
@@ -70,7 +70,20 @@ import {
 import judgeEligibleAPI from "./Server/exam/judgeEligibleAPI";
 import uploadInvigilationVideoAPI from "./Server/exam/uploadInvigilationVideoAPI";
 
+import {
+    getStudentGradeAPI,
+    getAllStudentGradesAPI,
+    getStudentGradesByStudentIdAPI,
+    getStudentGradesByCourseIdAPI,
+    getStudentGradesByGradeTypeAPI,
+    getStudentGradesByTeacherIdAPI
+} from "./Server/getStudentGradeAPI";
+import { createStudentGradeAPI } from "./Server/createStudentGradeAPI";
+import { updateStudentGradeAPI } from "./Server/updateStudentGradeAPI";
+import { deleteStudentGradeAPI } from "./Server/deleteStudentGradeAPI";
+
 export {
+    // ===== 上游代码全部保留 =====
     loginAPI,
     getQuestionTypeAPI,
     getSubjectAPI,
@@ -135,4 +148,15 @@ export {
     getUserLoginLogsAPI,
     judgeEligibleAPI,
     uploadInvigilationVideoAPI,
+
+    // ===== 本地独有的成绩相关API 补充进来 =====
+    getStudentGradeAPI,
+    getAllStudentGradesAPI,
+    getStudentGradesByStudentIdAPI,
+    getStudentGradesByCourseIdAPI,
+    getStudentGradesByGradeTypeAPI,
+    getStudentGradesByTeacherIdAPI,
+    createStudentGradeAPI,
+    updateStudentGradeAPI,
+    deleteStudentGradeAPI
 }

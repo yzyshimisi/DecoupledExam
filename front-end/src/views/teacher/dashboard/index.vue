@@ -16,10 +16,10 @@
               <div class="text-sm">课程管理</div>
               <div class="text-lg font-bold">管理</div>
             </router-link>
-            <div class="p-3 bg-secondary text-secondary-content rounded-lg">
-              <div class="text-sm">考试发布</div>
-              <div class="text-lg font-bold">发布</div>
-            </div>
+            <router-link to="/exam" class="p-3 bg-secondary text-secondary-content rounded-lg">
+              <div class="text-sm">我的考试</div>
+              <div class="text-lg font-bold">考试</div>
+            </router-link>
             <div class="p-3 bg-accent text-accent-content rounded-lg">
               <div class="text-sm">通知</div>
               <div class="text-lg font-bold">通知</div>
@@ -37,9 +37,9 @@
           <router-link class="p-3 rounded-lg bg-base-200 flex items-center justify-center" to="/teacher/courses">
             删除/修改课程
           </router-link>
-          <a class="p-3 rounded-lg bg-base-200 flex items-center justify-center" href="#">
-            发布考试
-          </a>
+          <router-link class="p-3 rounded-lg bg-base-200 flex items-center justify-center" to="/exam">
+            我的考试
+          </router-link>
           <a class="p-3 rounded-lg bg-base-200 flex items-center justify-center" href="#">
             题库管理
           </a>
@@ -57,13 +57,13 @@
           </div>
         </router-link>
 
-      <div class="bg-base-100 p-6 rounded-lg shadow">
-        <h4 class="text-lg font-medium mb-3">考试管理</h4>
-        <p class="text-sm text-gray-500">发布考试、设置考试</p>
-        <div class="mt-4">
-          <button class="btn btn-secondary">发布考试</button>
-        </div>
-      </div>
+        <router-link to="/exam" class="bg-base-100 p-6 rounded-lg shadow">
+          <h4 class="text-lg font-medium mb-3">考试管理</h4>
+          <p class="text-sm text-gray-500">发布考试、设置考试</p>
+          <div class="mt-4 flex gap-2">
+            <button class="btn btn-secondary">考试管理</button>
+          </div>
+        </router-link>
 
       <div class="bg-base-100 p-6 rounded-lg shadow">
         <h4 class="text-lg font-medium mb-3">通知管理</h4>

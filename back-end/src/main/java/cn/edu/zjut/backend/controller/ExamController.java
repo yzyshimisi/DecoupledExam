@@ -245,7 +245,7 @@ public class ExamController {
      * Authorization: Bearer {token}
      */
     @GetMapping("/{examId}")
-    public Response<Exam> getExamById(@PathVariable("examId") Long examId, HttpServletRequest httpRequest) {
+    public Response<cn.edu.zjut.backend.dto.ExamDetailDTO> getExamById(@PathVariable("examId") Long examId, HttpServletRequest httpRequest) {
         // 获取当前用户信息
         Claims claims = (Claims) httpRequest.getAttribute("claims");
         if (claims == null) {
@@ -256,15 +256,16 @@ public class ExamController {
         Integer currentUserType = (Integer) claims.get("userType");
 
         try {
-            Exam exam = examService.getExamById(examId);
-            if (exam != null) {
+            cn.edu.zjut.backend.dto.ExamDetailDTO examDetail = examService.getExamDetailById(examId);
+            if (examDetail != null) {
                 // 权限检查：教务老师可以查看所有考试，任课老师只能查看自己创建的考试，管理员可以查看所有考试
                 if (currentUserType == 1) { // 教师
+                    Exam exam = examService.getExamById(examId);
                     if (!examService.isAcademicAffairsTeacher(currentUserId) && !exam.getTeacherId().equals(currentUserId)) {
                         return Response.error("权限不足，无法查看其他教师的考试");
                     }
                 }
-                return Response.success(exam);
+                return Response.success(examDetail);
             } else {
                 return Response.error("未找到指定的考试");
             }
@@ -330,7 +331,17 @@ public class ExamController {
      *   "title": "更新后的考试标题",
      *   "startTime": "2024-01-16 10:00:00",
      *   "endTime": "2024-01-16 12:00:00",
-     *   "examCode": "MATH202401_UPDATED"
+     *   "examCode": "MATH202401_UPDATED",
+     *   "durationMinute": 120,
+     *   "allowLateEnter": 1,
+     *   "questionShuffle": 1,
+     *   "optionShuffle": 1,
+     *   "preventScreenSwitch": 0,
+     *   "passingScore": 60.0,
+     *   "autoSubmit": 1,
+     *   "allowViewPaper": 1,
+     *   "allowViewScore": 1,
+     *   "multiChoicePartialRatio": 0.5
      * }
      */
     @PostMapping("/{examId}/update")
@@ -392,8 +403,93 @@ public class ExamController {
             }
 
             // 调用服务更新考试
-            boolean success = examService.updateExam(exam);
-            return success ? Response.success(true) : Response.error("更新失败");
+            boolean examUpdateSuccess = examService.updateExam(exam);
+            
+            // 更新考试设置信息
+            ExamSetting examSetting = examSettingService.getSettingByExamId(examId);
+            if (examSetting != null) {
+                // 检查是否有考试设置相关字段需要更新
+                boolean settingUpdated = false;
+                
+                if (req.getDurationMinute() != null) {
+                    examSetting.setDurationMinute(req.getDurationMinute());
+                    settingUpdated = true;
+                }
+                if (req.getAllowLateEnter() != null) {
+                    examSetting.setAllowLateEnter(req.getAllowLateEnter());
+                    settingUpdated = true;
+                }
+                if (req.getQuestionShuffle() != null) {
+                    examSetting.setQuestionShuffle(req.getQuestionShuffle());
+                    settingUpdated = true;
+                }
+                if (req.getOptionShuffle() != null) {
+                    examSetting.setOptionShuffle(req.getOptionShuffle());
+                    settingUpdated = true;
+                }
+                if (req.getPreventScreenSwitch() != null) {
+                    examSetting.setPreventScreenSwitch(req.getPreventScreenSwitch());
+                    settingUpdated = true;
+                }
+                if (req.getPassingScore() != null) {
+                    examSetting.setPassingScore(req.getPassingScore());
+                    settingUpdated = true;
+                }
+                if (req.getAutoSubmit() != null) {
+                    examSetting.setAutoSubmit(req.getAutoSubmit());
+                    settingUpdated = true;
+                }
+                if (req.getAllowViewPaper() != null) {
+                    examSetting.setAllowViewPaper(req.getAllowViewPaper());
+                    settingUpdated = true;
+                }
+                if (req.getAllowViewScore() != null) {
+                    examSetting.setAllowViewScore(req.getAllowViewScore());
+                    settingUpdated = true;
+                }
+                if (req.getGenerateExamCode() != null) {
+                    examSetting.setGenerateExamCode(req.getGenerateExamCode());
+                    settingUpdated = true;
+                }
+                if (req.getPeerReview() != null) {
+                    examSetting.setPeerReview(req.getPeerReview());
+                    settingUpdated = true;
+                }
+                if (req.getFillCaseSensitive() != null) {
+                    examSetting.setFillCaseSensitive(req.getFillCaseSensitive());
+                    settingUpdated = true;
+                }
+                if (req.getFillIgnoreSymbols() != null) {
+                    examSetting.setFillIgnoreSymbols(req.getFillIgnoreSymbols());
+                    settingUpdated = true;
+                }
+                if (req.getFillManualMark() != null) {
+                    examSetting.setFillManualMark(req.getFillManualMark());
+                    settingUpdated = true;
+                }
+                if (req.getMultiChoicePartialScore() != null) {
+                    examSetting.setMultiChoicePartialScore(req.getMultiChoicePartialScore());
+                    settingUpdated = true;
+                }
+                if (req.getMultiChoicePartialRatio() != null) {
+                    examSetting.setMultiChoicePartialRatio(req.getMultiChoicePartialRatio());
+                    settingUpdated = true;
+                }
+                if (req.getSortQuestionScorePerBlank() != null) {
+                    examSetting.setSortQuestionScorePerBlank(req.getSortQuestionScorePerBlank());
+                    settingUpdated = true;
+                }
+                
+                // 如果有设置字段更新，则保存考试设置
+                if (settingUpdated) {
+                    boolean settingUpdateSuccess = examService.updateExamSetting(examSetting);
+                    if (!settingUpdateSuccess) {
+                        return Response.error("更新考试设置失败");
+                    }
+                }
+            }
+            
+            return examUpdateSuccess ? Response.success(true) : Response.error("更新失败");
         } catch (Exception e) {
             e.printStackTrace();
             return Response.error("更新考试失败：" + e.getMessage());
@@ -1133,6 +1229,24 @@ public class ExamController {
         private String endTime;
         private String examCode;
         private Byte status;
+        // 考试设置相关字段
+        private Integer durationMinute;
+        private Byte allowLateEnter;
+        private Byte questionShuffle;
+        private Byte optionShuffle;
+        private Byte preventScreenSwitch;
+        private BigDecimal passingScore;
+        private Byte autoSubmit;
+        private Byte allowViewPaper;
+        private Byte allowViewScore;
+        private Byte generateExamCode;
+        private Byte peerReview;
+        private Byte fillCaseSensitive;
+        private Byte fillIgnoreSymbols;
+        private Byte fillManualMark;
+        private Byte multiChoicePartialScore;
+        private BigDecimal multiChoicePartialRatio;
+        private Byte sortQuestionScorePerBlank;
 
         // Getters & Setters
         public String getTitle() { return title; }
@@ -1149,5 +1263,41 @@ public class ExamController {
         public void setExamCode(String examCode) { this.examCode = examCode; }
         public Byte getStatus() { return status; }
         public void setStatus(Byte status) { this.status = status; }
+        
+        // 考试设置相关字段的Getters & Setters
+        public Integer getDurationMinute() { return durationMinute; }
+        public void setDurationMinute(Integer durationMinute) { this.durationMinute = durationMinute; }
+        public Byte getAllowLateEnter() { return allowLateEnter; }
+        public void setAllowLateEnter(Byte allowLateEnter) { this.allowLateEnter = allowLateEnter; }
+        public Byte getQuestionShuffle() { return questionShuffle; }
+        public void setQuestionShuffle(Byte questionShuffle) { this.questionShuffle = questionShuffle; }
+        public Byte getOptionShuffle() { return optionShuffle; }
+        public void setOptionShuffle(Byte optionShuffle) { this.optionShuffle = optionShuffle; }
+        public Byte getPreventScreenSwitch() { return preventScreenSwitch; }
+        public void setPreventScreenSwitch(Byte preventScreenSwitch) { this.preventScreenSwitch = preventScreenSwitch; }
+        public BigDecimal getPassingScore() { return passingScore; }
+        public void setPassingScore(BigDecimal passingScore) { this.passingScore = passingScore; }
+        public Byte getAutoSubmit() { return autoSubmit; }
+        public void setAutoSubmit(Byte autoSubmit) { this.autoSubmit = autoSubmit; }
+        public Byte getAllowViewPaper() { return allowViewPaper; }
+        public void setAllowViewPaper(Byte allowViewPaper) { this.allowViewPaper = allowViewPaper; }
+        public Byte getAllowViewScore() { return allowViewScore; }
+        public void setAllowViewScore(Byte allowViewScore) { this.allowViewScore = allowViewScore; }
+        public Byte getGenerateExamCode() { return generateExamCode; }
+        public void setGenerateExamCode(Byte generateExamCode) { this.generateExamCode = generateExamCode; }
+        public Byte getPeerReview() { return peerReview; }
+        public void setPeerReview(Byte peerReview) { this.peerReview = peerReview; }
+        public Byte getFillCaseSensitive() { return fillCaseSensitive; }
+        public void setFillCaseSensitive(Byte fillCaseSensitive) { this.fillCaseSensitive = fillCaseSensitive; }
+        public Byte getFillIgnoreSymbols() { return fillIgnoreSymbols; }
+        public void setFillIgnoreSymbols(Byte fillIgnoreSymbols) { this.fillIgnoreSymbols = fillIgnoreSymbols; }
+        public Byte getFillManualMark() { return fillManualMark; }
+        public void setFillManualMark(Byte fillManualMark) { this.fillManualMark = fillManualMark; }
+        public Byte getMultiChoicePartialScore() { return multiChoicePartialScore; }
+        public void setMultiChoicePartialScore(Byte multiChoicePartialScore) { this.multiChoicePartialScore = multiChoicePartialScore; }
+        public BigDecimal getMultiChoicePartialRatio() { return multiChoicePartialRatio; }
+        public void setMultiChoicePartialRatio(BigDecimal multiChoicePartialRatio) { this.multiChoicePartialRatio = multiChoicePartialRatio; }
+        public Byte getSortQuestionScorePerBlank() { return sortQuestionScorePerBlank; }
+        public void setSortQuestionScorePerBlank(Byte sortQuestionScorePerBlank) { this.sortQuestionScorePerBlank = sortQuestionScorePerBlank; }
     }
 }

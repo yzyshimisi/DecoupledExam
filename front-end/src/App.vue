@@ -5,7 +5,7 @@
       <router-view />
     </div>
     <div class="w-screen flex flex-col items-center bg-base-200">
-<!--      <Footer></Footer>-->
+      <!--      <Footer></Footer>-->
     </div>
   </div>
 </template>
@@ -24,6 +24,7 @@ const hideNavbar = computed(() => {
 
   return route.path.startsWith('/student/exam-page/')
 })
+
 </script>
 
 <style scoped>

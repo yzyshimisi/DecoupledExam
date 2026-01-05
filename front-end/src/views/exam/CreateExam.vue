@@ -251,6 +251,16 @@
                 <span class="label-text ml-2">允许查看成绩</span>
               </label>
             </div>
+            <div class="form-control">
+              <label class="cursor-pointer label">
+                <input 
+                  v-model="form.generateExamCode" 
+                  type="checkbox" 
+                  class="checkbox checkbox-primary"
+                />
+                <span class="label-text ml-2">生成考试码</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -296,6 +306,33 @@
                   class="checkbox checkbox-primary"
                 />
                 <span class="label-text ml-2">生生互评</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 评分设置 -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-base-content mb-4">评分设置</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="cursor-pointer label">
+                <input 
+                  v-model="form.multiChoicePartialScore" 
+                  type="checkbox" 
+                  class="checkbox checkbox-primary"
+                />
+                <span class="label-text ml-2">多选未选全评分</span>
+              </label>
+            </div>
+            <div class="form-control">
+              <label class="cursor-pointer label">
+                <input 
+                  v-model="form.sortQuestionScorePerBlank" 
+                  type="checkbox" 
+                  class="checkbox checkbox-primary"
+                />
+                <span class="label-text ml-2">排序题按空给分</span>
               </label>
             </div>
           </div>
@@ -449,6 +486,7 @@ const form = ref({
   endTime: '',
   durationMinute: 60,
   examCode: '',
+  status: 1, // 默认状态
   allowLateEnter: true,
   questionShuffle: true,
   optionShuffle: true,
@@ -457,12 +495,14 @@ const form = ref({
   autoSubmit: true,
   allowViewPaper: true,
   allowViewScore: true,
-  multiChoicePartialRatio: 0.5,
+  generateExamCode: false, // 是否生成考试码
+  peerReview: false,
   fillCaseSensitive: false,
   fillIgnoreSymbols: true,
   fillManualMark: false,
-  peerReview: false,
-  description: ''
+  multiChoicePartialScore: true, // 多选未选全评分方式
+  multiChoicePartialRatio: 0.5,
+  sortQuestionScorePerBlank: false // 排序题是否按空给分
 });
 
 const paperInfo = ref<{
@@ -583,28 +623,47 @@ const fetchExamDetail = () => {
         if (res['code'] === 200) {
           const exam = res['data'];
           if (exam) {
+            // 辅助函数：安全地获取布尔值（处理数字类型0/1或布尔类型true/false）
+            const getBooleanValue = (value: any, defaultValue: boolean = false) => {
+              if (value === undefined || value === null) return defaultValue;
+              if (typeof value === 'boolean') return value;
+              if (typeof value === 'number') return value === 1;
+              if (typeof value === 'string') return value === '1' || value.toLowerCase() === 'true';
+              return Boolean(value);
+            };
+            
+            // 辅助函数：安全地获取数字值
+            const getNumberValue = (value: any, defaultValue: number) => {
+              if (value === undefined || value === null) return defaultValue;
+              const num = Number(value);
+              return isNaN(num) ? defaultValue : num;
+            };
+            
             form.value = {
               title: exam.title || '',
-              paperId: exam.paperId || 1,
-              teacherId: exam.teacherId || parseInt(localStorage.getItem('userId') || '0'),
+              paperId: getNumberValue(exam.paperId, 1),
+              teacherId: getNumberValue(exam.teacherId, parseInt(localStorage.getItem('userId') || '0')),
               startTime: exam.startTime ? formatDateTimeForInput(exam.startTime) : '',
               endTime: exam.endTime ? formatDateTimeForInput(exam.endTime) : '',
-              durationMinute: exam.durationMinute || 60,
+              durationMinute: getNumberValue(exam.durationMinute, 60),
               examCode: exam.examCode || '',
-              allowLateEnter: exam.allowLateEnter || true,
-              questionShuffle: exam.questionShuffle || true,
-              optionShuffle: exam.optionShuffle || true,
-              preventScreenSwitch: exam.preventScreenSwitch || true,
-              passingScore: exam.passingScore || 60.0,
-              autoSubmit: exam.autoSubmit || true,
-              allowViewPaper: exam.allowViewPaper || true,
-              allowViewScore: exam.allowViewScore || true,
-              multiChoicePartialRatio: exam.multiChoicePartialRatio || 0.5,
-              fillCaseSensitive: exam.fillCaseSensitive || false,
-              fillIgnoreSymbols: exam.fillIgnoreSymbols || true,
-              fillManualMark: exam.fillManualMark || false,
-              peerReview: exam.peerReview || false,
-              description: exam.description || ''
+              status: getNumberValue(exam.status, 1),
+              allowLateEnter: getBooleanValue(exam.allowLateEnter, false),
+              questionShuffle: getBooleanValue(exam.questionShuffle, true),
+              optionShuffle: getBooleanValue(exam.optionShuffle, true),
+              preventScreenSwitch: getBooleanValue(exam.preventScreenSwitch, false),
+              passingScore: getNumberValue(exam.passingScore, 60.0),
+              autoSubmit: getBooleanValue(exam.autoSubmit, true),
+              allowViewPaper: getBooleanValue(exam.allowViewPaper, true),
+              allowViewScore: getBooleanValue(exam.allowViewScore, true),
+              generateExamCode: getBooleanValue(exam.generateExamCode, false),
+              peerReview: getBooleanValue(exam.peerReview, false),
+              fillCaseSensitive: getBooleanValue(exam.fillCaseSensitive, false),
+              fillIgnoreSymbols: getBooleanValue(exam.fillIgnoreSymbols, true),
+              fillManualMark: getBooleanValue(exam.fillManualMark, false),
+              multiChoicePartialScore: getBooleanValue(exam.multiChoicePartialScore, true),
+              multiChoicePartialRatio: getNumberValue(exam.multiChoicePartialRatio, 0.5),
+              sortQuestionScorePerBlank: getBooleanValue(exam.sortQuestionScorePerBlank, false)
             };
           }
         }
@@ -655,6 +714,7 @@ const handleSubmit = () => {
     startTime: formatDateTimeForAPI(form.value.startTime),
     endTime: formatDateTimeForAPI(form.value.endTime),
     examCode: form.value.examCode || form.value.title.substring(0, 10).toUpperCase().replace(/\s+/g, ''), // 生成考试代码
+    status: form.value.status,
     durationMinute: form.value.durationMinute,
     allowLateEnter: form.value.allowLateEnter,
     questionShuffle: form.value.questionShuffle,
@@ -664,20 +724,43 @@ const handleSubmit = () => {
     autoSubmit: form.value.autoSubmit,
     allowViewPaper: form.value.allowViewPaper,
     allowViewScore: form.value.allowViewScore,
-    multiChoicePartialRatio: form.value.multiChoicePartialRatio,
+    generateExamCode: form.value.generateExamCode,
+    peerReview: form.value.peerReview,
     fillCaseSensitive: form.value.fillCaseSensitive,
     fillIgnoreSymbols: form.value.fillIgnoreSymbols,
     fillManualMark: form.value.fillManualMark,
-    peerReview: form.value.peerReview
+    multiChoicePartialScore: form.value.multiChoicePartialScore,
+    multiChoicePartialRatio: form.value.multiChoicePartialRatio,
+    sortQuestionScorePerBlank: form.value.sortQuestionScorePerBlank
   };
 
   if (isEditMode.value) {
     // 编辑模式：更新考试
     useRequest(() => updateExamAPI(parseInt(examId), {
       title: examData.title,
+      paperId: examData.paperId,
+      teacherId: examData.teacherId,
       startTime: examData.startTime,
       endTime: examData.endTime,
-      examCode: examData.examCode
+      examCode: examData.examCode,
+      status: examData.status,
+      durationMinute: examData.durationMinute,
+      allowLateEnter: examData.allowLateEnter ? 1 : 0,
+      questionShuffle: examData.questionShuffle ? 1 : 0,
+      optionShuffle: examData.optionShuffle ? 1 : 0,
+      preventScreenSwitch: examData.preventScreenSwitch ? 1 : 0,
+      passingScore: examData.passingScore,
+      autoSubmit: examData.autoSubmit ? 1 : 0,
+      allowViewPaper: examData.allowViewPaper ? 1 : 0,
+      allowViewScore: examData.allowViewScore ? 1 : 0,
+      generateExamCode: examData.generateExamCode ? 1 : 0,
+      peerReview: examData.peerReview ? 1 : 0,
+      fillCaseSensitive: examData.fillCaseSensitive ? 1 : 0,
+      fillIgnoreSymbols: examData.fillIgnoreSymbols ? 1 : 0,
+      fillManualMark: examData.fillManualMark ? 1 : 0,
+      multiChoicePartialScore: examData.multiChoicePartialScore ? 1 : 0,
+      multiChoicePartialRatio: examData.multiChoicePartialRatio,
+      sortQuestionScorePerBlank: examData.sortQuestionScorePerBlank ? 1 : 0
     }), {
       onSuccess(res) {
         if (res['code'] === 200 && res['data']) {

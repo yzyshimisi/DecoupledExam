@@ -140,6 +140,35 @@ public class ExamService {
     }
 
     /**
+     * 根据ID获取考试详细信息（包含考试设置）
+     * @param examId 考试ID
+     * @return 考试详细信息DTO
+     */
+    public cn.edu.zjut.backend.dto.ExamDetailDTO getExamDetailById(Long examId) {
+        Session session = null;
+        try {
+            session = HibernateUtil.getSession();
+            examDAO.setSession(session);
+            
+            // 获取考试基本信息
+            Exam exam = examDAO.getById(examId);
+            
+            // 获取考试设置信息 - 直接传入session
+            cn.edu.zjut.backend.po.ExamSetting examSetting = examSettingDAO.getByExamId(session, examId);
+            
+            // 创建DTO对象并返回
+            return new cn.edu.zjut.backend.dto.ExamDetailDTO(exam, examSetting);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("查询考试详细信息失败：" + e.getMessage());
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+    }
+
+    /**
      * 更新考试信息
      * @param exam 考试对象
      * @return 是否更新成功
@@ -160,6 +189,33 @@ public class ExamService {
             }
             e.printStackTrace();
             throw new RuntimeException("更新考试失败：" + e.getMessage());
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+    }
+
+    /**
+     * 更新考试设置信息
+     * @param setting 考试设置对象
+     * @return 是否更新成功
+     */
+    public boolean updateExamSetting(ExamSetting setting) {
+        Session session = null;
+        Transaction transaction = null;
+        try {
+            session = HibernateUtil.getSession();
+            transaction = session.beginTransaction();
+            examSettingDAO.saveSetting(session, setting);
+            transaction.commit();
+            return true;
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            throw new RuntimeException("更新考试设置失败：" + e.getMessage());
         } finally {
             if (session != null && session.isOpen()) {
                 session.close();
