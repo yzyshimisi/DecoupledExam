@@ -9,24 +9,35 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1e295152-80a3-45af-8987-9cf10e9d035f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../front-end/src/views/student/mistakes/index.vue" afterDir="false" />
+    <list default="true" id="52d7f3ef-4c7d-4dae-9bb8-15d30d440cd3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/78e981c6-b670-47fe-bf70-3729fc7ff827.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/c0c5eefd-91e6-4af0-81de-dbeb813a8c87.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/c0c5eefd-91e6-4af0-81de-dbeb813a8c87.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/c0c5eefd-91e6-4af0-81de-dbeb813a8c87/storage_v2/_src_/schema/DecoupledExam.olMUHQ.meta" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/c0c5eefd-91e6-4af0-81de-dbeb813a8c87/storage_v2/_src_/schema/DecoupledExam.olMUHQ.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/832bb778-71db-4f0d-a3f1-fb5dc3571aa5.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/832bb778-71db-4f0d-a3f1-fb5dc3571aa5/storage_v2/_src_/schema/DecoupledExam.olMUHQ.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/84e68a16-635e-479a-b436-125cd76a4f25.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/ExamWrongBookController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/ExamWrongBookController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/ExamWrongBookDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/ExamWrongBookDAO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/ExamWrongBookService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/ExamWrongBookService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/WEB-INF/web.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/.vscode/extensions.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/app/TestMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/app/TestMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/app/UserRegisterTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/app/UserRegisterTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/UserDAO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/dao/UserDAO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/po/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/po/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/util/FaceRec.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/zjut/backend/util/FaceRec.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/springmvc-servlet.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/springmvc-servlet.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/pnpm-lock.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/apis/Server/registerAPI.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/apis/Server/registerAPI.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/apis/axios.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/apis/axios.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/apis/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/apis/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/components/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/components/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../front-end/src/components/navbar/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/components/navbar/index.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/src/routers/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/routers/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../front-end/src/views/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/views/exam/CreateExam.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/exam/CreateExam.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/views/exam/ExamList.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/exam/ExamList.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/views/login/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/login/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/views/profile/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/profile/index.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../front-end/src/views/register/index.vue" beforeDir="false" afterPath="$PROJECT_DIR$/../front-end/src/views/register/index.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,10 +54,10 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="LogFilters">
     <option name="FILTER_ERRORS" value="false" />
     <option name="FILTER_WARNINGS" value="false" />
@@ -61,11 +72,10 @@
       </MavenGeneralSettings>
     </option>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 4
-}]]></component>
-  <component name="ProjectId" id="37sp1rT0Rh0LzxZYb9Ti87HG4XD" />
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="37sxEcFhcxJCr8pdBtG8iLDoSaM" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
   </component>
@@ -75,6 +85,8 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.EmailTest.executor": "Run",
+    "Application.TestMain.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "Tomcat Server.Tomcat 11.0.3.executor": "Run",
     "kotlin-language-version-configured": "true",
@@ -84,18 +96,46 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.32528734",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.0",
     "vue.rearranger.settings.migration": "true"
-  },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql",
-      "redis"
-    ]
   }
 }]]></component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.EmailTest">
+    <configuration name="EmailTest" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="cn.edu.zjut.backend.app.EmailTest" />
+      <module name="back-end" />
+      <shortenClasspath name="ARGS_FILE" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="cn.edu.zjut.backend.app.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestMain" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="cn.edu.zjut.backend.app.TestMain" />
+      <module name="back-end" />
+      <shortenClasspath name="ARGS_FILE" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="cn.edu.zjut.backend.app.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <shortenClasspath name="ARGS_FILE" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Tomcat 11.0.3" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 11.0.3" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
@@ -106,7 +146,7 @@
         </artifact>
       </deployment>
       <server-settings>
-        <option name="BASE_DIRECTORY_NAME" value="4703fcdc-cf05-4a59-85da-5ee672953b4d" />
+        <option name="BASE_DIRECTORY_NAME" value="1d9ac768-f622-46c7-84d8-55c4d8283a4d" />
       </server-settings>
       <predefined_log_file enabled="true" id="Tomcat" />
       <predefined_log_file enabled="true" id="Tomcat Catalina" />
@@ -114,7 +154,7 @@
       <predefined_log_file id="Tomcat Host Manager" />
       <predefined_log_file id="Tomcat Localhost Access" />
       <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="60907" />
+        <option name="DEBUG_PORT" value="51471" />
       </RunnerSettings>
       <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Cover">
         <option name="USE_ENV_VARIABLES" value="true" />
@@ -183,6 +223,17 @@
         </option>
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Application.EmailTest" />
+      <item itemvalue="Application.TestMain" />
+      <item itemvalue="Tomcat Server.Tomcat 11.0.3" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.EmailTest" />
+        <item itemvalue="Application.TestMain" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -195,12 +246,13 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="1e295152-80a3-45af-8987-9cf10e9d035f" name="Changes" comment="" />
-      <created>1767701421763</created>
+      <changelist id="52d7f3ef-4c7d-4dae-9bb8-15d30d440cd3" name="Changes" comment="" />
+      <created>1767705471043</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1767701421763</updated>
-      <workItem from="1767701424653" duration="2387000" />
+      <updated>1767705471043</updated>
+      <workItem from="1767705472871" duration="7757000" />
+      <workItem from="1767725557373" duration="167000" />
     </task>
     <servers />
   </component>

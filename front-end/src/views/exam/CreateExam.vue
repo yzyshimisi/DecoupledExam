@@ -21,7 +21,7 @@
 
     <!-- 表单 -->
     <form @submit.prevent="handleSubmit" class="card bg-base-100 shadow-xl border border-base-200">
-      <div class="card-body p-6">
+        <div class="card-body p-6">
         <!-- 考试标题 -->
         <div class="form-control mb-6">
           <label class="label">

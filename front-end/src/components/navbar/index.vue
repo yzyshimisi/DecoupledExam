@@ -79,6 +79,7 @@ import router from "../../routers";
 import { getAvatarAPI, getUserInfoByIdAPI } from "../../apis/Server/userAPI";
 import { jwtDecode } from 'jwt-decode';
 
+
 const userType = ref<string>(localStorage.getItem("userType") || "");
 const userAvatar = ref<string | null>(null);
 const defaultAvatar = 'https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg';
@@ -100,14 +101,14 @@ const loadUserAvatar = async () => {
       // 如果用户有头像URL，直接使用
       if (userData.avatarUrl) {
         // 拼接完整的图片URL（假设后端返回的是相对路径）
-        userAvatar.value = `http://localhost:80${userData.avatarUrl}`;
+        userAvatar.value = `${import.meta.env.VITE_RESOURCES_URL}${userData.avatarUrl}`;
       } else {
         // 如果没有头像，尝试获取头像
         const avatarResponse: any = await getAvatarAPI(token);
         if (avatarResponse && avatarResponse.code === 200 && avatarResponse.data) {
           // 如果返回的是URL字符串，直接使用
           if (typeof avatarResponse.data === 'string') {
-            userAvatar.value = `http://localhost:80${avatarResponse.data}`;
+            userAvatar.value = `${import.meta.env.VITE_RESOURCES_URL}${avatarResponse.data}`;
           } else {
             // 如果返回的是二进制数据，创建blob URL
             const blob = new Blob([avatarResponse.data], { type: avatarResponse.headers['content-type'] || 'image/jpeg' });
@@ -142,6 +143,7 @@ const routeToHome = () => {
 const logout = () => {
   localStorage.removeItem("token")
   localStorage.removeItem("userType")
+  localStorage.removeItem('id')
   useMainStore().useLoginStore().setLogin(false)
   router.push('/login').then(()=>{window.location.reload();})
 }

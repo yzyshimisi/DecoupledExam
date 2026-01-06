@@ -16,6 +16,9 @@ public class UserRegisterTest {
         
         // 测试管理员注册教师账号
         testAdminRegisterTeacher();
+        
+        // 测试邮箱验证功能
+        testEmailValidation();
     }
 
     /**
@@ -87,6 +90,41 @@ public class UserRegisterTest {
             System.out.println("教师用户注册成功！");
         } else {
             System.out.println("教师用户注册失败，可能是用户名已存在！");
+        }
+    }
+    
+    /**
+     * 测试邮箱验证功能
+     */
+    private static void testEmailValidation() {
+        System.out.println("\n=== 测试邮箱验证功能 ===");
+        
+        UserService userService = new UserService();
+        
+        // 测试无效邮箱格式
+        User userWithInvalidEmail = new User();
+        userWithInvalidEmail.setUsername("student_test_002");
+        userWithInvalidEmail.setPassword("password123");
+        userWithInvalidEmail.setRealName("李四");
+        
+        boolean result = userService.register(userWithInvalidEmail);
+        if (!result) {
+            System.out.println("邮箱格式验证成功：无效邮箱格式被正确拒绝");
+        } else {
+            System.out.println("邮箱格式验证失败：无效邮箱格式被接受");
+        }
+        
+        // 测试重复邮箱
+        User userWithDuplicateEmail = new User();
+        userWithDuplicateEmail.setUsername("student_test_003");
+        userWithDuplicateEmail.setPassword("password123");
+        userWithDuplicateEmail.setRealName("王五");
+        
+        result = userService.register(userWithDuplicateEmail);
+        if (!result) {
+            System.out.println("邮箱重复性验证成功：重复邮箱被正确拒绝");
+        } else {
+            System.out.println("邮箱重复性验证失败：重复邮箱被接受");
         }
         
         // 关闭Hibernate会话工厂

@@ -61,6 +61,23 @@
             </label>
           </div>
 
+          <!-- 邮箱输入 -->
+          <div class="form-control mb-4">
+            <label class="label">
+              <span class="label-text text-base-content font-medium">邮箱</span>
+            </label>
+            <input
+              v-model="registerForm.email"
+              type="email"
+              placeholder="请输入邮箱地址"
+              class="input input-bordered w-full focus:ring-2 focus:ring-primary/50"
+              :class="{ 'input-error': errors.email }"
+            />
+            <label class="label" v-if="errors.email">
+              <span class="label-text-alt text-error">{{ errors.email }}</span>
+            </label>
+          </div>
+
           <!-- 密码输入 -->
           <div class="form-control mb-4">
             <label class="label">
@@ -132,6 +149,7 @@ interface RegisterForm {
   password: string;
   realName: string;
   phone: string;
+  email: string;
   confirmPassword: string;
 }
 
@@ -140,6 +158,7 @@ const registerForm = reactive<RegisterForm>({
   password: '',
   realName: '',
   phone: '',
+  email: '',
   confirmPassword: ''
 })
 
@@ -149,6 +168,7 @@ const errors = reactive({
   password: '',
   realName: '',
   phone: '',
+  email: '',
   confirmPassword: ''
 })
 
@@ -164,6 +184,7 @@ const validateForm = (): boolean => {
   errors.password = ''
   errors.realName = ''
   errors.phone = ''
+  errors.email = ''
   errors.confirmPassword = ''
 
   if (!registerForm.username.trim()) {
@@ -193,6 +214,15 @@ const validateForm = (): boolean => {
     isValid = false
   }
 
+  if (!registerForm.email.trim()) {
+    errors.email = '请输入邮箱地址'
+    isValid = false
+  } else if (!/^[\w\.-]+@([\w-]+\.)+[\w-]{2,}$/.test(registerForm.email)) {
+    // 验证邮箱格式
+    errors.email = '请输入正确的邮箱格式'
+    isValid = false
+  }
+
   if (!registerForm.confirmPassword.trim()) {
     errors.confirmPassword = '请确认密码'
     isValid = false
@@ -214,7 +244,8 @@ const handleRegister = () => {
     username: registerForm.username,
     password: registerForm.password,
     realName: registerForm.realName,
-    phone: registerForm.phone
+    phone: registerForm.phone,
+    email: registerForm.email
   }), {
     onSuccess(res) {
       if (res['code'] == 200) {
