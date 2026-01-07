@@ -425,7 +425,7 @@ const loadUserProfile = async () => {
       
       // 设置头像
       if (userProfile.value.avatar) {
-        userAvatar.value = `http://localhost:80${userProfile.value.avatar}`;
+        userAvatar.value = `${import.meta.env.VITE_RESOURCES_URL}${userProfile.value.avatar}`;
       }
     } else {
       console.error('获取用户信息失败:', response['message']);

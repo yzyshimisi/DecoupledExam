@@ -81,6 +81,8 @@ import {
 import { createStudentGradeAPI } from "./Server/createStudentGradeAPI";
 import { updateStudentGradeAPI } from "./Server/updateStudentGradeAPI";
 import { deleteStudentGradeAPI } from "./Server/deleteStudentGradeAPI";
+import getExamWrongBookAPI from "./Server/examWrongBook/getExamWrongBookAPI";
+import getSubjectTeachersAPI from "./Server/teacher/getSubjectTeachersAPI";
 
 export {
     // ===== 上游代码全部保留 =====
@@ -148,6 +150,8 @@ export {
     getUserLoginLogsAPI,
     judgeEligibleAPI,
     uploadInvigilationVideoAPI,
+    getExamWrongBookAPI,
+    getSubjectTeachersAPI,
 
     // ===== 本地独有的成绩相关API 补充进来 =====
     getStudentGradeAPI,
@@ -158,5 +162,5 @@ export {
     getStudentGradesByTeacherIdAPI,
     createStudentGradeAPI,
     updateStudentGradeAPI,
-    deleteStudentGradeAPI
+    deleteStudentGradeAPI,
 }

@@ -37,7 +37,7 @@
   <div class="fixed w-[20vw] left-[2.5vw]">
     <ExamCameraMonitor
       :auto-start="true"
-      :interval="30"
+      :interval="5"
       :attention-score="attentionScore"
       @capture="uploadInvigilationVideo"
     />
@@ -175,7 +175,10 @@ const hasQuestions = computed(() => {
 })
 
 onBeforeMount(()=> {
+
   examToken.value = localStorage.getItem('examToken')
+
+  console.log('examToken:', examToken.value)
 
   answers.value = JSON.parse(localStorage.getItem('localAnswers')) || {} // 加载时，先同步本地存储的答案，不需要全部重选
 
@@ -188,6 +191,10 @@ onBeforeMount(()=> {
   // getExamPaper()
   // isFullScreen.value = true
   // isExamStarted.value = true
+})
+
+onUnmounted(()=>{
+  localStorage.removeItem("examToken")
 })
 
 const judgeEligible = () => {
@@ -343,10 +350,16 @@ const handleViolation = () => {
         let cnt = Number(res['data'])
         console.log('违规次数:', cnt);
         if(cnt >= 3){
-          ElNotification({title: 'Warning', message: '违规次数过多，请勿作弊！', type: 'warning',})
           localStorage.removeItem('examToken')
           localStorage.removeItem('localAnswers')
           examToken.value = ''
+          routers.push('/exam').then(()=>{
+            ElNotification.error({
+              title: '提示',
+              message: '违规次数过多，请勿作弊！',
+              duration: 3000
+            })
+          })
         }else{
           ElNotification({title: 'Warning', message: '请勿作弊！', type: 'warning',})
         }

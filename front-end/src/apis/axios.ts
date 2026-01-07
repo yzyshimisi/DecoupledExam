@@ -84,6 +84,7 @@ const handleTokenInvalid = () => {
     // 1. 清除 localStorage 中的 Token
     localStorage.removeItem('token')
     localStorage.removeItem('userType')
+    localStorage.removeItem('id')
 
     // 2. 如果使用了 Vuex/Pinia，也需要清除 store 中的用户信息
     useMainStore().useLoginStore().setLogin(false)

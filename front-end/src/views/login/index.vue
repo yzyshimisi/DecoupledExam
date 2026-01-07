@@ -185,6 +185,7 @@ const handleLogin = () => {
         const decoded = jwtDecode(token);
         localStorage.setItem('token', token)
         localStorage.setItem('userType', decoded['userType'])
+        localStorage.setItem('id', decoded['id'])
         useMainStore().useLoginStore().setLogin(true)
         router.push('/admin/teacher/register')
         switch (decoded['userType']){
@@ -232,6 +233,7 @@ const loginFace = (videoBase64:string) => {
         const decoded = jwtDecode(token);
         localStorage.setItem('token', token)
         localStorage.setItem('userType', decoded['userType'])
+        localStorage.setItem('id', decoded['id'])
         useMainStore().useLoginStore().setLogin(true)
         router.push('/admin/teacher/register')
         switch (decoded['userType']){

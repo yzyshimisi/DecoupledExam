@@ -30,15 +30,15 @@
       <div class="flex gap-2">
         <select v-model="filters.subjectId" class="select select-bordered select-sm">
           <option value="">全部科目</option>
-          <option v-for="subject in subjects" :key="subject.id" :value="subject.id">
-            {{ subject.name }}
+          <option v-for="subject in subjects" :key="subject['subjectId']" :value="subject['subjectId']">
+            {{ subject['subjectName'] }}
           </option>
         </select>
         
         <select v-model="filters.questionType" class="select select-bordered select-sm">
           <option value="">全部题型</option>
-          <option v-for="type in questionTypes" :key="type.id" :value="type.id">
-            {{ type.name }}
+          <option v-for="type in questionTypes" :key="type.typeId" :value="type.typeId">
+            {{ type.typeName }}
           </option>
         </select>
         
@@ -92,34 +92,34 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="mistake in filteredMistakes" :key="mistake.id">
+            <tr v-for="mistake in filteredMistakes" :key="mistake.examWrongBook.id">
               <td>
                 <input 
                   type="checkbox" 
                   class="checkbox checkbox-sm" 
-                  :checked="selectedMistakes.includes(mistake.id)" 
-                  @change="toggleSelect(mistake.id)"
+                  :checked="selectedMistakes.includes(mistake.examWrongBook.id)"
+                  @change="toggleSelect(mistake.examWrongBook.id)"
                 />
               </td>
               <td class="max-w-xs">
-                <div class="font-medium" :title="mistake.questionContent">{{ truncateText(mistake.questionContent, 50) }}</div>
-                <div class="text-sm text-gray-500 mt-1">正确答案: {{ mistake.correctAnswer }}</div>
-                <div class="text-sm text-error mt-1">我的答案: {{ mistake.userAnswer }}</div>
+                <div class="font-medium" :title="mistake.questionContent">{{ truncateText(mistake.questions.title, 50) }}</div>
+<!--                <div class="text-sm text-gray-500 mt-1">正确答案: {{ mistake.correctAnswer }}</div>-->
+<!--                <div class="text-sm text-error mt-1">我的答案: {{ mistake.userAnswer }}</div>-->
               </td>
-              <td>{{ getSubjectName(mistake.subjectId) }}</td>
-              <td>{{ getQuestionTypeName(mistake.questionType) }}</td>
+              <td>{{ getSubjectName(mistake.questions.subjectId) }}</td>
+              <td>{{ getQuestionTypeName(mistake.questions.typeId) }}</td>
               <td>
-                <span class="badge" :class="getDifficultyClass(mistake.difficulty)">
-                  {{ getDifficultyText(mistake.difficulty) }}
+                <span class="badge" :class="getDifficultyClass(mistake.questions.difficulty)">
+                  {{ getDifficultyText(mistake.questions.difficulty) }}
                 </span>
               </td>
               <td>
-                <span class="badge badge-warning">{{ mistake.errorCount }}</span>
+                <span class="badge badge-warning">{{ mistake.examWrongBook.errorCount }}</span>
               </td>
-              <td>{{ formatDate(mistake.firstWrongTime) }}</td>
+              <td>{{ formatDate(mistake.examWrongBook.createTime) }}</td>
               <td>
                 <span class="badge" :class="mistake.mastered ? 'badge-success' : 'badge-warning'">
-                  {{ mistake.mastered ? '已掌握' : '未掌握' }}
+                  {{ mistake.examWrongBook.isDeleted == '1' ? '已掌握' : '未掌握' }}
                 </span>
               </td>
               <td>
@@ -175,73 +175,19 @@
     </div>
 
     <!-- 错题详情模态框 -->
-    <dialog id="mistakeDetailModal" class="modal">
-      <div class="modal-box max-w-3xl">
-        <h3 class="font-bold text-lg mb-4">错题详情</h3>
-        
-        <div v-if="selectedMistake" class="space-y-4">
-          <div>
-            <h4 class="font-medium">题目内容:</h4>
-            <p class="mt-1 p-3 bg-base-200 rounded">{{ selectedMistake.questionContent }}</p>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <h4 class="font-medium">正确答案:</h4>
-              <p class="mt-1 p-3 bg-success text-success-content rounded">{{ selectedMistake.correctAnswer }}</p>
-            </div>
-            <div>
-              <h4 class="font-medium">我的答案:</h4>
-              <p class="mt-1 p-3 bg-error text-error-content rounded">{{ selectedMistake.userAnswer }}</p>
-            </div>
-          </div>
-          
-          <div>
-            <h4 class="font-medium">解析:</h4>
-            <p class="mt-1 p-3 bg-base-200 rounded">{{ selectedMistake.explanation || '暂无解析' }}</p>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <h4 class="font-medium">科目:</h4>
-              <p class="mt-1">{{ getSubjectName(selectedMistake.subjectId) }}</p>
-            </div>
-            <div>
-              <h4 class="font-medium">题型:</h4>
-              <p class="mt-1">{{ getQuestionTypeName(selectedMistake.questionType) }}</p>
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-3 gap-4">
-            <div>
-              <h4 class="font-medium">难度:</h4>
-              <p class="mt-1">{{ getDifficultyText(selectedMistake.difficulty) }}</p>
-            </div>
-            <div>
-              <h4 class="font-medium">错误次数:</h4>
-              <p class="mt-1">{{ selectedMistake.errorCount }}</p>
-            </div>
-            <div>
-              <h4 class="font-medium">掌握状态:</h4>
-              <p class="mt-1">
-                <span :class="selectedMistake.mastered ? 'text-success' : 'text-warning'">
-                  {{ selectedMistake.mastered ? '已掌握' : '未掌握' }}
-                </span>
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="modal-action">
-          <button class="btn" @click="closeMistakeDetail">关闭</button>
-        </div>
-      </div>
-    </dialog>
+    <QuestionPreviewDialog
+        v-if="selectedMistake!=null"
+        :model-value="selectedMistake"
+        @close="closeQuestionPreview"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import {ref, computed, onMounted, nextTick} from 'vue';
+import { useRequest } from "vue-hooks-plus";
+import {getExamWrongBookAPI, getQuestionTypeAPI, getSubjectsAPI} from "../../../apis"
+import { QuestionPreviewDialog } from "../../../components"
 
 // 错题统计
 const mistakeStats = ref({
@@ -252,102 +198,62 @@ const mistakeStats = ref({
 });
 
 // 科目数据
-const subjects = ref([
-  { id: 1, name: '数学' },
-  { id: 2, name: '英语' },
-  { id: 3, name: '计算机' },
-  { id: 4, name: '物理' },
-  { id: 5, name: '化学' }
-]);
+const subjects = ref([]);
 
 // 题型数据
-const questionTypes = ref([
-  { id: 1, name: '单选题' },
-  { id: 2, name: '多选题' },
-  { id: 3, name: '判断题' },
-  { id: 4, name: '填空题' },
-  { id: 5, name: '简答题' },
-  { id: 6, name: '编程题' }
-]);
+const questionTypes = ref([]);
 
 // 错题数据（样例数据）
-const mistakes = ref([
-  {
-    id: 1,
-    questionId: 101,
-    questionContent: '在JavaScript中，以下哪个方法可以用于向数组末尾添加一个元素？',
-    correctAnswer: 'push()',
-    userAnswer: 'pop()',
-    explanation: 'push()方法用于向数组末尾添加一个或多个元素，并返回新的长度。pop()方法用于删除数组末尾的元素。',
-    subjectId: 3,
-    questionType: 1,
-    difficulty: 2,
-    errorCount: 3,
-    firstWrongTime: '2025-12-20T10:30:00',
-    lastWrongTime: '2025-12-25T14:20:00',
-    mastered: false
-  },
-  {
-    id: 2,
-    questionId: 205,
-    questionContent: '下列哪个选项是Java中的基本数据类型？',
-    correctAnswer: 'int',
-    userAnswer: 'String',
-    explanation: 'Java中的基本数据类型包括byte, short, int, long, float, double, char, boolean。String是引用类型。',
-    subjectId: 3,
-    questionType: 1,
-    difficulty: 1,
-    errorCount: 1,
-    firstWrongTime: '2025-12-22T09:15:00',
-    lastWrongTime: '2025-12-22T09:15:00',
-    mastered: true
-  },
-  {
-    id: 3,
-    questionId: 301,
-    questionContent: '在微积分中，函数f(x) = x^2的导数是什么？',
-    correctAnswer: '2x',
-    userAnswer: 'x',
-    explanation: '根据幂函数求导法则，f(x) = x^n的导数是f\'(x) = nx^(n-1)。因此x^2的导数是2x。',
-    subjectId: 1,
-    questionType: 1,
-    difficulty: 2,
-    errorCount: 2,
-    firstWrongTime: '2025-12-18T11:45:00',
-    lastWrongTime: '2025-12-24T16:30:00',
-    mastered: false
-  },
-  {
-    id: 4,
-    questionId: 402,
-    questionContent: '英语中的过去完成时构成是？',
-    correctAnswer: 'had + 过去分词',
-    userAnswer: 'have + 过去分词',
-    explanation: '过去完成时表示在过去某一时间或动作之前已经发生或完成的动作，构成是had + 过去分词。',
-    subjectId: 2,
-    questionType: 1,
-    difficulty: 2,
-    errorCount: 1,
-    firstWrongTime: '2025-12-19T13:20:00',
-    lastWrongTime: '2025-12-19T13:20:00',
-    mastered: false
-  },
-  {
-    id: 5,
-    questionId: 503,
-    questionContent: '牛顿第一定律又称为？',
-    correctAnswer: '惯性定律',
-    userAnswer: '作用力定律',
-    explanation: '牛顿第一定律说明了物体具有惯性的性质，因此也称为惯性定律。',
-    subjectId: 4,
-    questionType: 1,
-    difficulty: 1,
-    errorCount: 1,
-    firstWrongTime: '2025-12-21T15:10:00',
-    lastWrongTime: '2025-12-21T15:10:00',
-    mastered: true
-  }
-]);
+const mistakes = ref([]);
+
+onMounted(()=>{
+  getQuestionType()
+  getSubjects()
+  getExamWrongBook()
+})
+
+const getExamWrongBook = () => {
+  useRequest(()=>getExamWrongBookAPI(),{
+    onSuccess: (res) => {
+      if(res['code']==200){
+        mistakes.value = res['data']
+        console.log(res['data'])
+        updateStats();
+      }else{
+        alert(res['msg'])
+      }
+    },
+
+    onError: (err) => {
+      alert(err.message)
+    }
+  })
+}
+
+const getQuestionType = () => {
+  useRequest(()=>getQuestionTypeAPI(),{
+    onSuccess: (res) => {
+      if(res['code']==200){
+        questionTypes.value = res['data']
+      }else{
+        alert(res['msg'])
+      }
+    },
+  })
+};
+
+const getSubjects = () => {
+  useRequest(()=>getSubjectsAPI(null),{
+    onSuccess: (res) => {
+      if(res['code']==200){
+        subjects.value = res['data']['subjects']
+      }else{
+        alert(res['msg'])
+      }
+    },
+  })
+
+}
 
 // 筛选条件
 const filters = ref({
@@ -374,15 +280,15 @@ const filteredMistakes = computed(() => {
   let result = mistakes.value;
   
   if (filters.value.subjectId) {
-    result = result.filter(m => m.subjectId === Number(filters.value.subjectId));
+    result = result.filter(m => m.questions.subjectId === Number(filters.value.subjectId));
   }
   
   if (filters.value.questionType) {
-    result = result.filter(m => m.questionType === Number(filters.value.questionType));
+    result = result.filter(m => m.questions.questionType === Number(filters.value.questionType));
   }
   
   if (filters.value.difficulty) {
-    result = result.filter(m => m.difficulty === Number(filters.value.difficulty));
+    result = result.filter(m => m.questions.difficulty === Number(filters.value.difficulty));
   }
   
   // 分页处理
@@ -409,14 +315,14 @@ const formatDate = (dateString: string) => {
 
 // 获取科目名称
 const getSubjectName = (subjectId: number) => {
-  const subject = subjects.value.find(s => s.id === subjectId);
-  return subject ? subject.name : '未知';
+  const subject = subjects.value.find(s => s['subjectId'] === subjectId);
+  return subject ? subject['subjectName'] : '未知';
 };
 
 // 获取题型名称
 const getQuestionTypeName = (typeId: number) => {
-  const type = questionTypes.value.find(t => t.id === typeId);
-  return type ? type.name : '未知';
+  const type = questionTypes.value.find(t => t.typeId === typeId);
+  return type ? type.typeName : '未知';
 };
 
 // 获取难度文本
@@ -494,8 +400,8 @@ const toggleMastery = (mistake: any) => {
 // 更新统计信息
 const updateStats = () => {
   const total = mistakes.value.length;
-  const corrected = mistakes.value.filter(m => m.mastered).length;
-  const subjects = new Set(mistakes.value.map(m => m.subjectId)).size;
+  const corrected = mistakes.value.filter(m => m.examWrongBook.isDeleted == "1").length;
+  const subjects = new Set(mistakes.value.map(m => m.questions.subjectId)).size;
   const masteryRate = total > 0 ? Math.round((corrected / total) * 100) : 0;
   
   mistakeStats.value = {
@@ -508,8 +414,10 @@ const updateStats = () => {
 
 // 查看错题详情
 const viewMistakeDetail = (mistake: any) => {
-  selectedMistake.value = mistake;
-  (document.getElementById('mistakeDetailModal') as HTMLDialogElement).showModal();
+  selectedMistake.value = mistake.questions;
+  nextTick(()=>{
+    questionPreviewDialog.showModal()
+  })
 };
 
 // 关闭错题详情
@@ -523,7 +431,7 @@ const refreshMistakes = () => {
   console.log('刷新错题数据');
 };
 
-onMounted(() => {
-  updateStats();
-});
+const closeQuestionPreview = () => {
+  questionPreviewDialog.close()
+}
 </script>

@@ -7,7 +7,7 @@ public class SM4test {
 
     public static void main(String[] args) {
 
-        String rawPassword = "admin123456"; // 要加密的明文密码
+        String rawPassword = "123456"; // 要加密的明文密码
 
         try {
             // 使用你现有的 SM4Utils.encrypt 方法加密

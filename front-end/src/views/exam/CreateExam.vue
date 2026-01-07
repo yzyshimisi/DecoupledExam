@@ -140,11 +140,11 @@
               <span class="label-text text-base-content font-medium">开始时间 *</span>
             </label>
             <input
-              v-model="form.startTime"
-              type="datetime-local"
-              class="input input-bordered w-full"
-              :class="{ 'input-error': errors.startTime }"
-              required
+                v-model="form.startTime"
+                type="datetime-local"
+                class="input input-bordered w-full"
+                :class="{ 'input-error': errors.startTime }"
+                required
             />
             <label class="label" v-if="errors.startTime">
               <span class="label-text-alt text-error">{{ errors.startTime }}</span>
@@ -156,11 +156,11 @@
               <span class="label-text text-base-content font-medium">结束时间 *</span>
             </label>
             <input
-              v-model="form.endTime"
-              type="datetime-local"
-              class="input input-bordered w-full"
-              :class="{ 'input-error': errors.endTime }"
-              required
+                v-model="form.endTime"
+                type="datetime-local"
+                class="input input-bordered w-full"
+                :class="{ 'input-error': errors.endTime }"
+                required
             />
             <label class="label" v-if="errors.endTime">
               <span class="label-text-alt text-error">{{ errors.endTime }}</span>
@@ -463,7 +463,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import {ref, onMounted, computed, watch} from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useRequest } from 'vue-hooks-plus';
 import { getExamDetailAPI, createExamAPI, updateExamAPI } from '../../apis';
@@ -502,8 +502,14 @@ const form = ref({
   fillManualMark: false,
   multiChoicePartialScore: true, // 多选未选全评分方式
   multiChoicePartialRatio: 0.5,
-  sortQuestionScorePerBlank: false // 排序题是否按空给分
+  sortQuestionScorePerBlank: false, // 排序题是否按空给分
+  description: '',
 });
+
+watch(()=>form.value.startTime,()=>{
+  console.log(form.value.startTime)
+})
+
 
 const paperInfo = ref<{
   paperId?: number;
@@ -663,7 +669,8 @@ const fetchExamDetail = () => {
               fillManualMark: getBooleanValue(exam.fillManualMark, false),
               multiChoicePartialScore: getBooleanValue(exam.multiChoicePartialScore, true),
               multiChoicePartialRatio: getNumberValue(exam.multiChoicePartialRatio, 0.5),
-              sortQuestionScorePerBlank: getBooleanValue(exam.sortQuestionScorePerBlank, false)
+              sortQuestionScorePerBlank: getBooleanValue(exam.sortQuestionScorePerBlank, false),
+              description: ''
             };
           }
         }
