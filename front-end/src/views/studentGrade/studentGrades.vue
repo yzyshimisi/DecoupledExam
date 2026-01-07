@@ -71,7 +71,7 @@ const loadGrades = async () => {
     // 解析JWT token获取用户ID
     const { jwtDecode } = await import('jwt-decode');
     const decoded = jwtDecode(token);
-    const userId = decoded['userId'];
+    const userId = decoded.id;
     
     // 获取当前学生的所有成绩
     const response = await getStudentGradesByStudentIdAPI(userId);
@@ -106,7 +106,7 @@ const searchByCourseId = async () => {
     // 解析JWT token获取用户ID
     const { jwtDecode } = await import('jwt-decode');
     const decoded = jwtDecode(token);
-    const userId = decoded['userId'];
+    const userId = decoded.id;
     
     // 先获取当前学生的所有成绩
     const response = await getStudentGradesByStudentIdAPI(userId);

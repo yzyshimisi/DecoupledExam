@@ -10,10 +10,11 @@ export const updateStudentGradeAPI = async (data: {
   score: number;
   fullScore: number;
   teacherId: number;
-  recordTime: string;
+  recordTime?: string; // 修改为可选字段
   remark?: string;
 }) => {
-  return request(`/api/student-grades/${data.gradeId}`, {
+  // 后端API路径不包含ID参数，ID包含在请求体中
+  return request(`/api/student-grades`, {
     method: "PUT",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("token")}` },
     data: data

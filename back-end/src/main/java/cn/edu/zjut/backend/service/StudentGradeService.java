@@ -8,6 +8,7 @@ import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Date;
 
 @Service
 public class StudentGradeService {
@@ -48,20 +49,94 @@ public class StudentGradeService {
         StudentGradeDAO dao = new StudentGradeDAO();
         dao.setSession(session);
         Transaction transaction = null;
+
         try {
-            transaction = session.beginTransaction();
-            dao.update(studentGrade);
-            transaction.commit();
-            return true;
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
+            System.out.println("开始更新成绩: " + studentGrade.toString());
+
+            // 验证必要字段
+            if (studentGrade == null) {
+                System.err.println("传入的成绩对象为空");
+                return false;
             }
+
+            if (studentGrade.getGradeId() == null) {
+                System.err.println("gradeId不能为空");
+                return false;
+            }
+
+            if (studentGrade.getStudentId() == null) {
+                System.err.println("studentId不能为空");
+                return false;
+            }
+
+            if (studentGrade.getGradeType() == null || studentGrade.getGradeType().trim().isEmpty()) {
+                System.err.println("gradeType不能为空");
+                return false;
+            }
+
+            if (studentGrade.getGradeName() == null || studentGrade.getGradeName().trim().isEmpty()) {
+                System.err.println("gradeName不能为空");
+                return false;
+            }
+
+            if (studentGrade.getScore() == null) {
+                System.err.println("score不能为空");
+                return false;
+            }
+
+            if (studentGrade.getFullScore() == null) {
+                System.err.println("fullScore不能为空");
+                return false;
+            }
+
+            if (studentGrade.getTeacherId() == null) {
+                System.err.println("teacherId不能为空");
+                return false;
+            }
+
+            // 设置recordTime为当前时间（如果为空）
+            if (studentGrade.getRecordTime() == null) {
+                studentGrade.setRecordTime(new Date());
+                System.out.println("recordTime已自动设置为当前时间");
+            }
+
+            // 开始事务
+            transaction = session.beginTransaction();
+
+            // 执行更新
+            dao.update(studentGrade);
+
+            // 提交事务
+            transaction.commit();
+            System.out.println("成绩更新成功，ID: " + studentGrade.getGradeId());
+            return true;
+
+        } catch (Exception e) {
+            // 记录详细的错误信息
+            System.err.println("更新成绩时发生异常: " + e.getMessage());
             e.printStackTrace();
+
+            // 回滚事务
+            if (transaction != null) {
+                try {
+                    transaction.rollback();
+                    System.err.println("事务已回滚");
+                } catch (Exception rollbackEx) {
+                    System.err.println("事务回滚失败: " + rollbackEx.getMessage());
+                }
+            }
+
             return false;
+
         } finally {
+            // 关闭会话
             if (session != null && session.isOpen()) {
-                session.close();
+                try {
+                    session.close();
+                    System.out.println("数据库会话已关闭");
+                } catch (Exception closeEx) {
+                    System.err.println("关闭会话失败: " + closeEx.getMessage());
+                }
             }
         }
     }

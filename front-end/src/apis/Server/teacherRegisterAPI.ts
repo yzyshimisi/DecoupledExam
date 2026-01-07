@@ -6,6 +6,7 @@ interface TeacherRegisterData {
   realName: string;
   userType: number; // 1 表示教师
   phone: string;
+  email: string;
 }
 
 const teacherRegisterAPI = async (data: TeacherRegisterData, token: string) => {

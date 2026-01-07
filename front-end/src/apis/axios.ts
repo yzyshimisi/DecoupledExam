@@ -4,7 +4,7 @@ import router from "../routers";   // 导入模块
 import { useRoute } from 'vue-router'
 
 const axiosInstance = axios.create({        //创建实例
-    baseURL:"",
+    baseURL: "",
     timeout: 20000,
 })
 
@@ -44,22 +44,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// 响应拦截器，处理通用错误
-// axiosInstance.interceptors.response.use(
-//   response => {
-//     return response;
-//   },
-//   error => {
-//     console.error('API请求错误:', error);
-//     if (error.response?.code === 401) {
-//       // 如果是认证错误，跳转到登录页面
-//       localStorage.removeItem('token');
-//       localStorage.removeItem('userType');
-//       window.location.href = '/login';
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+
 
 const request = <ResponseType = unknown>(  //创建request
     url: string,                             //上面如果给了baseURL，这里可以直接传入子路径
