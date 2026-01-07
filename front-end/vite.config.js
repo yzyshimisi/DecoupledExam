@@ -13,9 +13,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {  // 获取请求中带 /api 的请求
-        target: 'http://127.0.0.1',  // 后台服务器的域名
+        target: 'http://localhost:80',  // 后台服务器的域名和端口
         changeOrigin: true,   // 修改源
-      },
+      }
     }
   }
 })

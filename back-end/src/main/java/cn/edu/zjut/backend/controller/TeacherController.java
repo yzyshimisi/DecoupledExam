@@ -194,7 +194,8 @@ public class TeacherController {
             Long currentUserId = ((Number) claims.get("id")).longValue();
             Integer currentUserType = (Integer) claims.get("userType");
             
-            Long teacherId = request.getTeacherId();
+            // 如果请求体中没有提供teacherId，则使用当前登录用户ID
+            Long teacherId = (request.getTeacherId() != null) ? request.getTeacherId() : currentUserId;
             Integer subjectId = request.getSubjectId();
             
             // 如果是教师，只能操作自己的账号
@@ -228,7 +229,7 @@ public class TeacherController {
     @ResponseBody
     @LogRecord(module = "教师管理", action = "获取教师的所有学科关联", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<List<TeacherSubject>> getTeacherSubjects(
-            @RequestParam("teacherId") Long teacherId,
+            @RequestParam(required = false) Long teacherId,
             HttpServletRequest httpRequest) {
         try {
             // 验证权限：教师只能查看自己的学科，管理员可以查看所有教师的学科
@@ -240,6 +241,11 @@ public class TeacherController {
             Long currentUserId = ((Number) claims.get("id")).longValue();
             Integer currentUserType = (Integer) claims.get("userType");
             
+            // 如果请求参数中没有提供teacherId，则使用当前登录用户ID
+            if (teacherId == null) {
+                teacherId = currentUserId;
+            }
+            
             // 如果是教师，只能查看自己的学科
             if (currentUserType == 1 && !currentUserId.equals(teacherId)) { // 1=教师
                 return Response.error("权限不足，教师只能查看自己的学科信息");
@@ -249,6 +255,32 @@ public class TeacherController {
             return Response.success(subjects);
         } catch (Exception e) {
             return Response.error("获取教师学科信息异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取当前用户绑定的学科
+     * 教师只能获取自己的学科，管理员也可以获取自己的学科
+     * @return 当前用户学科关联列表
+     */
+    @GetMapping("/subject/my")
+    @ResponseBody
+    @LogRecord(module = "教师管理", action = "获取我的学科", targetType = "教师", logType = LogRecord.LogType.OPERATION)
+    public Response<List<TeacherSubject>> getCurrentUserSubjects(
+            HttpServletRequest httpRequest) {
+        try {
+            // 验证用户是否已登录
+            Claims claims = (Claims) httpRequest.getAttribute("claims");
+            if (claims == null) {
+                return Response.error("用户未登录");
+            }
+            
+            Long currentUserId = ((Number) claims.get("id")).longValue();
+            
+            List<TeacherSubject> subjects = teacherService.getTeacherSubjects(currentUserId);
+            return Response.success(subjects);
+        } catch (Exception e) {
+            return Response.error("获取我的学科信息异常：" + e.getMessage());
         }
     }
 
@@ -272,7 +304,7 @@ public class TeacherController {
     /**
      * 解绑教师与学科
      * 教师只能解绑自己的学科，管理员可以解绑任意教师的学科
-     * @param teacherId 教师ID
+     * @param teacherId 教师ID（可选，如果不提供则使用当前登录用户ID）
      * @param subjectId 学科ID
      * @return 操作结果
      */
@@ -280,7 +312,7 @@ public class TeacherController {
     @ResponseBody
     @LogRecord(module = "教师管理", action = "解绑教师与学科", targetType = "教师", logType = LogRecord.LogType.OPERATION)
     public Response<String> unbindTeacherSubject(
-            @RequestParam("teacherId") Long teacherId,
+            @RequestParam(required = false) Long teacherId,
             @RequestParam("subjectId") Integer subjectId,
             HttpServletRequest httpRequest) {
         try {
@@ -292,6 +324,11 @@ public class TeacherController {
             
             Long currentUserId = ((Number) claims.get("id")).longValue();
             Integer currentUserType = (Integer) claims.get("userType");
+            
+            // 如果请求参数中没有提供teacherId，则使用当前登录用户ID
+            if (teacherId == null) {
+                teacherId = currentUserId;
+            }
             
             // 如果是教师，只能操作自己的账号
             if (currentUserType == 1 && !currentUserId.equals(teacherId)) { // 1=教师
@@ -311,6 +348,44 @@ public class TeacherController {
             }
         } catch (Exception e) {
             return Response.error("教师学科解绑异常：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 解绑当前用户与学科
+     * 教师只能解绑自己的学科
+     * @param subjectId 学科ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/subject/my")
+    @ResponseBody
+    @LogRecord(module = "教师管理", action = "解绑我的学科", targetType = "教师", logType = LogRecord.LogType.OPERATION)
+    public Response<String> unbindCurrentUserSubject(
+            @RequestParam("subjectId") Integer subjectId,
+            HttpServletRequest httpRequest) {
+        try {
+            // 验证用户是否已登录
+            Claims claims = (Claims) httpRequest.getAttribute("claims");
+            if (claims == null) {
+                return Response.error("用户未登录");
+            }
+            
+            Long currentUserId = ((Number) claims.get("id")).longValue();
+            Integer currentUserType = (Integer) claims.get("userType");
+            
+            // 如果是学生，无权操作
+            if (currentUserType == 2) { // 2=学生
+                return Response.error("权限不足，学生无法执行此操作");
+            }
+            
+            boolean result = teacherService.unbindTeacherSubject(currentUserId, subjectId);
+            if (result) {
+                return Response.success("我的学科解绑成功");
+            } else {
+                return Response.error("我的学科解绑失败");
+            }
+        } catch (Exception e) {
+            return Response.error("我的学科解绑异常：" + e.getMessage());
         }
     }
 
