@@ -167,7 +167,8 @@ import { useRouter } from 'vue-router';
 import { useRequest } from 'vue-hooks-plus';
 import { getStudentExamsAPI, getExamListAPI, deleteExamAPI } from '../../apis';
 import { getTeacherPositionAPI } from "../../apis/Server/userAPI";
-import {ChooseExamTeacherDia} from "../../components";
+import { ChooseExamTeacherDia } from "../../components";
+import { ElNotification } from "element-plus";
 
 const router = useRouter();
 
@@ -483,13 +484,13 @@ const viewExam = (exam: any) => {
 };
 
 const editExam = (exam: any) => {
-  router.push(`/exam/${exam.id}/edit`);
+  router.push(`/exam/${exam.examId}/edit`);
 };
 
 const deleteExam = (exam: any) => {
   if (confirm('确定要删除这个考试吗？')) {
-    console.log('开始删除考试，examId:', exam.id);
-    useRequest(() => deleteExamAPI(exam.id), {
+    console.log('开始删除考试，examId:', exam.examId);
+    useRequest(() => deleteExamAPI(exam.examId), {
       onSuccess(res) {
         console.log('删除考试响应:', res);
         if (res['code'] === 200 && res['data'] === true) {
@@ -508,7 +509,7 @@ const deleteExam = (exam: any) => {
 };
 
 const manageStudents = (exam: any) => {
-  router.push(`/exam/${exam.id}/students`);
+  router.push(`/exam/${exam.examId}/students`);
 };
 
 const createExam = () => {

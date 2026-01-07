@@ -176,9 +176,7 @@ const hasQuestions = computed(() => {
 
 onBeforeMount(()=> {
 
-  examToken.value = localStorage.getItem('examToken')
-
-  console.log('examToken:', examToken.value)
+  examToken.value = localStorage.getItem('examToken') // 获取已存储的考试令牌
 
   answers.value = JSON.parse(localStorage.getItem('localAnswers')) || {} // 加载时，先同步本地存储的答案，不需要全部重选
 
@@ -194,7 +192,11 @@ onBeforeMount(()=> {
 })
 
 onUnmounted(()=>{
+
   localStorage.removeItem("examToken")
+  localStorage.removeItem('localAnswers')
+  isExamStarted.value = false
+  if (countdownTimer) onclearTimeout(countdownTimer);
 })
 
 const judgeEligible = () => {
@@ -230,8 +232,11 @@ const remainingSeconds = ref(0);
 let countdownTimer: number | null = null;
 
 const startCountdown = (endTime: number) => {
+  if(!isExamStarted.value) return
 
   const update = () => {
+    if(!isExamStarted.value) return
+
     const now = Date.now();
     const left = Math.max(0, endTime - now);
     remainingSeconds.value = Math.ceil(left / 1000);
@@ -247,11 +252,6 @@ const startCountdown = (endTime: number) => {
 
   update();
 }
-
-// 组件卸载时清理
-onUnmounted(() => {
-  if (countdownTimer) clearTimeout(countdownTimer);
-});
 
 const getQuestionTypes = () => {
   useRequest(()=>getQuestionTypeAPI(),{
@@ -350,14 +350,15 @@ const handleViolation = () => {
         let cnt = Number(res['data'])
         console.log('违规次数:', cnt);
         if(cnt >= 3){
-          localStorage.removeItem('examToken')
-          localStorage.removeItem('localAnswers')
-          examToken.value = ''
+          exitExam()  // 清除数据，更改状态
           routers.push('/exam').then(()=>{
-            ElNotification.error({
-              title: '提示',
-              message: '违规次数过多，请勿作弊！',
-              duration: 3000
+            window.location.reload();
+            nextTick(()=>{
+              ElNotification.error({
+                title: '提示',
+                message: '违规次数过多，请勿作弊！',
+                duration: 3000
+              })
             })
           })
         }else{
@@ -471,11 +472,11 @@ const verifyFaceSuccess = () => {
 
 // 所有题目是否都已作答
 const allAnswered = computed(() => {
-  // return groupedQuestions.value.every(group =>
-  //     group.items.every(pq => {
-  //       return answers.value[pq.questionId] !== undefined && answers.value[pq.questionId] !== null
-  //     })
-  // )
+  return groupedQuestions.value.every(group =>
+      group.items.every(pq => {
+        return answers.value[pq.questionId] !== undefined && answers.value[pq.questionId] !== null
+      })
+  )
 
   return true;
 })
@@ -508,10 +509,12 @@ const addExamAnswer = () => {
     onSuccess(res){
       if(res['code']==200){
         answers.value = {}
-        localStorage.removeItem('localAnswers') // 提交成功，删除本地答案
-        localStorage.removeItem('examToken')  // 删除考试令牌
+        exitExam()
         routers.push("/exam").then(()=>{
-          ElNotification({title: 'Success', message: '提交成功！', type: 'success',})
+          window.location.reload()
+          nextTick(()=>{
+            ElNotification({title: 'Success', message: '提交成功！', type: 'success',})
+          })
         })
       }else{
         ElNotification({title: 'Warning', message: res['msg'], type: 'warning',})
@@ -525,21 +528,32 @@ const addExamAnswer = () => {
 
 const uploadInvigilationVideo = (base64: string) => {
   useRequest(()=>uploadInvigilationVideoAPI({video: base64}),{
-    onSuccess(res){
-      if(res['code']==200){
+    onSuccess(res) {
+      if (res['code'] == 200) {
 
         attentionScore.value = res['data']['attentionScore']
 
-        if(res['data']['isViolation']){
-
-        }else{
-
+        if(res['data']['finish']){  // 结束考试（违规次数达到3次）
+          exitExam()
+          routers.push('/exam').then(()=>{
+            window.location.reload()
+            nextTick(()=>{
+              alert("违规次数过多，请勿作弊！")
+            })
+          })
+        }else if(res['data']['violation']){ // 监考违规（连续三次监考失败）
+          ElNotification({title: 'Warning', message: "监考到违规操作", type: 'warning',})
         }
-      }else{
-        ElNotification({title: 'Warning', message: res['msg'], type: 'warning',})
       }
-    },
+    }
   })
+}
+
+const exitExam = () => {
+  localStorage.removeItem('localAnswers') // 提交成功，删除本地答案
+  localStorage.removeItem('examToken')  // 删除考试令牌
+  isExamStarted.value = false
+  examToken.value = ''
 }
 </script>
 

@@ -104,8 +104,11 @@ public class FaceRec {
     public R<DetectionResponse> faceRecognition(String file){   // 传入视频
         InputStream inputStream = Base64Util.base64ToInputStream(file);
         R<LivenessResult> status = livenessDetModel.detectVideo(inputStream);
+        if(status.getData() == null) return null;
+
         System.out.println(status.getData().toString());
-        if(status.getData().getStatus().toString().equals("LIVE")){ // 确定是活体
+
+        if(status.getData() != null && status.getData().getStatus().toString().equals("LIVE")){ // 确定是活体
             try {
                 BufferedImage bufferedImage = extractRandomFrame(file);
                 Image image = SmartImageFactory.getInstance().fromBufferedImage(bufferedImage);

@@ -684,12 +684,41 @@ public class QuestionService {
     }
 
     public Questions queryQuestion(Long questionId){
+
         Session session = getSession();
         QuestionDAO dao = new QuestionDAO();
         dao.setSession(session);
         Questions questions = dao.query(questionId);
 
         HibernateUtil.closeSession();
+
+        // 如果是学生，不返回解析和答案
+        if(UserContext.getUserType().equals(2)){
+            Set<QuestionItems> items = questions.getQuestionItems();
+            Set<QuestionComponents> components = questions.getQuestionComponents();
+
+            if (components != null) {
+                components.removeIf(component ->
+                        "answer".equals(component.getComponentType()) ||
+                                "analysis".equals(component.getComponentType())
+                );
+            }
+
+            if (items != null) {
+                for (QuestionItems questionItem : items) {
+                    List<QuestionComponents> questionComponents = questionItem.getQuestionComponents();
+
+                    // 修改点 2：List 同样支持 removeIf，这里也替换掉
+                    if (questionComponents != null) {
+                        questionComponents.removeIf(component ->
+                                "answer".equals(component.getComponentType()) ||
+                                        "analysis".equals(component.getComponentType())
+                        );
+                    }
+                }
+            }
+        }
+
         return questions;
     }
 

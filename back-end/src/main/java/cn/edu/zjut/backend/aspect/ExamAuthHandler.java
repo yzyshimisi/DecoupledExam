@@ -29,7 +29,8 @@ public class ExamAuthHandler {
     private static final List<String> EXAM_AUTH_PATHS = List.of(
             "/api/exam/{examId}/exam-settings",
             "/api/examAnswer",
-            "/api/exam/violation"
+            "/api/exam/violation",
+            "/api/exam/invigilation"
     );
 
     @Pointcut("execution(* cn.edu.zjut.backend.controller..*(..))")
