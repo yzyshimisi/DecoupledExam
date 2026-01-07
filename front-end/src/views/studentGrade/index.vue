@@ -31,17 +31,17 @@
         </thead>
         <tbody>
           <tr v-for="grade in grades" :key="grade.gradeId">
-            <td>{{ grade.gradeId }}</td>
-            <td>{{ grade.studentId }}</td>
-            <td>{{ grade.courseId }}</td>
-            <td>{{ grade.subjectId }}</td>
-            <td>{{ grade.gradeType }}</td>
-            <td>{{ grade.gradeName }}</td>
+            <td>{{ grade.gradeId || grade.grade_id }}</td>
+            <td>{{ grade.studentId || grade.student_id }}</td>
+            <td>{{ grade.courseId || grade.course_id }}</td>
+            <td>{{ grade.subjectId || grade.subject_id }}</td>
+            <td>{{ grade.gradeType || grade.grade_type }}</td>
+            <td>{{ grade.gradeName || grade.grade_name }}</td>
             <td>{{ grade.score }}</td>
-            <td>{{ grade.fullScore }}</td>
-            <td>{{ grade.teacherId }}</td>
-            <td>{{ grade.recordTime }}</td>
-            <td>{{ grade.remark || '-' }}</td>
+            <td>{{ grade.fullScore || grade.full_score }}</td>
+            <td>{{ grade.teacherId || grade.teacher_id }}</td>
+            <td>{{ grade.recordTime || grade.record_time }}</td>
+            <td>{{ grade.remark || grade.remark || '-' }}</td>
             <td>
               <button @click="editGrade(grade)" class="btn btn-sm btn-outline mr-2">编辑</button>
               <button @click="deleteGrade(grade.gradeId)" class="btn btn-sm btn-error">删除</button>
@@ -99,7 +99,7 @@
           
           <div class="form-control">
             <label class="label">记录时间</label>
-            <input v-model="currentGrade.recordTime" type="datetime-local" class="input input-bordered" required />
+            <input v-model="currentGrade.recordTime" type="datetime-local" class="input input-bordered" />
           </div>
           
           <div class="form-control">
@@ -121,9 +121,11 @@
 import { ref, onMounted } from 'vue';
 import { useStudentGradeStore } from '../../stores/service/studentGradeStore';
 import StudentGradeFilters from '../../components/studentGrade/StudentGradeFilters.vue';
+import * as jwtDecode from 'jwt-decode';
 
 const studentGradeStore = useStudentGradeStore();
 const grades = ref<any[]>([]);
+const allGrades = ref<any[]>([]); // 保存所有成绩的副本，用于过滤
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
 const currentGrade = ref<any>({
@@ -141,33 +143,91 @@ const currentGrade = ref<any>({
 
 // 初始化加载成绩数据
 onMounted(async () => {
+  console.log('开始加载成绩数据...');
   await loadGrades();
 });
 
 // 加载成绩数据
 const loadGrades = async () => {
+  console.log('loadGrades函数开始执行');
+  
   try {
-    // 获取当前教师负责课程的成绩
+    // 获取当前用户的令牌
     const token = localStorage.getItem('token');
+    console.log('从localStorage获取到token:', token ? '存在' : '不存在');
+    
     if (!token) {
       console.error('未找到认证令牌');
       grades.value = [];
+      allGrades.value = [];
       return;
     }
       
-    // 从JWT token中获取教师ID
-    const decoded: any = jwtDecode(token);
-    const teacherId = decoded.id;
-      
-    // 使用教师ID获取成绩
-    const response = await studentGradeStore.getStudentGradesByTeacherId(teacherId);
-    if (response && response.data) {
-      grades.value = response.data;
-    } else {
+    // 从JWT token中获取用户信息
+    let decoded: any;
+    try {
+      decoded = jwtDecode.jwtDecode(token);
+      console.log('JWT解码成功，解码后数据:', decoded);
+    } catch (error) {
+      console.error('JWT解码失败:', error);
       grades.value = [];
+      allGrades.value = [];
+      return;
+    }
+    
+    // 根据项目规范，JWT中用户ID字段名为'id'，用户类型字段名为'userType'
+    const userId = decoded.id;
+    const userType = decoded.userType || decoded.role; // 尝试userType或role字段
+    
+    console.log('从JWT获取的用户信息:', { userId, userType });
+    
+    // 检查用户ID和用户类型是否有效
+    if (!userId) {
+      console.error('错误：无法从JWT中获取用户ID，userId为:', userId);
+      grades.value = [];
+      allGrades.value = [];
+      return;
+    }
+    
+    if (!userType) {
+      console.error('错误：无法从JWT中获取用户类型，userType为:', userType);
+      grades.value = [];
+      allGrades.value = [];
+      return;
+    }
+    
+    // 根据用户类型获取对应的成绩数据
+    let response;
+    console.log('开始根据用户类型获取数据，用户类型:', userType);
+    
+    if (userType === 'STUDENT' || userType === 'student') {
+      console.log('用户类型为学生，准备调用getStudentGradesByStudentId，参数:', userId);
+      response = await studentGradeStore.getStudentGradesByStudentId(userId);
+      console.log('getStudentGradesByStudentId调用完成，响应:', response);
+    } else if (userType === 'TEACHER' || userType === 'teacher') {
+      console.log('用户类型为教师，准备调用getStudentGradesByTeacherId，参数:', userId);
+      response = await studentGradeStore.getStudentGradesByTeacherId(userId);
+      console.log('getStudentGradesByTeacherId调用完成，响应:', response);
+    } else {
+      console.log('用户类型为其他(可能是管理员)，准备调用getAllStudentGrades');
+      response = await studentGradeStore.getAllStudentGrades();
+      console.log('getAllStudentGrades调用完成，响应:', response);
+    }
+      
+    if (response && response.data) {
+      allGrades.value = response.data;
+      grades.value = response.data; // 显示所有获取到的成绩
+      console.log('成功获取到成绩数据，总数:', response.data.length);
+      console.log('获取到的成绩数据:', response.data);
+    } else {
+      allGrades.value = [];
+      grades.value = [];
+      console.log('未获取到成绩数据，response为:', response);
     }
   } catch (error) {
-    console.error('加载成绩失败:', error);
+    console.error('加载成绩失败，详细错误信息:', error);
+    console.error('错误堆栈:', error instanceof Error ? error.stack : 'No stack');
+    allGrades.value = [];
     grades.value = [];
   }
 };
@@ -231,28 +291,50 @@ const closeModal = () => {
   };
 };
 
-// 处理筛选器变化
-const handleFilterChange = async (filters: any) => {
+// 处理筛选器变化 - 实现三者模糊查询
+const handleFilterChange = (filters: any) => {
+  console.log('处理筛选器变化:', filters);
   try {
-    let response;
-    if (filters.studentId) {
-      response = await studentGradeStore.getStudentGradesByStudentId(filters.studentId);
-    } else if (filters.courseId) {
-      response = await studentGradeStore.getStudentGradesByCourseId(filters.courseId);
-    } else if (filters.gradeType) {
-      response = await studentGradeStore.getStudentGradesByGradeType(filters.gradeType);
-    } else {
-      response = await studentGradeStore.getAllStudentGrades();
+    // 从所有成绩中进行过滤
+    let filteredGrades = [...allGrades.value];
+    console.log('开始过滤，总成绩数:', allGrades.value.length);
+    
+    // 根据学生ID进行模糊过滤（如果提供了学生ID）
+    if (filters.studentId !== null && filters.studentId !== '') {
+      console.log('按学生ID过滤，过滤值:', filters.studentId);
+      filteredGrades = filteredGrades.filter((grade: any) => 
+        grade.studentId && 
+        grade.studentId.toString().includes(filters.studentId.toString())
+      );
+      console.log('学生ID过滤后剩余:', filteredGrades.length);
     }
     
-    if (response && response.data) {
-      grades.value = response.data;
-    } else {
-      grades.value = [];
+    // 根据课程ID进行模糊过滤（如果提供了课程ID）
+    if (filters.courseId !== null && filters.courseId !== '') {
+      console.log('按课程ID过滤，过滤值:', filters.courseId);
+      filteredGrades = filteredGrades.filter((grade: any) => 
+        grade.courseId && 
+        grade.courseId.toString().includes(filters.courseId.toString())
+      );
+      console.log('课程ID过滤后剩余:', filteredGrades.length);
     }
+    
+    // 根据成绩类型进行模糊过滤（如果提供了成绩类型）
+    if (filters.gradeType !== null && filters.gradeType !== '') {
+      console.log('按成绩类型过滤，过滤值:', filters.gradeType);
+      filteredGrades = filteredGrades.filter((grade: any) => 
+        grade.gradeType && 
+        grade.gradeType.toLowerCase().includes(filters.gradeType.toLowerCase())
+      );
+      console.log('成绩类型过滤后剩余:', filteredGrades.length);
+    }
+    
+    // 更新显示的成绩列表
+    grades.value = filteredGrades;
+    console.log('最终显示成绩数:', filteredGrades.length);
   } catch (error) {
     console.error('筛选成绩失败:', error);
-    grades.value = [];
+    grades.value = allGrades.value; // 如果出错，显示所有成绩
   }
 };
 </script>
