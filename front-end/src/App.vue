@@ -16,6 +16,8 @@ import { Navbar, Footer } from './components';
 import { useMainStore } from "./stores";
 import {useRoute} from "vue-router";
 
+// console.log(localStorage.getItem('token'))
+
 const isLogin = ref<boolean>(useMainStore().useLoginStore().loginSession)
 
 const route = useRoute()

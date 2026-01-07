@@ -30,16 +30,14 @@ public class QuestionService {
     private static final Map<String, String> QUESTION_JSON = new HashMap<String, String>() {{
         // 单选题
         put("单选题", "{\n" +
-                "  \"typeId\": 1, \n" +
+                "  \"typeId\": 1\n" +
                 "  \"title\": \"以下关于Java中ArrayList的描述，错误的是？\",\n" +
                 "  \"difficulty\": 2,\n" +
                 "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"option\",\n" +
                 "      \"content\": \"{\\\"options\\\":[{\\\"label\\\":\\\"A\\\",\\\"value\\\":\\\"ArrayList底层基于数组实现\\\",\\\"isCorrect\\\":false},{\\\"label\\\":\\\"B\\\",\\\"value\\\":\\\"ArrayList扩容时默认扩容为原容量的1.5倍\\\",\\\"isCorrect\\\":false},{\\\"label\\\":\\\"C\\\",\\\"value\\\":\\\"ArrayList支持快速的插入/删除操作\\\",\\\"isCorrect\\\":true},{\\\"label\\\":\\\"D\\\",\\\"value\\\":\\\"ArrayList是非线程安全的\\\",\\\"isCorrect\\\":false}],\\\"allowMultiple\\\":false}\",\n" +
-                "      \"meta\": \"{\\\"questionType\\\":\\\"singleChoice\\\",\\\"totalOptions\\\":4}\"\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
@@ -58,7 +56,6 @@ public class QuestionService {
                 "  \"title\": \"以下属于Java集合框架中线程安全的类有哪些？\",\n" +
                 "  \"difficulty\": 3,\n" +
                 "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"option\",\n" +
@@ -77,36 +74,11 @@ public class QuestionService {
                 "}");
 
         // 填空题
-        put("填空题", "{\n" +
-                "  \"typeId\": 4,\n" +
-                "  \"title\": \"Java中声明抽象方法的关键字是______，定义接口的关键字是______。\",\n" +
-                "  \"difficulty\": 2,\n" +
-                "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
-                "  \"questionComponents\": [\n" +
-                "    {\n" +
-                "      \"componentType\": \"blank\",\n" +
-                "      \"content\": \"{\\\"blanks\\\":[{\\\"label\\\":\\\"1\\\",\\\"placeholder\\\":\\\"______\\\",\\\"position\\\":\\\"第1空\\\",\\\"answer\\\":\\\"abstract\\\",\\\"sort\\\":1},{\\\"label\\\":\\\"2\\\",\\\"placeholder\\\":\\\"______\\\",\\\"position\\\":\\\"第2空\\\",\\\"answer\\\":\\\"interface\\\",\\\"sort\\\":2}]}\",\n" +
-                "      \"meta\": \"{\\\"totalScore\\\":4}\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"componentType\": \"answer\",\n" +
-                "      \"content\": \"{\\\"answers\\\":[{\\\"blankLabel\\\":\\\"1\\\",\\\"correctAnswer\\\":\\\"abstract\\\"},{\\\"blankLabel\\\":\\\"2\\\",\\\"correctAnswer\\\":\\\"interface\\\"}],\\\"tip\\\":\\\"注意关键字拼写，区分大小写\\\"}\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"componentType\": \"analysis\",\n" +
-                "      \"content\": \"{\\\"analysisDesc\\\":\\\"1. abstract关键字用于声明抽象方法/抽象类，抽象方法无方法体；2. interface关键字用于定义接口，接口中方法默认是public abstract，变量默认是public static final。\\\"}\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}");
-
-        // 判断题
         put("判断题", "{\n" +
                 "  \"typeId\": 3,\n" +
                 "  \"title\": \"Java中的String类是不可变的。\",\n" +
                 "  \"difficulty\": 1,\n" +
                 "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
@@ -119,13 +91,34 @@ public class QuestionService {
                 "  ]\n" +
                 "}");
 
+        // 判断题
+        put("填空题", "{\n" +
+                "  \"typeId\": 4,\n" +
+                "  \"title\": \"Java中声明抽象方法的关键字是______，定义接口的关键字是______。\",\n" +
+                "  \"difficulty\": 2,\n" +
+                "  \"subjectId\": 4,\n" +
+                "  \"questionComponents\": [\n" +
+                "    {\n" +
+                "      \"componentType\": \"blank\",\n" +
+                "      \"content\": \"{\\\"blanks\\\":[{\\\"label\\\":\\\"1\\\",\\\"placeholder\\\":\\\"______\\\",\\\"position\\\":\\\"第1空\\\",\\\"answer\\\":\\\"abstract\\\",\\\"sort\\\":1},{\\\"label\\\":\\\"2\\\",\\\"placeholder\\\":\\\"______\\\",\\\"position\\\":\\\"第2空\\\",\\\"answer\\\":\\\"interface\\\",\\\"sort\\\":2}]}\",\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"componentType\": \"answer\",\n" +
+                "      \"content\": \"{\\\"answers\\\":[{\\\"blankLabel\\\":\\\"1\\\",\\\"correctAnswer\\\":\\\"abstract\\\"},{\\\"blankLabel\\\":\\\"2\\\",\\\"correctAnswer\\\":\\\"interface\\\"}],\\\"tip\\\":\\\"注意关键字拼写，区分大小写\\\"}\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"componentType\": \"analysis\",\n" +
+                "      \"content\": \"{\\\"analysisDesc\\\":\\\"1. abstract关键字用于声明抽象方法/抽象类，抽象方法无方法体；2. interface关键字用于定义接口，接口中方法默认是public abstract，变量默认是public static final。\\\"}\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}");
+
         // 名词解析
-        put("简答题", "{\n" +
+        put("名词解析", "{\n" +
                 "  \"typeId\": 5,\n" +
                 "  \"title\": \"请解析Java中的多态性\",\n" +
                 "  \"difficulty\": 3,\n" +
                 "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
@@ -144,12 +137,10 @@ public class QuestionService {
                 "  \"title\": \"论述Java中异常处理机制的设计思想及实际应用场景\",\n" +
                 "  \"difficulty\": 4,\n" +
                 "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
                 "      \"content\": \"{\\\"completeAnswer\\\":\\\"1. 设计思想：Java异常处理基于‘异常即对象’的核心思想，将错误处理逻辑与核心业务逻辑解耦，通过抛出-捕获的异常处理流程，脱离传统线性执行逻辑，避免大量if-else错误判断代码，提升程序可读性；2. 异常体系：分为Checked Exception（受检异常，如IOException，强制捕获处理）和Unchecked Exception（非受检异常，如NullPointerException，可选择性处理）；3. 核心应用场景：① IO操作中捕获IOException，保证流资源正常关闭；② 数据库操作中捕获SQLException，处理连接失败/查询异常；③ 自定义业务异常，标识参数非法、权限不足等业务错误；4. 最佳实践：避免捕获Exception父类、按需使用finally释放资源、合理设计自定义异常体系。\\\"}\",\n" +
-                "      \"meta\": \"{\\\"score\\\":10}\"\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"analysis\",\n" +
@@ -164,12 +155,10 @@ public class QuestionService {
                 "  \"title\": \"已知Java程序中int a = 10, b = 5; 计算a++ + ++b + a * b的结果，并写出详细解题步骤\",\n" +
                 "  \"difficulty\": 3,\n" +
                 "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
                 "      \"content\": \"{\\\"finalAnswer\\\":71,\\\"steps\\\":[\\\"1. 初始值：a=10，b=5;\\\",\\\"2. 计算a++：先取值10参与运算，运算后a自增为11;\\\",\\\"3. 计算++b：先自增b为6，再取值6参与运算;\\\",\\\"4. 计算a*b：此时a=11，b=6，结果为11*6=66;\\\",\\\"5. 汇总运算：10 + 6 + 66 = 71;\\\"]}\",\n" +
-                "      \"meta\": \"{\\\"score\\\":8,\\\"stepScore\\\":[2,2,2,2]}\"\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"analysis\",\n" +
@@ -184,16 +173,14 @@ public class QuestionService {
                 "  \"title\": \"企业从银行取得期限为6个月的短期借款200000元，款项已存入银行账户\",\n" +
                 "  \"difficulty\": 2,\n" +
                 "  \"subjectId\": 5,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
                 "      \"content\": \"{\\\"entryList\\\":[{\\\"debitAccount\\\":\\\"银行存款\\\",\\\"debitAmount\\\":200000.00,\\\"creditAccount\\\":\\\"短期借款\\\",\\\"creditAmount\\\":200000.00}],\\\"entryDesc\\\":\\\"该业务导致企业资产（银行存款）增加，负债（短期借款）等额增加，符合借贷记账法‘有借必有贷，借贷必相等’的记账规则。\\\"}\",\n" +
-                "      \"meta\": \"{\\\"score\\\":10,\\\"debitScore\\\":5,\\\"creditScore\\\":5}\"\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"analysis\",\n" +
-                "      \"content\": \"{\\\"analysisDesc\\\":\\\"1. 业务性质：属于筹资活动中的短期借款业务；2. 账户性质：银行存款属于资产类账户，借方记增加；短期借款属于负债类账户，贷方记增加；3. 易错点：容易混淆‘短期借款’与‘长期借款’的账户归属，区分关键在于借款期限是否超过1年。\\\"}\"\n" +
+                "      \"content\": \"{\\\"analysisDesc\\\":\\\"1. 业务性质：属于筹资活动中的短期借款业务；2. 账户性质：银行存款属于资产类账户，借方记增加；短期借款属于负债类账户，贷方记增加；3. 易错点：容易混淆‘短期借款’与‘长期借款’的账户归属，区分关键在于借款期限是否超过1年；4. 拓展：若借款到期偿还，分录为借记短期借款，贷记银行存款。\\\"}\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}");
@@ -204,7 +191,6 @@ public class QuestionService {
                 "  \"title\": \"将下列Java集合类与其对应的底层实现结构进行连线匹配\",\n" +
                 "  \"difficulty\": 2,\n" +
                 "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"match\",\n" +
@@ -214,11 +200,10 @@ public class QuestionService {
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
                 "      \"content\": \"{\\\"matchPairs\\\":[{\\\"leftId\\\":\\\"L1\\\",\\\"rightId\\\":\\\"R2\\\"},{\\\"leftId\\\":\\\"L2\\\",\\\"rightId\\\":\\\"R3\\\"},{\\\"leftId\\\":\\\"L3\\\",\\\"rightId\\\":\\\"R1\\\"}],\\\"ruleDesc\\\":\\\"左侧集合类与右侧底层实现结构一一对应，每个匹配项唯一且不重复\\\"}\",\n" +
-                "      \"meta\": \"{\\\"score\\\":6,\\\"singleScore\\\":2}\"\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"analysis\",\n" +
-                "      \"content\": \"{\\\"analysisDesc\\\":\\\"1. ArrayList底层基于动态数组，LinkedList底层基于双向链表，HashMap JDK1.8后底层为数组+链表+红黑树。\\\"}\"\n" +
+                "      \"content\": \"{\\\"analysisDesc\\\":\\\"1. ArrayList底层基于动态数组，支持快速随机访问，增删效率低；2. LinkedList底层基于双向链表，增删效率高，随机访问效率低；3. HashMap JDK1.8后底层为数组+链表+红黑树，解决哈希冲突，兼顾查询与增删效率；4. 易错点：容易混淆HashMap与HashTable的底层实现，后者是线程安全的，底层仅为数组+链表。\\\"}\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}");
@@ -226,10 +211,9 @@ public class QuestionService {
         // 排序题
         put("排序题", "{\n" +
                 "  \"typeId\": 10,\n" +
-                "  \"title\": \"请将下列Java代码执行流程按正确顺序排列：定义主类Main, 编写main方法作为程序入口, 声明并初始化变量, 调用方法执行业务逻辑, 编译代码生成class文件, 运行class文件输出结果\",\n" +
+                "  \"title\": \"请将下列Java代码执行流程按正确顺序排列\",\n" +
                 "  \"difficulty\": 3,\n" +
                 "  \"subjectId\": 4,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"sort\",\n" +
@@ -239,11 +223,10 @@ public class QuestionService {
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
                 "      \"content\": \"{\\\"correctOrder\\\":[\\\"S1\\\",\\\"S2\\\",\\\"S3\\\",\\\"S4\\\",\\\"S5\\\",\\\"S6\\\"],\\\"orderDesc\\\":\\\"遵循‘定义类→编写入口→实现逻辑→编译→运行’的Java程序执行规范\\\"}\",\n" +
-                "      \"meta\": \"{\\\"score\\\":10,\\\"singleItemScore\\\":1.67}\"\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"analysis\",\n" +
-                "      \"content\": \"{\\\"analysisDesc\\\":\\\"核心考点为Java程序的开发与执行流程，注意区分‘编译’与‘运行’的顺序。\\\"}\"\n" +
+                "      \"content\": \"{\\\"analysisDesc\\\":\\\"1. 核心考点：Java程序的开发与执行流程；2. 易错点：容易混淆‘编译’与‘运行’的顺序，需注意先通过javac命令编译.java文件生成.class字节码文件，再通过java命令运行；3. 拓展：若代码中包含自定义方法，需先定义方法再在main中调用。\\\"}\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}");
@@ -254,71 +237,58 @@ public class QuestionService {
                 "  \"title\": \"English is one of the most widely used languages in the world. It __1__ by nearly every country. If you want to travel abroad, you will find __2__ important to master English. It is also a bridge between different cultures. With English, we can communicate with people from all over the world __3__.\",\n" +
                 "  \"difficulty\": 3,\n" +
                 "  \"subjectId\": 2,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionItems\": [\n" +
                 "    {\n" +
                 "      \"sequence\": 1,\n" +
-                "      \"content\": \"\",\n" +
                 "      \"typeId\": 1,\n" +
                 "      \"questionComponents\": [\n" +
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
                 "          \"content\": \"{\\\"options\\\":[{\\\"key\\\":\\\"A\\\",\\\"value\\\":\\\"speaks\\\"},{\\\"key\\\":\\\"B\\\",\\\"value\\\":\\\"is spoken\\\"},{\\\"key\\\":\\\"C\\\",\\\"value\\\":\\\"spoke\\\"},{\\\"key\\\":\\\"D\\\",\\\"value\\\":\\\"is speaking\\\"}]}\",\n" +
-                "          \"meta\": \"{\\\"optionType\\\":\\\"singleChoice\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
                 "          \"content\": \"{\\\"correctKey\\\":\\\"B\\\",\\\"answerDesc\\\":\\\"本题考查一般现在时的被动语态\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
                 "          \"content\": \"{\\\"analysisDesc\\\":\\\"主语It指代English，与speak是逻辑上的被动关系，因此需用被动语态；一般现在时的被动语态结构为am/is/are + 过去分词，speak的过去分词为spoken，故答案为B。\\\"}\",\n" +
-                "          \"meta\": \"{}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"sequence\": 2,\n" +
-                "      \"content\": \"\",\n" +
                 "      \"typeId\": 1,\n" +
                 "      \"questionComponents\": [\n" +
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
                 "          \"content\": \"{\\\"options\\\":[{\\\"key\\\":\\\"A\\\",\\\"value\\\":\\\"it\\\"},{\\\"key\\\":\\\"B\\\",\\\"value\\\":\\\"this\\\"},{\\\"key\\\":\\\"C\\\",\\\"value\\\":\\\"that\\\"},{\\\"key\\\":\\\"D\\\",\\\"value\\\":\\\"its\\\"}]}\",\n" +
-                "          \"meta\": \"{\\\"optionType\\\":\\\"singleChoice\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
                 "          \"content\": \"{\\\"correctKey\\\":\\\"A\\\",\\\"answerDesc\\\":\\\"本题考查it作形式宾语的用法\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
                 "          \"content\": \"{\\\"analysisDesc\\\":\\\"固定句型find it + adj. + to do sth.中，it作形式宾语，真正的宾语是后面的不定式短语to master English，this/that/its均无法充当形式宾语，故答案为A。\\\"}\",\n" +
-                "          \"meta\": \"{}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"sequence\": 3,\n" +
-                "      \"content\": \"\",\n" +
                 "      \"typeId\": 1,\n" +
                 "      \"questionComponents\": [\n" +
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
                 "          \"content\": \"{\\\"options\\\":[{\\\"key\\\":\\\"A\\\",\\\"value\\\":\\\"easy\\\"},{\\\"key\\\":\\\"B\\\",\\\"value\\\":\\\"easier\\\"},{\\\"key\\\":\\\"C\\\",\\\"value\\\":\\\"easily\\\"},{\\\"key\\\":\\\"D\\\",\\\"value\\\":\\\"easiest\\\"}]}\",\n" +
-                "          \"meta\": \"{\\\"optionType\\\":\\\"singleChoice\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
                 "          \"content\": \"{\\\"correctKey\\\":\\\"C\\\",\\\"answerDesc\\\":\\\"本题考查副词修饰动词的用法\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
                 "          \"content\": \"{\\\"analysisDesc\\\":\\\"空格处需修饰动词communicate，修饰动词需用副词；easy是形容词，easier是比较级，easiest是最高级，easily是副词形式，故答案为C。\\\"}\",\n" +
-                "          \"meta\": \"{}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    }\n" +
@@ -329,7 +299,6 @@ public class QuestionService {
         put("阅读理解", "{\n" +
                 "  \"title\": \"A new study published in Nature shows that artificial intelligence (AI) has gradually changed people's daily life. From smart home devices to personalized medical care, AI is making life more convenient. However, experts warn that over-reliance on AI may reduce people's independent thinking ability. The study surveyed 10,000 people across 5 countries and found that 78% of respondents use AI tools at least once a day, while only 32% still keep the habit of manual problem-solving.\",\n" +
                 "  \"typeId\": 12,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"difficulty\": 3,\n" +
                 "  \"subjectId\": 1,\n" +
                 "  \"questionItems\": [\n" +
@@ -340,18 +309,15 @@ public class QuestionService {
                 "      \"questionComponents\": [\n" +
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"A. The history of AI development<br/>B. The influence of AI on daily life<br/>C. The disadvantages of AI technology<br/>D. The global survey of AI usage\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2, \\\"optionLabels\\\":\\\"A|B|C|D\\\"}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"A. The history of AI development<br/>B. The influence of AI on daily life<br/>C. The disadvantages of AI technology<br/>D. The global survey of AI usage\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\",\n" +
-                "          \"meta\": \"{\\\"correctness\\\":true}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"The passage mainly discusses how AI changes people's daily life, including convenience and potential problems. Option A is not mentioned, Option C is only a small part, Option D is just a supporting detail.\\\"}\",\n" +
-                "          \"meta\": \"{\\\"keyPoint\\\":\\\"主旨理解需抓住全文核心，而非局部信息\\\"}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"The passage mainly discusses how AI changes people's daily life, including convenience and potential problems. Option A is not mentioned, Option C is only a small part, Option D is just a supporting detail.\\\"}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    },\n" +
@@ -362,18 +328,15 @@ public class QuestionService {
                 "      \"questionComponents\": [\n" +
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"A. 32%<br/>B. 78%<br/>C. 50%<br/>D. 100%\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2, \\\"optionLabels\\\":\\\"A|B|C|D\\\"}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"A. 32%<br/>B. 78%<br/>C. 50%<br/>D. 100%\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\",\n" +
-                "          \"meta\": \"{\\\"correctness\\\":true}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"The passage clearly states: '78% of respondents use AI tools at least once a day', so the answer is B. Option A refers to the percentage of people who keep manual problem-solving habits.\\\"}\",\n" +
-                "          \"meta\": \"{\\\"keyPoint\\\":\\\"细节题需精准定位原文数据\\\"}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"The passage clearly states: '78% of respondents use AI tools at least once a day', so the answer is B. Option A refers to the percentage of people who keep manual problem-solving habits.\\\"}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    },\n" +
@@ -384,18 +347,15 @@ public class QuestionService {
                 "      \"questionComponents\": [\n" +
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"A. AI will replace human jobs completely<br/>B. Over-reliance on AI may reduce independent thinking<br/>C. AI is not suitable for medical care<br/>D. AI tools are too expensive for daily use\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2, \\\"optionLabels\\\":\\\"A|B|C|D\\\"}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"A. AI will replace human jobs completely<br/>B. Over-reliance on AI may reduce independent thinking<br/>C. AI is not suitable for medical care<br/>D. AI tools are too expensive for daily use\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\",\n" +
-                "          \"meta\": \"{\\\"correctness\\\":true}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"Experts' warning is mentioned in the sentence: 'over-reliance on AI may reduce people's independent thinking ability'. Option A is an extreme statement not supported by the passage, Option C and D are not mentioned.\\\"}\",\n" +
-                "          \"meta\": \"{\\\"keyPoint\\\":\\\"推理题需基于原文，避免过度推断\\\"}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"Experts' warning is mentioned in the sentence: 'over-reliance on AI may reduce people's independent thinking ability'. Option A is an extreme statement not supported by the passage, Option C and D are not mentioned.\\\"}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    }\n" +
@@ -403,8 +363,7 @@ public class QuestionService {
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"global_analysis\",\n" +
-                "      \"content\": \"{\\\"text\\\":\\\"This passage is a typical expository text about AI's influence. It combines factual data and expert opinions, testing students' ability to understand main ideas, locate details, and make reasonable inferences. Key vocabulary: artificial intelligence, independent thinking, respondent.\\\"}\",\n" +
-                "      \"meta\": \"{\\\"totalScore\\\":6, \\\"difficulty\\\":\\\"medium-hard\\\", \\\"coreVocab\\\":\\\"artificial intelligence, independent thinking\\\"}\"\n" +
+                "      \"content\": \"{\\\"text\\\":\\\"This passage is a typical expository text about AI's influence. It combines factual data and expert opinions, testing students' ability to understand main ideas, locate details, and make reasonable inferences. Key vocabulary: artificial intelligence, independent thinking, respondent.\\\"}\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}");
@@ -413,19 +372,16 @@ public class QuestionService {
         put("听力题", "{\n" +
                 "  \"title\": \"请听对话，完成下列题目\",\n" +
                 "  \"typeId\": 13,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"difficulty\": 3,\n" +
                 "  \"subjectId\": 1,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"audio\",\n" +
                 "      \"content\": \"{\\\"url\\\":\\\"null\\\", \\\"duration\\\":\\\"1分45秒\\\", \\\"size\\\":\\\"2.5MB\\\"}\",\n" +
-                "      \"meta\": \"{\\\"audioFormat\\\":\\\"mp3\\\", \\\"bitRate\\\":\\\"128kbps\\\", \\\"source\\\":\\\"高考真题改编\\\"}\"\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"listening_text\",\n" +
                 "      \"content\": \"{\\\"text\\\":\\\"W: Good morning, sir. Can I help you?\\\\nM: Yes, I'd like to book a train ticket to Beijing tomorrow.\\\\nW: What time do you want to leave? We have trains at 8:00, 10:30 and 14:15.\\\\nM: The 10:30 one, please.\\\\nW: Single or return ticket?\\\\nM: Single, and a first-class seat if possible.\\\\nW: Let me check... Yes, there are first-class seats available for the 10:30 train.\\\\nM: Great, how much is it?\\\\nW: 380 yuan.\\\\nM: Here's the money.\\\\nW: Thank you. Your ticket is ready. Have a nice trip!\\\"}\",\n" +
-                "      \"meta\": \"{\\\"language\\\":\\\"English\\\", \\\"level\\\":\\\"medium\\\"}\"\n" +
                 "    }\n" +
                 "  ],\n" +
                 "  \"questionItems\": [\n" +
@@ -437,17 +393,14 @@ public class QuestionService {
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
                 "          \"content\": \"{\\\"text\\\":\\\"A. Book a plane ticket<br/>B. Book a train ticket<br/>C. Book a bus ticket\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2, \\\"optionLabels\\\":\\\"A|B|C\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
                 "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\",\n" +
-                "          \"meta\": \"{\\\"correctness\\\":true}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
                 "          \"content\": \"{\\\"text\\\":\\\"The man clearly says 'I'd like to book a train ticket to Beijing tomorrow', so the answer is B. Option A (plane) and C (bus) are not mentioned in the conversation.\\\"}\",\n" +
-                "          \"meta\": \"{\\\"keyPoint\\\":\\\"捕捉核心动作'book a train ticket'\\\"}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    },\n" +
@@ -458,18 +411,15 @@ public class QuestionService {
                 "      \"questionComponents\": [\n" +
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"A. The 8:00 one<br/>B. The 10:30 one<br/>C. The 14:15 one\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2, \\\"optionLabels\\\":\\\"A|B|C\\\"}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"A. The 8:00 one<br/>B. The 10:30 one<br/>C. The 14:15 one\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
-                "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\",\n" +
-                "          \"meta\": \"{\\\"correctness\\\":true}\"\n" +
+                "          \"content\": \"{\\\"text\\\":\\\"B\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
                 "          \"content\": \"{\\\"text\\\":\\\"When the woman asks about the departure time, the man replies 'The 10:30 one, please', which directly corresponds to option B.\\\"}\",\n" +
-                "          \"meta\": \"{\\\"keyPoint\\\":\\\"定位时间类关键信息\\\"}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    },\n" +
@@ -481,17 +431,14 @@ public class QuestionService {
                 "        {\n" +
                 "          \"componentType\": \"option\",\n" +
                 "          \"content\": \"{\\\"text\\\":\\\"A. 380 yuan<br/>B. 480 yuan<br/>C. 580 yuan\\\"}\",\n" +
-                "          \"meta\": \"{\\\"score\\\":2, \\\"optionLabels\\\":\\\"A|B|C\\\"}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"answer\",\n" +
                 "          \"content\": \"{\\\"text\\\":\\\"A\\\"}\",\n" +
-                "          \"meta\": \"{\\\"correctness\\\":true}\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "          \"componentType\": \"analysis\",\n" +
                 "          \"content\": \"{\\\"text\\\":\\\"The woman tells the man '380 yuan' when he asks about the price of the first-class ticket, so the answer is A.\\\"}\",\n" +
-                "          \"meta\": \"{\\\"keyPoint\\\":\\\"精准抓取数字类信息\\\"}\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    }\n" +
@@ -504,7 +451,6 @@ public class QuestionService {
                 "  \"typeId\": 14,\n" +
                 "  \"difficulty\": 2,\n" +
                 "  \"subjectId\": 1,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
@@ -513,7 +459,7 @@ public class QuestionService {
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"analysis\",\n" +
-                "      \"content\": \"{\\\"analysis\\\": \\\"冒泡排序通过重复遍历数组，比较相邻元素并交换位置来实现排序。\\\"}\",\n" +
+                "      \"content\": \"{\\\"analysis\\\": \\\"冒泡排序通过重复遍历数组，比较相邻元素并交换位置来实现排序。外层循环控制排序轮数，内层循环进行相邻元素比较。时间复杂度O(n²)，空间复杂度O(1)。虽然效率不高，但实现简单，适合小规模数据排序。\\\"}\",\n" +
                 "      \"meta\": \"{\\\"keyPoints\\\": [\\\"嵌套循环\\\", \\\"相邻元素比较\\\", \\\"原地排序\\\"]}\"\n" +
                 "    }\n" +
                 "  ]\n" +
@@ -525,7 +471,6 @@ public class QuestionService {
                 "  \"typeId\": 15,\n" +
                 "  \"difficulty\": 2,\n" +
                 "  \"subjectId\": 1,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"answer\",\n" +
@@ -534,8 +479,8 @@ public class QuestionService {
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"analysis\",\n" +
-                "      \"content\": \"{\\\"analysis\\\": \\\"这道题考察学生的英语口语表达能力和组织信息的能力。\\\"}\",\n" +
-                "      \"meta\": \"{\\\"tips\\\": [\\\"Use simple and clear language\\\", \\\"Structure your answer\\\"]}\"\n" +
+                "      \"content\": \"{\\\"analysis\\\": \\\"这道题考察学生的英语口语表达能力和组织信息的能力。一个完整的回答应该清晰地介绍家乡的地理位置，生动地描述至少一种特色美食，并能详细介绍一个著名景点。回答时要注意时态的正确使用（如一般现在时），并使用恰当的连接词使内容连贯。\\\"}\",\n" +
+                "      \"meta\": \"{\\\"tips\\\": [\\\"Use simple and clear language\\\", \\\"Structure your answer with an introduction, body, and conclusion\\\", \\\"Practice using descriptive adjectives\\\", \\\"Speak at a moderate pace\\\"]}\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}");
@@ -546,17 +491,14 @@ public class QuestionService {
                 "  \"typeId\": 17,\n" +
                 "  \"difficulty\": 1,\n" +
                 "  \"subjectId\": 1,\n" +
-                "  \"creatorId\": 2,\n" +
                 "  \"questionComponents\": [\n" +
                 "    {\n" +
                 "      \"componentType\": \"option\",\n" +
-                "      \"content\": \"{\\\"options\\\": [{\\\"key\\\": \\\"A\\\", \\\"value\\\": \\\"Java 5 (泛型、注解、自动装箱)\\\"}, {\\\"key\\\": \\\"B\\\", \\\"value\\\": \\\"Java 8 (Lambda表达式、Stream API)\\\"}, {\\\"key\\\": \\\"C\\\", \\\"value\\\": \\\"Java 11 (新的HTTP客户端、局部变量类型推断)\\\"}, {\\\"key\\\": \\\"D\\\", \\\"value\\\": \\\"Java 17 (密封类、模式匹配预览)\\\"}], \\\"allowMultiple\\\": false}\",\n" +
-                "      \"meta\": \"{\\\"minSelections\\\": 1, \\\"maxSelections\\\": 1}\"\n" +
+                "      \"content\": \"{\\\"options\\\": [{\\\"key\\\": \\\"A\\\", \\\"value\\\": \\\"Java 5 (泛型、注解、自动装箱)\\\"}, {\\\"key\\\": \\\"B\\\", \\\"value\\\": \\\"Java 8 (Lambda表达式、Stream API)\\\"}, {\\\"key\\\": \\\"C\\\", \\\"value\\\": \\\"Java 11 (新的HTTP客户端、局部变量类型推断)\\\"}, {\\\"key\\\": \\\"D\\\", \\\"value\\\": \\\"Java 17 (密封类、模式匹配预览)\\\"}], \\\"allowMultiple\\\": false}\"\n" +
                 "    },\n" +
                 "    {\n" +
                 "      \"componentType\": \"analysis\",\n" +
-                "      \"content\": \"{\\\"analysis\\\": \\\"这是一个开放性的投票问题，旨在了解大家对Java发展历程的看法。\\\"}\",\n" +
-                "      \"meta\": \"{\\\"discussionPoints\\\": [\\\"LTS版本的重要性\\\", \\\"向后兼容性\\\"]}\"\n" +
+                "      \"content\": \"{\\\"analysis\\\": \\\"这是一个开放性的投票问题，旨在了解大家对Java发展历程的看法。Java 5奠定了现代Java的基础，Java 8的Lambda和Stream API带来了编程范式的巨大变革，而Java 11和17作为LTS版本，则带来了许多实用的生产级特性。每个选项都有其支持者，没有绝对的正确答案。\\\"}\"\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}");
@@ -690,7 +632,7 @@ public class QuestionService {
                 String qContent = q.substring(firstSpaceIndex + 1);   // 题目内容
                 String qSubject = qMark.split("-")[0];     // 题目学科
                 String qType = qMark.split("-")[1];         // 题目类型
-                qType = qType.equals("完形填空") || qType.equals("阅读理解") ? qType : qType + "题";
+                qType = qType.equals("完形填空") || qType.equals("阅读理解") || qType.equals("名词解析") ? qType : qType + "题";
                 System.out.println(qSubject +" " + qType);
 
 //                Thread.sleep(10000);
@@ -742,12 +684,41 @@ public class QuestionService {
     }
 
     public Questions queryQuestion(Long questionId){
+
         Session session = getSession();
         QuestionDAO dao = new QuestionDAO();
         dao.setSession(session);
         Questions questions = dao.query(questionId);
 
         HibernateUtil.closeSession();
+
+        // 如果是学生，不返回解析和答案
+        if(UserContext.getUserType().equals(2)){
+            Set<QuestionItems> items = questions.getQuestionItems();
+            Set<QuestionComponents> components = questions.getQuestionComponents();
+
+            if (components != null) {
+                components.removeIf(component ->
+                        "answer".equals(component.getComponentType()) ||
+                                "analysis".equals(component.getComponentType())
+                );
+            }
+
+            if (items != null) {
+                for (QuestionItems questionItem : items) {
+                    List<QuestionComponents> questionComponents = questionItem.getQuestionComponents();
+
+                    // 修改点 2：List 同样支持 removeIf，这里也替换掉
+                    if (questionComponents != null) {
+                        questionComponents.removeIf(component ->
+                                "answer".equals(component.getComponentType()) ||
+                                        "analysis".equals(component.getComponentType())
+                        );
+                    }
+                }
+            }
+        }
+
         return questions;
     }
 

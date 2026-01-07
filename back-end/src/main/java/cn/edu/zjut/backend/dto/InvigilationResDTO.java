@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InvigilationResDTO {
     private boolean isViolation = false;
+    private boolean isFinish = false;
     private Integer attentionScore = 0;
     private String message = "";
 }

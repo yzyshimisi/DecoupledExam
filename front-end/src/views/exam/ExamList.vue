@@ -39,6 +39,13 @@
         >
           批量管理
         </button>
+        <button
+            v-if="userType !== '2' && isAcademic"
+            class="btn btn-primary btn-sm"
+            onclick="chooseExamTeacherDia.showModal()"
+        >
+          选择出卷老师
+        </button>
         <button 
           v-if="userType !== '2'" 
           class="btn btn-primary btn-sm"
@@ -151,6 +158,7 @@
       </button>
     </div>
   </div>
+  <ChooseExamTeacherDia />
 </template>
 
 <script setup lang="ts">
@@ -158,6 +166,9 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useRequest } from 'vue-hooks-plus';
 import { getStudentExamsAPI, getExamListAPI, deleteExamAPI } from '../../apis';
+import { getTeacherPositionAPI } from "../../apis/Server/userAPI";
+import { ChooseExamTeacherDia } from "../../components";
+import { ElNotification } from "element-plus";
 
 const router = useRouter();
 
@@ -174,6 +185,28 @@ if (!userType) {
 const exams = ref<any[]>([]);
 const statusFilter = ref('');
 const teacherFilter = ref('');
+
+// 页面加载时获取数据
+onMounted(() => {
+  console.log('ExamList组件挂载');
+  fetchExams();
+  judgeAcademic();
+});
+
+const isAcademic = ref(false);
+
+const judgeAcademic = () => {
+  if(userType ==='2') return
+  useRequest(()=>getTeacherPositionAPI(Number(localStorage.getItem("id")), localStorage.getItem("token")), {
+    onSuccess: (res) => {
+      console.log('ExamList - 获取用户职位成功:', res);
+      isAcademic.value = res['data']['role'] === 1;
+    },
+    onError: (err) => {
+      console.error('ExamList - 获取用户职位失败:', err);
+    }
+  })
+}
 
 // 状态相关方法
 const getStatusClass = (status: string) => {
@@ -260,7 +293,7 @@ const fetchExams = () => {
   if (userType === '2') {
     // 学生：获取自己的考试列表
     console.log('调用getStudentExamsAPI获取学生考试列表');
-    console.log('当前用户ID:', localStorage.getItem('userId'));
+    console.log('当前用户ID:', localStorage.getItem('id'));
     useRequest(() => getStudentExamsAPI(), {
       onSuccess(res) {
         console.log('获取学生考试列表响应:', res);
@@ -314,7 +347,7 @@ const fetchExams = () => {
       params.teacherId = parseInt(teacherFilter.value);
     } else if (userType === '1') {
       // 普通老师只能查看自己创建的考试
-      const currentUserId = localStorage.getItem('userId');
+      const currentUserId = localStorage.getItem('id');
       if (currentUserId) {
         params.teacherId = parseInt(currentUserId);
         console.log('普通老师，设置teacherId为:', params.teacherId);
@@ -377,7 +410,7 @@ const canEditExam = (exam: any) => {
     return true;
   } else if (userType === '1') {
     // 普通老师只能编辑自己创建的考试
-    const currentUserId = localStorage.getItem('userId');
+    const currentUserId = localStorage.getItem('id');
     if (!currentUserId) {
       console.error('未找到当前用户ID');
       return false;
@@ -399,7 +432,7 @@ const canDeleteExam = (exam: any) => {
     return true;
   } else if (userType === '1') {
     // 普通老师只能删除自己创建的考试
-    const currentUserId = localStorage.getItem('userId');
+    const currentUserId = localStorage.getItem('id');
     if (!currentUserId) {
       console.error('未找到当前用户ID');
       return false;
@@ -419,7 +452,7 @@ const canManageStudents = (exam: any) => {
     return true;
   } else if (userType === '1') {
     // 普通老师只能管理自己创建的考试的学生
-    const currentUserId = localStorage.getItem('userId');
+    const currentUserId = localStorage.getItem('id');
     if (!currentUserId) {
       return false;
     }
@@ -451,13 +484,13 @@ const viewExam = (exam: any) => {
 };
 
 const editExam = (exam: any) => {
-  router.push(`/exam/${exam.id}/edit`);
+  router.push(`/exam/${exam.examId}/edit`);
 };
 
 const deleteExam = (exam: any) => {
   if (confirm('确定要删除这个考试吗？')) {
-    console.log('开始删除考试，examId:', exam.id);
-    useRequest(() => deleteExamAPI(exam.id), {
+    console.log('开始删除考试，examId:', exam.examId);
+    useRequest(() => deleteExamAPI(exam.examId), {
       onSuccess(res) {
         console.log('删除考试响应:', res);
         if (res['code'] === 200 && res['data'] === true) {
@@ -476,16 +509,10 @@ const deleteExam = (exam: any) => {
 };
 
 const manageStudents = (exam: any) => {
-  router.push(`/exam/${exam.id}/students`);
+  router.push(`/exam/${exam.examId}/students`);
 };
 
 const createExam = () => {
   router.push('/exam/create');
 };
-
-// 页面加载时获取数据
-onMounted(() => {
-  console.log('ExamList组件挂载');
-  fetchExams();
-});
 </script>

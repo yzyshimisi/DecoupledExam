@@ -5,6 +5,7 @@ interface RegisterData {
   password: string;
   realName: string;
   phone: string;
+  email: string;
 }
 
 const registerAPI = async (data: RegisterData) => {

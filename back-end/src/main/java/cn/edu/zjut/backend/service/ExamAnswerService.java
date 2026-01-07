@@ -42,8 +42,10 @@ public class ExamAnswerService {
         ExamRecordDAO examRecordDAO = new ExamRecordDAO();
         ExamSettingDAO examSettingDAO = new ExamSettingDAO();
         ExamDAO examDAO = new ExamDAO();
+        StudentCourseDAO studentCourseDAO = new StudentCourseDAO();
         examDAO.setSession(session);
         examAnswerDAO.setSession(session);
+        studentCourseDAO.setSession(session);
 
         Transaction tran = null;
 
@@ -116,8 +118,10 @@ public class ExamAnswerService {
         Session session = this.getSession();
         QuestionDAO questionDAO = new QuestionDAO();
         ExamPaperQuestionDAO examPaperQuestionDAO = new ExamPaperQuestionDAO();
+        ExamWrongBookDAO examWrongBookDAO = new ExamWrongBookDAO();
         questionDAO.setSession(session);
         examPaperQuestionDAO.setSession(session);
+        examWrongBookDAO.setSession(session);
 
         try{
             Questions questions = questionDAO.query(questionId);    // 题目对象
@@ -598,6 +602,31 @@ public class ExamAnswerService {
 
             System.out.println(examAnswer);
             System.out.println(examRecord);
+
+            // 如果没有拿满分，则记录错题
+            if(examAnswer.getScore().compareTo(examPaperQuestion.getScore()) < 0){
+                List<ExamWrongBook> examWrongBooks = examWrongBookDAO.queryByStudentId(ExamContext.getStudentId());
+                boolean isExist = false;
+                for (ExamWrongBook examWrongBook : examWrongBooks) {
+                    if(examWrongBook.getQuestionId().equals(questionId)){
+                        isExist = true;
+                        examWrongBook.setErrorCount(examWrongBook.getErrorCount() + 1);
+                        examWrongBook.setLastErrorTime(new Date());
+                        examWrongBookDAO.update(examWrongBook);
+                        break;
+                    }
+                }
+                if(!isExist){
+                    ExamWrongBook examWrongBook = new ExamWrongBook();
+                    examWrongBook.setStudentId(ExamContext.getStudentId());
+                    examWrongBook.setQuestionId(questionId);
+                    examWrongBook.setErrorCount(1);
+                    examWrongBook.setCreateTime(new Date());
+                    examWrongBook.setLastErrorTime(new Date());
+                    examWrongBookDAO.save(examWrongBook);
+                }
+            }
+
         }catch (Exception e){
             e.printStackTrace();
             throw e;

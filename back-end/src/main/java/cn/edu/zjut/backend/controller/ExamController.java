@@ -1121,22 +1121,18 @@ public class ExamController {
     @ResponseBody
     public Response<InvigilationResDTO> handleInvigilation(@RequestBody Map<String, Object> loginRequest) {
 
-        try{
-            if(loginRequest.get("video")==null){
-                return Response.error("参数禁止为空");
-            }
-
-            String videoBase64 = loginRequest.get("video").toString();
-            if(videoBase64==null || videoBase64.isEmpty()){
-                return Response.error("参数禁止为空");
-            }
-
-            InvigilationResDTO resDTO = examService.handleInvigilation(videoBase64);
-            return Response.success(resDTO);
-
-        }catch (Exception e){
-            return Response.error(e.getMessage());
+        if(loginRequest.get("video")==null){
+            return Response.error("参数禁止为空");
         }
+
+        String videoBase64 = loginRequest.get("video").toString();
+        if(videoBase64==null || videoBase64.isEmpty()){
+            return Response.error("参数禁止为空");
+        }
+
+        InvigilationResDTO resDTO = examService.handleInvigilation(videoBase64);
+        return Response.success(resDTO);
+
     }
 
     /**

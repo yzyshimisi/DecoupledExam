@@ -13,6 +13,7 @@ import CreateExam from "../views/exam/CreateExam.vue";
 import ExamResult from "../views/exam/ExamResult.vue";
 import ExamStudents from "../views/exam/ExamStudents.vue";
 import ExamNotifications from "../views/student/ExamNotifications.vue";
+import StudentMistakes from "../views/student/mistakes/index.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -191,6 +192,11 @@ const routes: Array<RouteRecordRaw> = [
     component: ExamNotifications
   },
   {
+    path: "/student/mistakes",
+    name: "student-mistakes",
+    component: StudentMistakes
+  },
+  {
     path: "/teacher/student-grade",
     name: "studentGrade",
     component: StudentGrade,
@@ -219,7 +225,7 @@ router.beforeEach((to, _, next) => {
 
     if (loginSession.value === false) {
         //解决无限重定向的问题
-        if (to.path === "/login") {
+        if (to.path === "/login" || to.path === "/register") {
             next();
         } else {
             next("/login");

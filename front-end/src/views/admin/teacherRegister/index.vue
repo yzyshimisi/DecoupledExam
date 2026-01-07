@@ -61,6 +61,23 @@
             </label>
           </div>
 
+          <!-- 邮箱输入 -->
+          <div class="form-control mb-4">
+            <label class="label">
+              <span class="label-text text-base-content font-medium">邮箱</span>
+            </label>
+            <input
+                v-model="teacherForm.email"
+                type="email"
+                placeholder="请输入邮箱地址"
+                class="input input-bordered w-full focus:ring-2 focus:ring-primary/50"
+                :class="{ 'input-error': errors.email }"
+            />
+            <label class="label" v-if="errors.email">
+              <span class="label-text-alt text-error">{{ errors.email }}</span>
+            </label>
+          </div>
+
           <!-- 密码输入 -->
           <div class="form-control mb-4">
             <label class="label">
@@ -141,6 +158,7 @@ const teacherForm = reactive<TeacherRegisterForm>({
   realName: '',
   userType: 1, // 固定为教师用户类型
   phone: '',
+  email: '',
   confirmPassword: ''
 })
 
@@ -150,6 +168,7 @@ const errors = reactive({
   password: '',
   realName: '',
   phone: '',
+  email: '',
   confirmPassword: ''
 })
 
@@ -165,6 +184,7 @@ const validateForm = (): boolean => {
   errors.password = ''
   errors.realName = ''
   errors.phone = ''
+  errors.email = ''
   errors.confirmPassword = ''
 
   if (!teacherForm.username.trim()) {
@@ -226,7 +246,8 @@ const handleTeacherRegister = () => {
     password: teacherForm.password,
     realName: teacherForm.realName,
     userType: teacherForm.userType, // 固定为 1（教师）
-    phone: teacherForm.phone
+    phone: teacherForm.phone,
+    email: teacherForm.email
   }, token), {
     onSuccess(res) {
       if (res['code'] == 200) {

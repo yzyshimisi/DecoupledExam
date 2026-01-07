@@ -11,6 +11,7 @@ import ExamStudents from "./exam/ExamStudents.vue";
 import ExamNotifications from "./student/ExamNotifications.vue";
 import StudentGrade from "./studentGrade/index.vue";
 import StudentGrades from "./studentGrade/studentGrades.vue";
+import StudentMistakes from "./student/mistakes/index.vue";
 import Subject from "./subject/index.vue";
 import Admin from "./admin/index.vue"
 import ExamPaper from "./examPaper/index.vue"
@@ -39,5 +40,6 @@ export {
     LogManagement,
     StudentGrade,
     StudentGrades,
+    StudentMistakes,
 }
 

@@ -767,7 +767,13 @@ public class ExamService {
         studentCourseDAO.setSession(session);
 
         // 判断迟到
-        Exam exam = examDAO.getById(examId);
+        Exam exam = null;
+        try{
+            exam = examDAO.getById(examId);
+        }catch (Exception e){
+            throw new Exception("为存在当前试卷");
+        }
+
         ExamSetting examSetting = examSettingDAO.getByExamId(session, examId);
         // 是否允许迟到进入
         if(String.valueOf(examSetting.getAllowLateEnter()).equals("0") && exam.getStartTime().before(new Date())){
@@ -804,7 +810,7 @@ public class ExamService {
     }
 
     // 处理监考（人脸识别身份验证 + 注意力分数）
-    public InvigilationResDTO handleInvigilation(String videoBase64) throws Exception{
+    public InvigilationResDTO handleInvigilation(String videoBase64){
 
         InvigilationResDTO resDTO = new InvigilationResDTO();
 
@@ -838,6 +844,8 @@ public class ExamService {
                     resDTO.setViolation(false);
                     resDTO.setAttentionScore(score);
                     resDTO.setMessage("成功");
+
+                    resetInvigilationCount(ExamContext.getStudentId(), ExamContext.getExamId());    // 成功一次就重置监考违规次数
                 }else{
                     throw new Exception("人脸不匹配");
                 }
@@ -845,13 +853,68 @@ public class ExamService {
                 throw new Exception("人脸识别未通过");
             }
         }catch (Exception e){
-            handleViolation();  // 人脸识别不通过，违规处理
-            resDTO.setViolation(true);
-            resDTO.setAttentionScore(0);
-            resDTO.setMessage(e.getMessage());
+            e.printStackTrace();
+
+            incrementInvigilationCount(ExamContext.getStudentId(), ExamContext.getExamId());
+            int cnt = getInvigilationCount(ExamContext.getStudentId(), ExamContext.getExamId());
+
+            if(cnt >= 3){   // 连续3次监考没有通过，则按违规处理
+
+                resetInvigilationCount(ExamContext.getStudentId(), ExamContext.getExamId());    // 重新开始计数
+
+                int violateCnt = 0;
+
+                try{
+                    violateCnt = handleViolation();  // 人脸识别不通过，违规处理
+                }catch (Exception e2){
+                    e2.printStackTrace();
+                }
+
+                if(violateCnt >= 3){
+                    resDTO.setFinish(true);
+                }
+
+                resDTO.setViolation(true);
+                resDTO.setAttentionScore(0);
+                resDTO.setMessage(e.getMessage());
+            }
+
+            resDTO.setAttentionScore(new Random().nextInt(11)); // 随机生成一个低分数
         }
 
         return resDTO;  // 返回数据
+    }
+
+    // 这里监考违规是连续的3次才会当作考试中违规，如果打断了，需要重置
+    public void resetInvigilationCount(Long studentId, Long examId) {
+        try (Jedis jedis = JedisConnectionFactory.getJedis()) {
+            String key = "exam:invigilation:" + examId + ":" + studentId;
+            // 原子自增
+            long newCount = jedis.del(key);
+            // 设置过期时间（比如考试结束后3小时自动清理）
+            jedis.expire(key, 10800); // 3小时
+            System.out.println("学生 " + studentId + " 违规次数更新为: " + newCount);
+        }
+    }
+
+    // 监考过程中违规
+    public void incrementInvigilationCount(Long studentId, Long examId) {
+        try (Jedis jedis = JedisConnectionFactory.getJedis()) {
+            String key = "exam:invigilation:" + examId + ":" + studentId;
+            // 原子自增
+            long newCount = jedis.incr(key);
+            // 设置过期时间（比如考试结束后3小时自动清理）
+            jedis.expire(key, 10800); // 3小时
+            System.out.println("学生 " + studentId + " 监考违规次数更新为: " + newCount);
+        }
+    }
+
+    public int getInvigilationCount(Long studentId, Long examId) {
+        try (Jedis jedis = JedisConnectionFactory.getJedis()) {
+            String key = "exam:invigilation:" + examId + ":" + studentId;
+            String countStr = jedis.get(key);
+            return countStr == null ? 0 : Integer.parseInt(countStr);
+        }
     }
 
     private int computeAttentionScore(FaceAttribute faceInfo, String emotion) {
