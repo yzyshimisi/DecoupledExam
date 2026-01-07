@@ -99,6 +99,8 @@ const verifyFace = (videoBase64) => {
         if(token==null || token=='') return
         localStorage.setItem('examToken', token)
 
+        console.log(localStorage.getItem("examToken"))
+
         varemit('verifyFaceSuccess')
       }else{
         alert(res['msg'])

@@ -84,7 +84,13 @@
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(question, index) in questions" :key="question.id" @click="toggleSelect(question.id)" class="hover cursor-pointer" @contextmenu.prevent="openMenu($event, question.id)">
+              <tr
+                  v-for="(question, index) in questions"
+                  :key="question.id"
+                  @dblclick.stop.prevent="()=>{openQuestionPreview(questions.find(q => q.id === question.id))}"
+                  @click="toggleSelect(question.id)"
+                  class="hover cursor-pointer"
+                  @contextmenu.prevent="openMenu($event, question.id)">
                 <!-- 多选框单元格 -->
                 <td v-if="showCheckboxes || isComponent" class="text-center">
                   <input

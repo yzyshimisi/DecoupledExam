@@ -225,7 +225,7 @@ router.beforeEach((to, _, next) => {
 
     if (loginSession.value === false) {
         //解决无限重定向的问题
-        if (to.path === "/login") {
+        if (to.path === "/login" || to.path === "/register") {
             next();
         } else {
             next("/login");

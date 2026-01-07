@@ -32,6 +32,9 @@ public class User {
     @Column(name = "phone", length = 20)
     private String phone;
 
+    @Column(name = "email", length = 100, unique = true)
+    private String email;
+
     @Column(name = "status", length = 1, nullable = false, columnDefinition = "CHAR(1) DEFAULT '0'")
     private String status = "0"; // 0正常 1停用
 
@@ -48,6 +51,22 @@ public class User {
         this.password = password;
         this.realName = realName;
         this.avatarUrl = null; // 默认值
+        this.userType = userType;
+        this.faceImg = faceImg;
+        this.phone = phone;
+        this.email = null; // 默认值
+        this.status = status;
+        this.createTime = createTime;
+    }
+
+    public User(Long userId, String username, String password, String realName, String email,
+                Integer userType, String faceImg, String phone, String status, Date createTime) {
+        this.userId = userId;
+        this.username = username;
+        this.password = password;
+        this.realName = realName;
+        this.avatarUrl = null; // 默认值
+        this.email = email;
         this.userType = userType;
         this.faceImg = faceImg;
         this.phone = phone;
@@ -120,6 +139,14 @@ public class User {
         this.phone = phone;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -146,6 +173,7 @@ public class User {
                 ", userType=" + userType +
                 ", faceImg='" + faceImg + '\'' +
                 ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
                 ", status='" + status + '\'' +
                 ", createTime=" + createTime +
                 '}';

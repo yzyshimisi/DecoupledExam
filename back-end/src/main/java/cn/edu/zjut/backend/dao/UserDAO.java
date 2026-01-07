@@ -47,6 +47,22 @@ public class UserDAO {
     }
 
     /**
+     * 根据邮箱查找用户（用于注册验证）
+     */
+    public User findByEmail(String email) {
+        try {
+            String hql = "from User where email = :email";
+            Query<User> query = session.createQuery(hql, User.class);
+            query.setParameter("email", email);
+            List<User> results = query.list();
+            return results.isEmpty() ? null : results.get(0);
+        } catch (RuntimeException re) {
+            log.error("find user by email failed", re);
+            throw re;
+        }
+    }
+
+    /**
      * 根据用户ID查找用户
      */
     public User findById(Long userId) {

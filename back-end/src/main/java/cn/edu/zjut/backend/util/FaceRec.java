@@ -53,23 +53,24 @@ public class FaceRec {
         FaceDetConfig faceDetConfig = new FaceDetConfig();
         faceDetConfig.setModelEnum(FaceDetModelEnum.MTCNN); //人脸检测模型
         // 离线模型存储路径
-        String resourcePath = "C:\\Users\\31986\\Desktop\\resources";    // 依据情况自己改
-        faceDetConfig.setModelPath(resourcePath + "\\FaceModel\\mtcnn");
+
+        faceDetConfig.setModelPath(ConfigLoader.getProperty("app.resource.path") + "\\FaceModel\\mtcnn");
         FaceDetModel faceDetModel = FaceDetModelFactory.getInstance().getModel(faceDetConfig);
 
         // 活体识别模型
         LivenessConfig livenessConfig = new LivenessConfig();
         livenessConfig.setModelEnum(LivenessModelEnum.MINI_VISION_MODEL);
         livenessConfig.setDetectModel(faceDetModel);
-        livenessConfig.setModelPath(resourcePath + "\\FaceModel\\MiniVision\\2.7_80x80_MiniFASNetV2.onnx");
-        livenessConfig.putCustomParam("seModelPath", resourcePath + "\\FaceModel\\MiniVision\\4_0_0_80x80_MiniFASNetV1SE.onnx");
+        livenessConfig.setModelPath(ConfigLoader.getProperty("app.resource.path") + "\\FaceModel\\MiniVision\\2.7_80x80_MiniFASNetV2.onnx");
+        livenessConfig.putCustomParam("seModelPath", ConfigLoader.getProperty("app.resource.path") + "\\FaceModel\\MiniVision\\4_0_0_80x80_MiniFASNetV1SE.onnx");
+        livenessConfig.setRealityThreshold(0.45F);
         livenessConfig.setFrameCount(3);
         livenessDetModel = LivenessModelFactory.getInstance().getModel(livenessConfig);
 
         // 人脸识别模型
         FaceRecConfig faceRecConfig = new FaceRecConfig();
         faceRecConfig.setModelEnum(FaceRecModelEnum.FACENET_MODEL);//人脸识别模型
-        faceRecConfig.setModelPath(resourcePath + "\\FaceModel\\FaceNet");
+        faceRecConfig.setModelPath(ConfigLoader.getProperty("app.resource.path") + "\\FaceModel\\FaceNet");
         faceRecConfig.setCropFace(true);
         faceRecConfig.setAlign(true);
         faceRecConfig.setAutoLoadFace(true);
@@ -77,7 +78,7 @@ public class FaceRec {
 
         // 配置SQLITE数据库
         SQLiteConfig vectorDBConfig = new SQLiteConfig();
-        vectorDBConfig.setDbPath( resourcePath + "\\face.db");
+        vectorDBConfig.setDbPath( ConfigLoader.getProperty("app.resource.path") + "\\face.db");
         vectorDBConfig.setSimilarityType(SimilarityType.IP);
 
         faceRecConfig.setVectorDBConfig(vectorDBConfig);
@@ -87,13 +88,13 @@ public class FaceRec {
         // 人脸属性检测模型
         FaceAttributeConfig faceAttributeConfig = new FaceAttributeConfig();
         faceAttributeConfig.setModelEnum(FaceAttributeModelEnum.SEETA_FACE6_MODEL);
-        faceAttributeConfig.setModelPath( resourcePath + "\\FaceModel\\sf3.0_models");
+        faceAttributeConfig.setModelPath( ConfigLoader.getProperty("app.resource.path") + "\\FaceModel\\sf3.0_models");
         faceAttributeModel = FaceAttributeModelFactory.getInstance().getModel(faceAttributeConfig);
 
         // 表情检测模型
         FaceExpressionConfig faceExpressionConfig = new FaceExpressionConfig();
         faceExpressionConfig.setModelEnum(ExpressionModelEnum.FrEmotion);
-        faceExpressionConfig.setModelPath(  resourcePath + "\\FaceModel\\FrEmotion\\fr_expression.onnx");
+        faceExpressionConfig.setModelPath(  ConfigLoader.getProperty("app.resource.path") + "\\FaceModel\\FrEmotion\\fr_expression.onnx");
         faceExpressionConfig.setAlign(true);
         faceExpressionConfig.setDetectModel(faceDetModel);
         faceExpressionModel = ExpressionModelFactory.getInstance().getModel(faceExpressionConfig);

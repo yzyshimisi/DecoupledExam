@@ -34,6 +34,11 @@ public class UserService {
             return false; // 手机号格式不正确
         }
         
+        // 验证邮箱格式（如果提供了邮箱）
+        if (user.getEmail() != null && !user.getEmail().isEmpty() && !isValidEmail(user.getEmail())) {
+            return false; // 邮箱格式不正确
+        }
+        
         // 验证密码是否为空或空字符串
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             return false; // 密码不能为空
@@ -60,12 +65,26 @@ public class UserService {
      * 管理员注册用户（可以注册教师或学生账号）
      */
     public boolean adminRegister(User user) {
+        // 验证邮箱格式（如果提供了邮箱）
+        if (user.getEmail() != null && !user.getEmail().isEmpty() && !isValidEmail(user.getEmail())) {
+            return false; // 邮箱格式不正确
+        }
+        
         // 验证密码是否为空或空字符串
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             return false; // 密码不能为空
         }
         
         return saveUser(user);
+    }
+
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return false; // 邮箱不能为空
+        }
+        // 邮箱正则表达式
+        String emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email.matches(emailPattern);
     }
 
     /**
@@ -83,6 +102,14 @@ public class UserService {
             if (dao.findByUsername(user.getUsername()) != null) {
                 return false; // 用户名已存在
             }
+            
+            // 检查邮箱是否已存在（如果提供了邮箱）
+            if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+                if (dao.findByEmail(user.getEmail()) != null) {
+                    return false; // 邮箱已存在
+                }
+            }
+            
             // 对密码进行加密
             String encodedPassword = PasswordEncoder.encode(user.getPassword());
             user.setPassword(encodedPassword);

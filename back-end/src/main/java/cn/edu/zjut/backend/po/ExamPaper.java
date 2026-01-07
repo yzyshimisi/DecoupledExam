@@ -21,8 +21,8 @@ public class ExamPaper {
     @Column(name = "paper_name", nullable = false, length = 100)
     private String paperName;
 
-    @Column(name = "course_id")
-    private Long courseId;
+    @Column(name = "subject_id")
+    private Long subjectId;
 
     @Column(name = "total_score", nullable = false)
     private Integer totalScore = 100;

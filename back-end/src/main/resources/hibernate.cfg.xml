@@ -46,5 +46,6 @@
         <mapping class="cn.edu.zjut.backend.po.ExamCourse"/>
         <mapping class="cn.edu.zjut.backend.po.ExamCoursePK"/>
         <mapping class="cn.edu.zjut.backend.po.ExamAnswer"/>
+        <mapping class="cn.edu.zjut.backend.po.ExamWrongBook"/>
     </session-factory>
 </hibernate-configuration>

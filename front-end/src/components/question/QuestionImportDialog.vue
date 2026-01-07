@@ -261,6 +261,11 @@ const checkProgress = () => {
           window.removeEventListener('visibilitychange', handleVisibilityChange)
           alert('导入失败')
         }
+      }else{
+        alert('轮询失败:' + res['msg']);
+        stopPolling()
+        window.removeEventListener('visibilitychange', handleVisibilityChange)
+        isUploading.value = false
       }
     },
 

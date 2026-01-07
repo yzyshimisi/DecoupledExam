@@ -460,9 +460,11 @@ const loadSubjects = async () => {
     }
     
     const response: any = await getSubjectListAPI(token);
-    
+
+    console.log('学科列表:', response);
+
     if (response && response.code === 200) {
-      subjects.value = response.data || [];
+      subjects.value = response.data['subjects'] || [];
     } else {
       console.error('获取学科列表失败:', response?.msg || '未知错误');
     }

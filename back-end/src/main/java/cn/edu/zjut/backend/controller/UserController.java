@@ -2,11 +2,7 @@ package cn.edu.zjut.backend.controller;
 
 import cn.edu.zjut.backend.po.User;
 import cn.edu.zjut.backend.service.UserService;
-import cn.edu.zjut.backend.util.FaceRec;
-import cn.edu.zjut.backend.util.Jwt;
-import cn.edu.zjut.backend.util.Response;
-import cn.edu.zjut.backend.util.LoginLogger;
-import cn.edu.zjut.backend.util.UserContext;
+import cn.edu.zjut.backend.util.*;
 import cn.smartjavaai.common.entity.DetectionResponse;
 import cn.smartjavaai.common.entity.R;
 import com.google.gson.Gson;
@@ -14,6 +10,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.EncodedResource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,9 +26,13 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+
+import org.springframework.web.context.ContextLoader;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.util.Map;
+import java.util.Properties;
 
 
 @Controller
@@ -41,6 +45,9 @@ public class UserController {
     
     @Autowired
     private LoginLogger loginLogger;
+
+    @Value("${app.resource.path}")
+    private String resourcePath;
 
     /**
      * 用户注册
@@ -57,6 +64,14 @@ public class UserController {
             }
         }
         
+        // 检查邮箱格式
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+            String emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+            if (!user.getEmail().matches(emailPattern)) {
+                return Response.error("邮箱格式不正确");
+            }
+        }
+        
         // 检查密码是否为空
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             return Response.error("密码不能为空！");
@@ -65,11 +80,7 @@ public class UserController {
         if (userService.register(user)) {
             return Response.success("注册成功");
         } else {
-            // 区分不同错误原因
-            if (user.getPassword() == null || user.getPassword().isEmpty()) {
-                return Response.error("密码不能为空！");
-            }
-            return Response.error("注册失败，用户名可能已存在或手机号格式不正确");
+            return Response.error("注册失败，用户名或邮箱可能已存在，或手机号/邮箱格式不正确");
         }
     }
 
@@ -238,6 +249,14 @@ public class UserController {
             }
         }
         
+        // 检查邮箱格式
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+            String emailPattern = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+            if (!user.getEmail().matches(emailPattern)) {
+                return Response.error("邮箱格式不正确");
+            }
+        }
+        
         // 检查密码是否为空
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             return Response.error("密码不能为空！");
@@ -246,11 +265,7 @@ public class UserController {
         if (userService.adminRegister(user)) {
             return Response.success("教师用户注册成功");
         } else {
-            // 区分不同错误原因
-            if (user.getPassword() == null || user.getPassword().isEmpty()) {
-                return Response.error("密码不能为空！");
-            }
-            return Response.error("注册失败，用户名可能已存在或手机号格式不正确");
+            return Response.error("注册失败，用户名或邮箱可能已存在，或手机号/邮箱格式不正确");
         }
     }
 
@@ -358,7 +373,7 @@ public class UserController {
 
         try {
             // 确保目录存在
-            String uploadDir = "C:\\Users\\31986\\Desktop\\resources\\uploads\\avatars";
+            String uploadDir = ConfigLoader.getProperty("app.resource.path") + "\\uploads\\avatars";
             File dir = new File(uploadDir);
             if (!dir.exists()) {
                 dir.mkdirs();
