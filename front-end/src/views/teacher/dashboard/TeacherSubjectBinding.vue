@@ -1,100 +1,120 @@
 <template>
-  <div class="max-w-7xl mx-auto px-8 py-6">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold mb-2">学科绑定</h1>
-      <p class="text-gray-600">左侧选择要绑定的学科，右侧查看已绑定的学科</p>
-    </div>
+  <div class="p-6 bg-base-100 rounded-lg shadow">
+    <h1 class="text-2xl font-bold mb-6 text-base-content">学科绑定管理</h1>
 
-    <!-- 主容器：左侧可绑定学科 + 右侧已绑定学科 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- 左侧：可绑定的学科列表 -->
-      <div class="lg:col-span-1 bg-base-100 p-6 rounded-lg shadow">
-        <h3 class="text-lg font-semibold mb-4">可绑定学科</h3>
-        <div v-if="loadingSubjects" class="flex items-center justify-center py-8">
-          <span class="loading loading-spinner loading-lg"></span>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- 左侧：可绑定学科列表 -->
+      <div class="border border-base-300 rounded-lg p-6 bg-base-200">
+        <h2 class="text-xl font-semibold mb-4 text-base-content">可绑定学科</h2>
+
+        <!-- 加载状态 -->
+        <div v-if="loading" class="text-center py-8">
+          <div class="inline-block">
+            <span class="loading loading-spinner loading-md text-primary"></span>
+          </div>
+          <p class="text-base-content mt-2">加载中...</p>
         </div>
-        <div v-else-if="subjects.length > 0" class="space-y-2">
-          <button 
-            v-for="subject in subjects" 
+
+        <!-- 错误提示 -->
+        <div v-else-if="error" class="alert alert-error">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span>{{ error }}</span>
+        </div>
+
+        <!-- 学科列表 -->
+        <div v-else class="space-y-2 max-h-96 overflow-y-auto">
+          <div
+            v-for="subject in unboundSubjects"
             :key="subject.id"
+            class="flex items-center p-3 bg-base-100 border border-base-300 rounded-lg hover:bg-primary hover:text-primary-content cursor-pointer transition"
             @click="selectSubject(subject)"
-            :class="selectedSubject?.id === subject.id ? 'bg-primary text-primary-content' : 'bg-base-200 hover:bg-base-300'"
-            class="w-full p-3 rounded-lg text-left transition-all duration-200 font-medium"
+            :class="{ 'bg-primary text-primary-content border-primary': selectedSubject?.id === subject.id }"
           >
-            {{ subject.subjectName }}
-          </button>
-        </div>
-        <div v-else class="text-center py-8">
-          <p class="text-gray-400">暂无可用的学科</p>
-        </div>
-
-        <!-- 绑定选项（当选中学科时显示） -->
-        <div v-if="selectedSubject" class="mt-6 pt-6 border-t border-base-300">
-          <div class="mb-4">
-            <label class="label">
-              <span class="label-text font-semibold text-base">是否为主学科</span>
+            <input
+              type="radio"
+              :id="`subject-${subject.id}`"
+              :value="subject.id"
+              v-model="selectedSubjectId"
+              class="radio radio-primary mr-3"
+            />
+            <label :for="`subject-${subject.id}`" class="flex-1 cursor-pointer font-medium">
+              {{ subject.name }}
             </label>
-            <div class="flex gap-4 mt-2">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  v-model.number="isMain" 
-                  :value="1"
-                  class="radio radio-primary"
-                />
-                <span class="label-text">是</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input 
-                  type="radio" 
-                  v-model.number="isMain" 
-                  :value="0"
-                  class="radio radio-primary"
-                />
-                <span class="label-text">否</span>
-              </label>
-            </div>
           </div>
 
-          <button 
+          <div v-if="unboundSubjects.length === 0" class="text-center text-base-content py-8">
+            暂无可绑定学科
+          </div>
+        </div>
+
+        <!-- 绑定按钮 -->
+        <div class="mt-6 flex gap-2">
+          <button
             @click="bindSubject"
-            :disabled="loading"
-            class="btn btn-success w-full"
+            :disabled="!selectedSubject || isBinding"
+            class="btn btn-primary flex-1"
+            :class="{'loading': isBinding}"
           >
-            <span v-if="!loading">绑定学科</span>
-            <span v-else class="loading loading-spinner loading-sm"></span>
+            {{ isBinding ? '绑定中...' : '绑定' }}
           </button>
         </div>
       </div>
 
-      <!-- 右侧：已绑定的学科列表 -->
-      <div class="lg:col-span-2 bg-base-100 p-6 rounded-lg shadow">
-        <h3 class="text-lg font-semibold mb-4">已绑定学科</h3>
-        <div v-if="boundSubjects.length > 0" class="space-y-2">
-          <div 
-            v-for="item in boundSubjectsWithNames" 
-            :key="item.subjectId"
-            class="p-4 bg-base-200 rounded-lg flex items-center justify-between"
+      <!-- 右侧：已绑定学科列表 -->
+      <div class="border border-base-300 rounded-lg p-6 bg-base-200">
+        <h2 class="text-xl font-semibold mb-4 text-base-content">已绑定学科</h2>
+
+        <!-- 加载状态 -->
+        <div v-if="loadingBound" class="text-center py-8">
+          <div class="inline-block">
+            <span class="loading loading-spinner loading-md text-secondary"></span>
+          </div>
+          <p class="text-base-content mt-2">加载中...</p>
+        </div>
+
+        <!-- 错误提示 -->
+        <div v-else-if="errorBound" class="alert alert-error">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span>{{ errorBound }}</span>
+        </div>
+
+        <!-- 已绑定学科列表 -->
+        <div v-else class="space-y-2 max-h-96 overflow-y-auto">
+          <div
+            v-for="binding in boundSubjectsWithNames"
+            :key="binding.id"
+            class="flex items-center justify-between p-3 bg-base-100 border border-base-300 rounded-lg hover:bg-error hover:text-error-content transition"
           >
-            <div class="flex-1">
-              <div class="font-semibold text-base">{{ item.subjectName }}</div>
-              <div class="text-sm text-gray-500 mt-1">
-                <span v-if="item.isMain === 1" class="badge badge-success gap-1">主学科</span>
-                <span v-else class="badge badge-outline gap-1">辅学科</span>
-              </div>
+            <div class="flex items-center">
+              <span class="font-medium">{{ binding.subjectName }}</span>
+              <span v-if="binding.isMain === 1" class="ml-2 badge badge-warning badge-sm">
+                主要
+              </span>
             </div>
-            <button 
-              @click="unbindSubject(item.subjectId)"
-              :disabled="deleteLoading"
+            <button
+              @click="unbindSubject(binding.subjectId)"
+              :disabled="isUnbinding === binding.subjectId"
               class="btn btn-error btn-sm"
+              :class="{'loading': isUnbinding === binding.subjectId}"
             >
-              <span v-if="!deleteLoading">解绑</span>
-              <span v-else class="loading loading-spinner loading-xs"></span>
+              {{ isUnbinding === binding.subjectId ? '取消中...' : '取消绑定' }}
             </button>
           </div>
+
+          <div v-if="boundSubjectsWithNames.length === 0" class="text-center text-base-content py-8">
+            暂未绑定学科
+          </div>
         </div>
-        <div v-else class="text-center py-12">
-          <p class="text-gray-400">暂未绑定任何学科</p>
+
+        <!-- 刷新按钮 -->
+        <div class="mt-6">
+          <button
+            @click="loadBoundSubjects"
+            :disabled="loadingBound"
+            class="btn btn-secondary w-full"
+          >
+            刷新已绑定学科
+          </button>
         </div>
       </div>
     </div>
@@ -102,19 +122,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
-import getSubjectsAPI from '../../../apis/Server/subject/getSubjectsAPI';
-import { 
-  bindTeacherSubjectAPI, 
-  getTeacherSubjectsAPI, 
-  deleteTeacherSubjectAPI 
-} from '../../../apis/Server/teacherSubjectAPI';
+import { ref, computed, onMounted } from 'vue';
 import { jwtDecode } from 'jwt-decode';
+import getSubjectsAPI from '../../../apis/Server/subject/getSubjectsAPI';
+import {
+  bindTeacherSubjectAPI,
+  getTeacherSubjectsAPI,
+  deleteTeacherSubjectAPI
+} from '../../../apis/Server/teacherSubjectAPI';
 
 interface Subject {
   id: number;
-  subjectName: string;
-  isMain?: number;
+  name: string;
 }
 
 interface BoundSubject {
@@ -123,153 +142,277 @@ interface BoundSubject {
   isMain: number;
 }
 
+interface BoundSubjectWithName extends BoundSubject {
+  subjectName: string;
+  id: string;
+}
+
+interface DecodedToken {
+  id: number;
+  username: string;
+  userType: number;
+  [key: string]: any;
+}
+
+// 状态管理
 const subjects = ref<Subject[]>([]);
 const boundSubjects = ref<BoundSubject[]>([]);
 const selectedSubject = ref<Subject | null>(null);
-const isMain = ref<number>(0);
-const loading = ref<boolean>(false);
-const deleteLoading = ref<boolean>(false);
-const teacherId = ref<number | null>(null);
-const loadingSubjects = ref<boolean>(false);
+const selectedSubjectId = ref<number | null>(null);
 
-// 计算已绑定学科的完整信息（包含学科名称）
-const boundSubjectsWithNames = computed(() => {
-  return boundSubjects.value.map(bound => {
-    const subject = subjects.value.find(s => s.id === bound.subjectId);
-    return {
-      ...bound,
-      subjectName: subject?.subjectName || `学科 ${bound.subjectId}`
-    };
-  });
-});
+// 加载状态
+const loading = ref(false);
+const loadingBound = ref(false);
+const isBinding = ref(false);
+const isUnbinding = ref<number | null>(null);
 
-// 初始化 - 获取所有学科和已绑定的学科
-onMounted(async () => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+// 错误提示
+const error = ref('');
+const errorBound = ref('');
 
-    const decoded: any = jwtDecode(token);
-    teacherId.value = decoded.id;
+// 获取 token
+const getToken = (): string => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+  console.log('获取的 token:', token);
+  return token;
+};
 
-    // 获取所有学科
-    await loadSubjects();
-    // 获取已绑定的学科
-    await loadBoundSubjects(token);
-  } catch (error) {
-    console.error('初始化页面失败:', error);
+// 解析 token 获取教师 ID
+const getTeacherId = (): number | null => {
+  const token = getToken();
+  if (!token) {
+    console.error('未找到 token');
+    return null;
   }
-});
-
-// 获取所有学科
-const loadSubjects = async () => {
   try {
-    loadingSubjects.value = true;
-    const response: any = await getSubjectsAPI({
-      status: 1 // 只获取启用的学科
-    });
-    if (response && response.code === 200) {
-      const subjectsData = response.data.subjects || response.data;
-      if (Array.isArray(subjectsData)) {
-        subjects.value = subjectsData.map((item: any) => ({
-          id: item.id,
-          subjectName: item.subjectName
-        }));
-      }
-    }
+    const decoded = jwtDecode<DecodedToken>(token);
+    console.log('解析的 token:', decoded);
+    console.log('教师 ID:', decoded.id);
+    return decoded.id;
   } catch (error) {
-    console.error('获取学科列表失败:', error);
-  } finally {
-    loadingSubjects.value = false;
+    console.error('解析 token 失败:', error);
+    return null;
   }
 };
 
-// 获取已绑定的学科
-const loadBoundSubjects = async (token: string) => {
+// 加载所有学科
+const loadSubjects = async () => {
+  loading.value = true;
+  error.value = '';
   try {
-    if (!teacherId.value) return;
-    const response: any = await getTeacherSubjectsAPI(teacherId.value, token);
-    if (response && response.code === 200 && Array.isArray(response.data)) {
-      boundSubjects.value = response.data;
+    const response = await getSubjectsAPI({});
+    console.log('获取所有学科响应:', response);
+
+    // 处理多种可能的响应格式
+    if (Array.isArray(response)) {
+      subjects.value = response.map(subject => ({
+        id: subject.subjectId,
+        name: subject.subjectName
+      }));
+    } else if (response.data && Array.isArray(response.data.subjects)) {
+      // 处理 {code: 200, msg: '操作成功', data: {subjects: [...]}} 格式
+      subjects.value = response.data.subjects.map(subject => ({
+        id: subject.subjectId,
+        name: subject.subjectName
+      }));
+    } else if (response.data && Array.isArray(response.data)) {
+      // 处理 {code: 200, msg: '操作成功', data: [...]} 格式
+      subjects.value = response.data.map(subject => ({
+        id: subject.subjectId,
+        name: subject.subjectName
+      }));
+    } else if (response.subjects && Array.isArray(response.subjects)) {
+      subjects.value = response.subjects.map(subject => ({
+        id: subject.subjectId,
+        name: subject.subjectName
+      }));
+    } else {
+      console.warn('未识别的学科响应格式:', response);
+      subjects.value = [];
     }
-  } catch (error) {
-    console.error('获取已绑定学科失败:', error);
+    console.log('学科列表:', subjects.value);
+  } catch (err: any) {
+    error.value = `加载学科失败: ${err.message || '未知错误'}`;
+    console.error('加载学科出错:', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 加载已绑定学科
+const loadBoundSubjects = async () => {
+  loadingBound.value = true;
+  errorBound.value = '';
+  const token = getToken();
+
+  if (!token) {
+    errorBound.value = '未找到授权信息，请重新登录';
+    loadingBound.value = false;
+    return;
+  }
+
+  try {
+    const response = await getTeacherSubjectsAPI(token);
+    console.log('获取已绑定学科响应:', response);
+
+    // 处理多种可能的响应格式
+    if (Array.isArray(response)) {
+      boundSubjects.value = response;
+    } else if (response.data && Array.isArray(response.data)) {
+      boundSubjects.value = response.data;
+    } else if (response.subjects && Array.isArray(response.subjects)) {
+      boundSubjects.value = response.subjects;
+    } else {
+      console.warn('未识别的绑定学科响应格式:', response);
+      boundSubjects.value = [];
+    }
+    console.log('已绑定学科列表:', boundSubjects.value);
+  } catch (err: any) {
+    errorBound.value = `加载已绑定学科失败: ${err.response?.data?.msg || err.message || '未知错误'}`;
+    console.error('加载已绑定学科出错:', err);
+  } finally {
+    loadingBound.value = false;
   }
 };
 
 // 选择学科
 const selectSubject = (subject: Subject) => {
   selectedSubject.value = subject;
-  isMain.value = 0;
+  selectedSubjectId.value = subject.id;
+  console.log('选择学科:', subject);
 };
 
 // 绑定学科
 const bindSubject = async () => {
-  if (!selectedSubject.value || !teacherId.value) return;
+  if (!selectedSubject.value) {
+    alert('请选择要绑定的学科');
+    return;
+  }
 
-  loading.value = true;
+  const token = getToken();
+  if (!token) {
+    alert('未找到授权信息，请重新登录');
+    return;
+  }
+
+  isBinding.value = true;
+  error.value = '';
+
   try {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    console.log('准备绑定学科:', {
+      subjectId: selectedSubject.value.id,
+      isMain: 1
+    });
 
-    const response: any = await bindTeacherSubjectAPI(
-      teacherId.value,
+    const response = await bindTeacherSubjectAPI(
       selectedSubject.value.id,
-      isMain.value,
+      1, // isMain
       token
     );
 
-    if (response && response.code === 200) {
-      alert('学科绑定成功！');
-      resetForm();
-      await loadBoundSubjects(token);
-    } else {
-      alert(response?.message || '学科绑定失败');
-    }
-  } catch (error) {
-    console.error('绑定学科失败:', error);
-    alert('学科绑定失败，请稍后重试');
+    console.log('绑定成功:', response);
+    alert('学科绑定成功');
+
+    // 重新加载已绑定学科列表
+    await loadBoundSubjects();
+
+    // 重置选择
+    selectedSubject.value = null;
+    selectedSubjectId.value = null;
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.msg || err.message || '绑定失败';
+    error.value = `绑定学科失败: ${errorMsg}`;
+    console.error('绑定学科出错:', err);
+    alert(`绑定学科失败: ${errorMsg}`);
   } finally {
-    loading.value = false;
+    isBinding.value = false;
   }
 };
 
-// 删除学科绑定
+// 解绑学科
 const unbindSubject = async (subjectId: number) => {
-  if (!teacherId.value || !confirm('确定要删除此学科绑定吗？')) return;
+  if (!confirm('确定要取消绑定该学科吗？')) {
+    return;
+  }
 
-  deleteLoading.value = true;
+  const token = getToken();
+  if (!token) {
+    alert('未找到授权信息，请重新登录');
+    return;
+  }
+
+  isUnbinding.value = subjectId;
+  errorBound.value = '';
+
   try {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    console.log('准备解绑学科:', { subjectId });
 
-    const response: any = await deleteTeacherSubjectAPI(
-      teacherId.value,
-      subjectId,
-      token
-    );
+    const response = await deleteTeacherSubjectAPI(subjectId, token);
 
-    if (response && response.code === 200) {
-      alert('学科绑定已删除');
-      await loadBoundSubjects(token);
-    } else {
-      alert(response?.message || '删除失败');
-    }
-  } catch (error) {
-    console.error('删除学科绑定失败:', error);
-    alert('删除失败，请稍后重试');
+    console.log('解绑成功:', response);
+    alert('学科解绑成功');
+
+    // 重新加载已绑定学科列表
+    await loadBoundSubjects();
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.msg || err.message || '解绑失败';
+    errorBound.value = `解绑学科失败: ${errorMsg}`;
+    console.error('解绑学科出错:', err);
+    alert(`解绑学科失败: ${errorMsg}`);
   } finally {
-    deleteLoading.value = false;
+    isUnbinding.value = null;
   }
 };
 
-// 重置表单
-const resetForm = () => {
-  selectedSubject.value = null;
-  isMain.value = 0;
-};
+// 计算未绑定学科列表
+const unboundSubjects = computed(() => {
+  return subjects.value.filter(
+    subject => !boundSubjects.value.some(binding => binding.subjectId === subject.id)
+  );
+});
+
+// 计算已绑定学科（包含名称）
+const boundSubjectsWithNames = computed(() => {
+  return boundSubjects.value
+    .map(binding => {
+      const subjectName =
+        subjects.value.find(s => s.id === binding.subjectId)?.name || `学科 ${binding.subjectId}`;
+      return {
+        ...binding,
+        id: `${binding.teacherId}-${binding.subjectId}`,
+        subjectName
+      } as BoundSubjectWithName;
+    })
+    .sort((a, b) => b.isMain - a.isMain); // 主要学科排在前面
+});
+
+// 页面初始化
+onMounted(async () => {
+  console.log('页面初始化...');
+  const teacherId = getTeacherId();
+  console.log('教师 ID:', teacherId);
+
+  await loadSubjects();
+  await loadBoundSubjects();
+});
 </script>
 
 <style scoped>
-/* 可以添加自定义样式 */
+/* 添加必要的滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 </style>
