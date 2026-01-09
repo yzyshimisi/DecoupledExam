@@ -803,7 +803,6 @@ public class ExamService {
                     return true;
                 }
             }
-
         }
 
         return false;

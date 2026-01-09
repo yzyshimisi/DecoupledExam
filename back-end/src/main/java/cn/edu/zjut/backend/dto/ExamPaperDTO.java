@@ -17,6 +17,7 @@ public class ExamPaperDTO {
     private String isSealed;
     private Long creatorId;
     private String composeType = "1";
+    private Long subjectId;
     private Date createTime =  new Date();
     private Date updatedAt =  new Date();
 

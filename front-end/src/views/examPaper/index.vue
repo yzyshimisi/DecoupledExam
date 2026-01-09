@@ -125,6 +125,7 @@
   <ManualComposeDialog
       :open="isOpenManualComposeDia"
       :questionTypes="questionTypes"
+      :subjects="subjectList"
       @update:open="(val) => { isOpenManualComposeDia = val }"
       @success="getExamPapers()"
   />

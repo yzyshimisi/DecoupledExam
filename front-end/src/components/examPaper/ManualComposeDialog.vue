@@ -30,6 +30,19 @@
               </select>
             </div>
 
+            <div v-if="subjects && subjects.length > 0">
+              <label class="label">
+                <span class="label-text">学科</span>
+              </label>
+              <select v-model="form.subjectId" class="select select-bordered w-full text-base">
+                <option value="-1" selected disabled>请选择学科</option>
+                <option
+                  v-for="(value, index) in subjects"
+                  :value="value.subjectId"
+                >{{ value.subjectName }}</option>
+              </select>
+            </div>
+
             <div>
               <label class="label">
                 <span class="label-text">试卷总分（只读，由题目分数自动计算）</span>
@@ -168,6 +181,7 @@ import { useRequest } from "vue-hooks-plus"; // 假设你有这个 API
 const props = defineProps<{
   open: boolean
   questionTypes: any[]
+  subjects: any[]
 }>()
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
@@ -195,7 +209,8 @@ const selectQuestions = (ids) => {  // 通过Question组件来选择题目
 const form = ref({
   paperName: '',
   isSealed: '0',
-  composeType: '1' // 手动组卷
+  composeType: '1', // 手动组卷
+  subjectId: '-1'
 })
 
 // 模拟题库（实际应从 API 获取）
@@ -268,6 +283,7 @@ const handleSubmit = async () => {
     totalScore: Math.round(computedTotalScore.value), // 取整
     isSealed: form.value.isSealed,
     composeType: form.value.composeType,
+    subjectId: form.value.subjectId,
     questions: selectedQuestions.value.map(q => ({
       questionId: q.id,
       score: q.score,
@@ -284,7 +300,8 @@ const handleSubmit = async () => {
         form.value = {
           paperName: '',
           isSealed: '0',
-          composeType: '1'
+          composeType: '1',
+          subjectId: '-1'
         }
         selectedQuestions.value = []
         searchKeyword.value = ''
