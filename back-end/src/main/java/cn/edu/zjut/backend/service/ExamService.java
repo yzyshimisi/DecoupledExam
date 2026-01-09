@@ -4,6 +4,7 @@ import cn.edu.zjut.backend.dao.*;
 import cn.edu.zjut.backend.dto.InvigilationResDTO;
 import cn.edu.zjut.backend.po.*;
 import cn.edu.zjut.backend.util.*;
+import cn.hutool.extra.mail.Mail;
 import cn.smartjavaai.common.entity.DetectionResponse;
 import cn.smartjavaai.common.entity.R;
 import cn.smartjavaai.common.entity.face.FaceAttribute;
@@ -994,5 +995,9 @@ public class ExamService {
 
         // 保证分数在 0～100 范围内
         return Math.max(0, Math.min(100, score));
+    }
+
+    public boolean sendPrepareExamPaperMail(String teacherEmail, String subject, String cotent) throws Exception{
+        return EmailSender.sendMail(Collections.singletonList(teacherEmail), subject, cotent);
     }
 }

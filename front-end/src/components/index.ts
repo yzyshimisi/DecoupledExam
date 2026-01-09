@@ -16,6 +16,7 @@ import ExamPreparation from "./examPage/ExamPreparation.vue";
 import ExamCameraMonitor from "./examPage/ExamCameraMonitor.vue";
 import StudentGradeFilters from "./studentGrade/StudentGradeFilters.vue";
 import ChooseExamTeacherDia from "./exam/ChooseExamTeacherDia.vue";
+import TeacherCard from "./exam/TeacherCard.vue";
 
 export {
     Navbar,
@@ -36,4 +37,5 @@ export {
     ExamCameraMonitor,
     StudentGradeFilters,
     ChooseExamTeacherDia,
+    TeacherCard,
 }

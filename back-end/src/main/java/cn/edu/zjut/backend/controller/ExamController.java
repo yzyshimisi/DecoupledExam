@@ -1135,6 +1135,33 @@ public class ExamController {
 
     }
 
+    @RequestMapping(value = "/sendPrepareExamPaperMail", method = RequestMethod.POST)
+    @ResponseBody
+    public Response<String> sendPrepareExamPaperMail(@RequestBody Map<String, Object> loginRequest) {
+
+        if(loginRequest.get("mail")==null){
+            return Response.error("参数禁止为空");
+        }
+
+        String teacherEmail = loginRequest.get("mail").toString();
+        String subject = loginRequest.get("subject").toString();
+        String content = loginRequest.get("content").toString();
+
+        try{
+            if(teacherEmail==null || teacherEmail.isEmpty() || subject==null || subject.isEmpty() || content==null || content.isEmpty()) {
+                throw new Exception("参数禁止为空");
+            }
+
+            if(examService.sendPrepareExamPaperMail(teacherEmail, subject, content)){
+                return Response.success();
+            }else{
+                return Response.error("发送失败！");
+            }
+        }catch (Exception e){
+            return Response.error(e.getMessage());
+        }
+    }
+
     /**
      * 请求参数类（创建考试）
      */

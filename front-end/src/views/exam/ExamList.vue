@@ -41,7 +41,7 @@
         </button>
         <button
             v-if="userType !== '2' && isAcademic"
-            class="btn btn-primary btn-sm"
+            class="btn btn-success btn-sm"
             onclick="chooseExamTeacherDia.showModal()"
         >
           选择出卷老师
