@@ -29,7 +29,7 @@ public class SubjectController {
     @RequestMapping(value = "/api/subject", method = RequestMethod.POST)
     @ResponseBody
     @LogRecord(module = "科目管理", action = "添加科目", targetType = "科目", logType = LogRecord.LogType.OPERATION)
-    public Response<List<Subject>> addSubject(@RequestBody Subject subject, Model model) {
+    public Response<List<Subject>> addSubject(@RequestBody Subject subject) {
         if (subjectServ.addSubject(subject)) {
             return Response.success();
         }

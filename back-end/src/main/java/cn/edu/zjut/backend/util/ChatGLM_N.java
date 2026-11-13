@@ -10,7 +10,7 @@ import java.util.Collections;
 
 public class ChatGLM_N {
 
-    private static final String API_KEY = "dc2dac203e4847a38277beb1f2ce5936.TUemDuFlJBO7fX2F";;
+    private static final String API_KEY = "54a162d1dd5349eda974c9fcdf014070.KFZzViznh6wggZUh";;
 
     public static String inquire(String askQuestion, Boolean useKnowledge) {
         // 初始化客户端

@@ -21,6 +21,18 @@ public class SubjectService {
     }
 
     public boolean addSubject(Subject subject) {
+
+        Byte gradeLevel = subject.getGradeLevel();
+        if (gradeLevel == null || (gradeLevel != 1 && gradeLevel != 2 && gradeLevel != 3 && gradeLevel != 9)) {
+            return false;
+        }
+        if (subject.getSubjectName().isEmpty()){
+            return false;
+        }
+        if (subject.getStatus()==null || (subject.getStatus()!=1 && subject.getStatus()!=0)){
+            return false;
+        }
+
         Session session = getSession();
         SubjectDAO dao = new SubjectDAO();
         dao.setSession(session);

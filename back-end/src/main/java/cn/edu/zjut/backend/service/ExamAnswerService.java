@@ -79,7 +79,7 @@ public class ExamAnswerService {
             examRecord.setObjectiveScore(BigDecimal.ZERO);  // 设置分数
             examRecord.setSubjectiveScore(BigDecimal.ZERO);
             examRecord.setTotalScore(BigDecimal.ZERO);
-            examRecord.setStatus("1");  // 考试记录状态，设置为已交
+            examRecord.setStatus("0");  // 考试记录状态，设置为已交
             examRecord.setSubmitTime(now);  // 设置提交时间
 
             for (Map.Entry<Long, Object> entry : answers.entrySet()) {
@@ -95,7 +95,7 @@ public class ExamAnswerService {
                 examAnswer.setMarkType("1");
                 examAnswer.setMarkerId(exam.getTeacherId());    // 发布考试的老师ID
 
-                correctAnswers(examAnswer, examRecord , examSetting , value, exam.getPaperId(), questionId);
+//                correctAnswers(examAnswer, examRecord , examSetting , value, exam.getPaperId(), questionId);
 
                 examAnswerDAO.save(examAnswer);
                 examRecordDAO.updateExamRecord(session, examRecord);

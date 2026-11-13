@@ -19,7 +19,7 @@ public class Subject {
     private String subjectCode;
 
     @Column(name = "grade_level", nullable = false)
-    private Byte gradeLevel;
+        private Byte gradeLevel;
 
     @Column(name = "sort_order", nullable = false, columnDefinition = "INT(11) DEFAULT 0") // 7. 使用 columnDefinition 来实现默认值
     private Integer sortOrder = 1;

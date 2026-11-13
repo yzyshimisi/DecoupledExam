@@ -16,6 +16,7 @@ export default defineConfig({
         target: 'http://localhost:80',  // 后台服务器的域名和端口
         changeOrigin: true,   // 修改源
       }
-    }
+    },
+    host: '0.0.0.0',
   }
 })

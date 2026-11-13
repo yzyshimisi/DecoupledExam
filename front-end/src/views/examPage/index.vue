@@ -511,12 +511,13 @@ const addExamAnswer = () => {
       if(res['code']==200){
         answers.value = {}
         exitExam()
-        routers.push("/exam").then(()=>{
-          window.location.reload()
-          nextTick(()=>{
-            ElNotification({title: 'Success', message: '提交成功！', type: 'success',})
-          })
-        })
+        // routers.push("/exam").then(()=>{
+        //   window.location.reload()
+        //   nextTick(()=>{
+        //     ElNotification({title: 'Success', message: '提交成功！', type: 'success',})
+        //   })
+        // })
+        ElNotification({title: 'Success', message: '提交成功！', type: 'success',})
       }else{
         isExamStarted.value = true
         ElNotification({title: 'Warning', message: res['msg'], type: 'warning',})

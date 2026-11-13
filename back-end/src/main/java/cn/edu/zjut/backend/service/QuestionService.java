@@ -13,6 +13,7 @@ import lombok.Data;
 import org.apache.poi.xwpf.usermodel.*;
 import org.hibernate.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import redis.clients.jedis.Jedis;
 
 import java.io.ByteArrayInputStream;
@@ -25,6 +26,12 @@ import java.util.regex.Pattern;
 
 @Service("questionServ")
 public class QuestionService {
+
+//    QuestionDAO dao;
+//
+//    public QuestionService(QuestionDAO dao){
+//        this.dao = dao;
+//    }
 
     private final Gson gson = new Gson();
     private static final Map<String, String> QUESTION_JSON = new HashMap<String, String>() {{
@@ -511,12 +518,16 @@ public class QuestionService {
     // 添加题目
     public boolean addQuestion(Questions question){
 
+        if (!StringUtils.hasText(question.getTitle()) || question.getDifficulty() == null || question.getDifficulty() < 1 || question.getDifficulty() > 5) {
+            return false;
+        }
+
         // 生成题目标签
         Gson gson = new Gson();
         String questionStr = gson.toJson(question);
 
-        String questionTagsJson = generateTags(questionStr);
-        List<QuestionTags> questionTags = gson.fromJson(questionTagsJson, new TypeToken<List<QuestionTags>>(){}.getType());
+//        String questionTagsJson = generateTags(questionStr);
+//        List<QuestionTags> questionTags = gson.fromJson(questionTagsJson, new TypeToken<List<QuestionTags>>(){}.getType());
 
         // 手动建立双向引用
         bindQuestionRelations(question);
@@ -533,10 +544,10 @@ public class QuestionService {
 
             dao.add(question);  // 插入题目
             // 插入标签
-            for(QuestionTags questionTag : questionTags){
-                questionTag.setQuestionId(question.getId());
-                questionTagsDAO.add(questionTag);
-            }
+//            for(QuestionTags questionTag : questionTags){
+//                questionTag.setQuestionId(question.getId());
+//                questionTagsDAO.add(questionTag);
+//            }
 
             tran.commit();
             return true;
@@ -723,14 +734,33 @@ public class QuestionService {
     }
 
     // 删除题目，支持批量删除
-    public boolean deleteQuestion(List<Long> ids){
+    public boolean deleteQuestion(List<String> ids){
+
+        List<Long> validIds = new ArrayList<>();
+
+        for (String idStr : ids) {
+            if (idStr == null || idStr.trim().isEmpty()) {
+                continue; // 忽略空字符串
+            }
+
+            // 2. 尝试将 String 转为 Long
+            try {
+                System.out.println("Trying to parse ID: " + idStr);
+                Long id = Long.parseLong(idStr.trim());
+                validIds.add(id);
+            } catch (NumberFormatException e) {
+                // 3. 如果既不是 *，又转不成数字（比如传入了 "a"），则属于非法参数
+                return false;
+            }
+        }
+
         Session session=this.getSession();
         QuestionDAO dao = new QuestionDAO();
         dao.setSession(session);
         Transaction tran = null;
         try {
             tran = session.beginTransaction();
-            for(Long id:ids){
+            for(Long id:validIds){
                 Questions questions = dao.query(id);
                 if(Objects.equals(questions.getCreatorId(), UserContext.getUserId())){  // 只允许删除自己创建的题目
                     dao.delete(questions);
@@ -981,7 +1011,7 @@ public class QuestionService {
 
                 // 预处理：尝试修复常见的JSON格式问题
                 res = preprocessJson(res);
-//                System.out.println(res);
+                System.out.println(res);
 
                 Questions question = gson.fromJson(res, Questions.class);
 //                System.out.println(question);

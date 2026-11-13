@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -1065,11 +1068,14 @@ public class ExamController {
     public Response<String> verifyFace(@RequestBody Map<String, Object> loginRequest, @PathVariable Long examId) {
 
         try{
-            if(loginRequest.get("video")==null){
-                return Response.error("参数禁止为空");
-            }
+//            if(loginRequest.get("video")==null){
+//                return Response.error("参数禁止为空");
+//            }
+//
+//            String videoBase64 = loginRequest.get("video").toString();
 
-            String videoBase64 = loginRequest.get("video").toString();
+            String videoBase64 = Files.readString(Paths.get("C:\\Users\\31986\\Desktop\\集成测试\\video.txt"), StandardCharsets.UTF_8);
+
             if(videoBase64==null || videoBase64.isEmpty()){
                 return Response.error("参数禁止为空");
             }

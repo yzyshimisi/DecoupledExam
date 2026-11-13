@@ -52,6 +52,7 @@
           <!-- 登录按钮 -->
           <div class="form-control mb-6">
             <button
+                name="login button"
                 type="submit"
                 class="btn btn-primary w-full text-lg font-semibold"
                 :class="{ 'loading': isLoading }"

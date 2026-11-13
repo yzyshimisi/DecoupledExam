@@ -33,6 +33,7 @@ public class QuestionController {
     @ResponseBody
     @LogRecord(module = "题库管理", action = "添加题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
     public Response<List<Questions>> addQuestion(@RequestBody Questions question) {
+        System.out.println("Received question: " + question);
         if(questionServ.addQuestion(question)) {
             return Response.success();
         }else{
@@ -164,7 +165,7 @@ public class QuestionController {
     @RequestMapping(value = "/api/question", method = RequestMethod.DELETE)
     @ResponseBody
     @LogRecord(module = "题库管理", action = "删除题目", targetType = "题目", logType = LogRecord.LogType.OPERATION)
-    public Response<List<Questions>> deleteQuestion(@RequestBody List<Long> ids, Model model) {
+    public Response<List<Questions>> deleteQuestion(@RequestBody List<String> ids, Model model) {
         if(ids==null || ids.isEmpty()){
             return Response.error("未指定参数");
         }

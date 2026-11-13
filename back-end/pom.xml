@@ -58,6 +58,12 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.0.1</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Spring -->
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
@@ -286,12 +292,20 @@
             <version>1.6.2</version>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/org.mockito/mockito-core -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>compile</scope>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>6.2.5.Final</version>
+        </dependency>
+
     </dependencies>
 
     <build>
